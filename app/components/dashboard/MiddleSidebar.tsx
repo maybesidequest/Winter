@@ -5,13 +5,16 @@ import {
   CloudServerOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
-import { mockHubs, mockServers } from "~/data/dashboard-mock";
+import type { ServerResource } from "~/resources/server";
+import type { HubResource } from "~/resources/hub";
 import { SidebarToggle } from "./SidebarToggle";
 import { SidebarTabs, type SidebarContext } from "./SidebarTabs";
 import { UserBar } from "./UserBar";
 
 interface MiddleSidebarProps {
   instanceType: "servers" | "hubs";
+  servers?: ServerResource[];
+  hubs?: HubResource[];
   onToggleInstanceType: (type: "servers" | "hubs") => void;
   onOpenSettings: () => void;
   onNavigate?: () => void;
@@ -19,6 +22,8 @@ interface MiddleSidebarProps {
 
 export function MiddleSidebar({
   instanceType,
+  servers = [],
+  hubs = [],
   onToggleInstanceType,
   onOpenSettings,
   onNavigate,
@@ -32,18 +37,22 @@ export function MiddleSidebar({
   let currentIcon = <AppstoreOutlined className="text-sm text-violet-400" />;
 
   if (location.pathname.startsWith("/dashboard/hubs") && params.hubId) {
-    context = { type: "hub", id: params.hubId };
-    const hub = mockHubs.find((h) => h.id === params.hubId);
+    const hub = hubs.find((h) => h.metadata.id === params.hubId);
+    context = { type: "hub", id: params.hubId, hub };
     if (hub) {
-      currentTitle = hub.name;
+      currentTitle = hub.metadata.name;
       currentIcon = <ClusterOutlined className="text-sm text-violet-400" />;
+    } else {
+      currentTitle = "Hub Workspace";
     }
   } else if (location.pathname.startsWith("/dashboard/servers") && params.serverId) {
-    context = { type: "server", id: params.serverId };
-    const server = mockServers.find((s) => s.id === params.serverId);
+    const server = servers.find((s) => s.metadata.id === params.serverId);
+    context = { type: "server", id: params.serverId, server };
     if (server) {
-      currentTitle = server.name;
+      currentTitle = server.metadata.name;
       currentIcon = <CloudServerOutlined className="text-sm text-sky-400" />;
+    } else {
+      currentTitle = "Server Workspace";
     }
   } else if (location.pathname.startsWith("/dashboard/calls")) {
     context = { type: "calls" };
@@ -52,6 +61,7 @@ export function MiddleSidebar({
     context = { type: "browse" };
     currentTitle = "Hub Directory";
   }
+
 
   return (
     <aside
@@ -98,8 +108,9 @@ export function MiddleSidebar({
         <SidebarToggle value={instanceType} onChange={onToggleInstanceType} />
 
         {/* Collapsible Tabs */}
-        <SidebarTabs context={context} onNavigate={onNavigate} />
+        <SidebarTabs context={context} servers={servers} hubs={hubs} onNavigate={onNavigate} />
       </div>
+
 
       {/* Bottom User Bar */}
       <div className="pt-2.5 mt-auto border-t border-white/[0.08] flex-shrink-0">

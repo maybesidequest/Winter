@@ -1,12 +1,32 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation, useLoaderData } from "react-router";
+import type { Route } from "./+types/layout";
 import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
+import { requireUser } from "~/services/auth.server";
+import { serverService } from "~/services/server.server";
+import { hubService } from "~/services/hub.server";
 import "~/styles/dashboard.css";
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await requireUser(request);
+  const [servers, hubs] = await Promise.all([
+    serverService.list(user.id).catch((err) => {
+      console.error("Failed to load user servers:", err);
+      return [];
+    }),
+    hubService.getUserHubs(user.id).catch((err) => {
+      console.error("Failed to load user hubs:", err);
+      return [];
+    }),
+  ]);
+  return { user, servers, hubs };
+}
+
 export default function DashboardLayout() {
+  const { user, servers, hubs } = useLoaderData<typeof loader>();
   const location = useLocation();
   const [instanceType, setInstanceType] = useState<"servers" | "hubs">("servers");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -51,10 +71,14 @@ export default function DashboardLayout() {
       <div className="hidden md:flex">
         <IconRail
           instanceType={instanceType}
+          servers={servers}
+          hubs={hubs}
           onOpenCreate={() => setIsSettingsOpen(true)}
         />
         <MiddleSidebar
           instanceType={instanceType}
+          servers={servers}
+          hubs={hubs}
           onToggleInstanceType={setInstanceType}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
@@ -73,6 +97,8 @@ export default function DashboardLayout() {
           <div className="relative z-10 flex h-full max-w-[320px] w-full shadow-2xl animate-slideRight">
             <IconRail
               instanceType={instanceType}
+              servers={servers}
+              hubs={hubs}
               onOpenCreate={() => {
                 setMobileMenuOpen(false);
                 setIsSettingsOpen(true);
@@ -81,6 +107,8 @@ export default function DashboardLayout() {
             <div className="flex-1 bg-[#151424]">
               <MiddleSidebar
                 instanceType={instanceType}
+                servers={servers}
+                hubs={hubs}
                 onToggleInstanceType={setInstanceType}
                 onOpenSettings={() => {
                   setMobileMenuOpen(false);
@@ -100,7 +128,7 @@ export default function DashboardLayout() {
           background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
         }}
       >
-        <Outlet />
+        <Outlet context={{ user, servers, hubs }} />
       </main>
 
       {/* Global Settings Modal */}
@@ -111,3 +139,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

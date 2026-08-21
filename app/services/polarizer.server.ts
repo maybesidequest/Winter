@@ -56,5 +56,6 @@ export const polarizerClient = {
   listAppeals: (actorId: string, hubId: string, cursor?: string) => call<any>("listAppeals", { context: requestContext(actorId), scope: hubScope(hubId), status: "RESOURCE_STATUS_PENDING", page: page(cursor) }),
   listInfractions: (actorId: string, hubId: string, cursor?: string) => call<any>("listInfractions", { context: requestContext(actorId), scope: hubScope(hubId), status: "RESOURCE_STATUS_UNSPECIFIED", page: page(cursor) }),
   listRestrictions: (actorId: string, hubId: string, cursor?: string) => call<any>("listRestrictions", { context: requestContext(actorId), scope: hubScope(hubId), status: "RESOURCE_STATUS_UNSPECIFIED", page: page(cursor) }),
-  adjudicateHeld: (actorId: string, input: { reviewItemId: string; resolution: "APPROVE" | "REJECT" | "EXPIRE"; reason: string; expectedVersion: number }) => call<any>("adjudicateHeldAction", { context: requestContext(actorId, true), reviewItemId: input.reviewItemId, resolution: `HELD_ACTION_RESOLUTION_${input.resolution}`, reason: input.reason, expectedVersion: String(input.expectedVersion) }),
+  adjudicateHeld: (actorId: string, hubId: string, input: { reviewItemId: string; resolution: "APPROVE" | "REJECT" | "EXPIRE"; reason: string; expectedVersion: number }) => call<any>("adjudicateHeldAction", { context: requestContext(actorId, true), scope: hubScope(hubId), reviewItemId: input.reviewItemId, resolution: `HELD_ACTION_RESOLUTION_${input.resolution}`, reason: input.reason, expectedVersion: String(input.expectedVersion) }),
 };
+

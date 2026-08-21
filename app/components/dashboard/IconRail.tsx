@@ -6,15 +6,23 @@ import {
   CompassOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
-import { mockHubs, mockServers } from "~/data/dashboard-mock";
+import type { ServerResource } from "~/resources/server";
+import type { HubResource } from "~/resources/hub";
 import { InstanceIcon } from "./InstanceIcon";
 
 interface IconRailProps {
   instanceType: "servers" | "hubs";
+  servers?: ServerResource[];
+  hubs?: HubResource[];
   onOpenCreate?: () => void;
 }
 
-export function IconRail({ instanceType, onOpenCreate }: IconRailProps) {
+export function IconRail({
+  instanceType,
+  servers = [],
+  hubs = [],
+  onOpenCreate,
+}: IconRailProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [homeHover, setHomeHover] = useState(false);
@@ -26,7 +34,27 @@ export function IconRail({ instanceType, onOpenCreate }: IconRailProps) {
   const isBrowseActive = location.pathname.startsWith("/dashboard/browse");
   const isCallsActive = location.pathname.startsWith("/dashboard/calls");
 
-  const instances = instanceType === "servers" ? mockServers : mockHubs;
+  const instances =
+    instanceType === "servers"
+      ? servers.map((s) => ({
+          id: s.metadata.id,
+          name: s.metadata.name,
+          initials: s.metadata.name.slice(0, 2).toUpperCase(),
+          color: "#2a7198",
+          iconUrl: s.metadata.iconUrl,
+          memberCount: s.status.callCount,
+          type: "server" as const,
+        }))
+      : hubs.map((h) => ({
+          id: h.metadata.id,
+          name: h.metadata.name,
+          initials: h.metadata.name.slice(0, 2).toUpperCase(),
+          color: "#5b4ccb",
+          iconUrl: h.spec.iconUrl,
+          memberCount: h.status.connectionCount,
+          type: "hub" as const,
+        }));
+
 
   return (
     <aside
@@ -148,7 +176,7 @@ export function IconRail({ instanceType, onOpenCreate }: IconRailProps) {
               }}
             >
               <span className="font-bold text-white text-[13px] font-['Sora']">
-                Create {instanceType === "hubs" ? "Hub" : "Server"}
+                Create Hub
               </span>
               <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
             </div>

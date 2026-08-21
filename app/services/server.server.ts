@@ -56,8 +56,8 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
   return manageable;
 }
 
-async function assertManageable(userId: string, serverId: string) {
-  const guild = (await manageableGuilds(userId)).find((item) => item.id === serverId);
+async function assertManageable(userId: string, serverId: string, forceRefresh = false) {
+  const guild = (await manageableGuilds(userId, forceRefresh)).find((item) => item.id === serverId);
   if (!guild) throw new Error("You need Manage Server permission in Discord.");
   return guild;
 }
@@ -133,13 +133,26 @@ export const serverService = {
   },
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
-    const guild = await assertManageable(userId, input.serverId);
+    const guild = await assertManageable(userId, input.serverId, true);
     const [existing] = await db.select().from(serverData).where(eq(serverData.id, input.serverId)).limit(1);
     if (!existing) throw new Error("Install InterChat in this server before changing Call settings.");
-    const { serverId, ...settings } = input;
+
+    // Validate that provided lobbyChannelIds legitimately belong to this server
+    let validatedChannelIds = input.lobbyChannelIds;
+    if (validatedChannelIds.length > 0) {
+      const validChannels = await serverService.channels(userId, input.serverId);
+      const validChannelSet = new Set(validChannels.map((c) => c.id));
+      validatedChannelIds = validatedChannelIds.filter((id) => validChannelSet.has(id));
+    }
+
+    const { serverId, lobbyChannelIds, ...settings } = input;
     await db
       .update(serverData)
-      .set({ ...settings, updatedAt: new Date().toISOString() })
+      .set({
+        ...settings,
+        lobbyChannelIds: validatedChannelIds,
+        updatedAt: new Date().toISOString(),
+      })
       .where(eq(serverData.id, serverId));
     await redis.del(`server:settings:${serverId}`);
     await redis.incr(`server:settings:version:${serverId}`);
@@ -195,7 +208,7 @@ export const serverService = {
   },
 
   async addBlock(userId: string, input: AddBlockInput) {
-    await assertManageable(userId, input.serverId);
+    await assertManageable(userId, input.serverId, true);
     const [existingServer] = await db.select().from(serverData).where(eq(serverData.id, input.serverId)).limit(1);
     if (!existingServer) throw new Error("Server not found.");
 
@@ -231,11 +244,12 @@ export const serverService = {
   },
 
   async removeBlock(userId: string, input: RemoveBlockInput) {
-    await assertManageable(userId, input.serverId);
+    await assertManageable(userId, input.serverId, true);
     await db
       .delete(serverBlocklist)
       .where(and(eq(serverBlocklist.id, input.blockId), eq(serverBlocklist.serverId, input.serverId)));
     return { success: true };
   },
 };
+
 

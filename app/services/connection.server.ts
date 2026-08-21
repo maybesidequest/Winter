@@ -5,6 +5,15 @@ import type { HubConnectionResource } from "../resources/connection";
 import { discordService } from "./discord.server";
 import { permissionService } from "./permission.server";
 
+import { serverService } from "./server.server";
+
+const VALID_WEBHOOK_PREFIXES = [
+  "https://discord.com/api/webhooks/",
+  "https://discordapp.com/api/webhooks/",
+  "https://ptb.discord.com/api/webhooks/",
+  "https://canary.discord.com/api/webhooks/",
+];
+
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
     await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
@@ -96,7 +105,18 @@ export const connectionService = {
     webhookUrl: string,
     parentId?: string
   ): Promise<{ success: boolean; hubId?: string; error?: string }> {
+    // 1. Assert Hub permission
     await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
+
+    // 2. Assert Server Manage permission to prevent cross-server BOLA
+    await serverService.get(userId, serverId);
+
+    // 3. Validate Webhook URL integrity
+    const isDiscordWebhook = VALID_WEBHOOK_PREFIXES.some((prefix) => webhookUrl.startsWith(prefix));
+    if (!isDiscordWebhook) {
+      return { success: false, error: "Invalid Discord webhook URL." };
+    }
+
     const id = crypto.randomUUID();
     try {
       await db.insert(connection).values({
@@ -120,3 +140,4 @@ export const connectionService = {
     }
   },
 };
+

@@ -1,5 +1,5 @@
 import { db } from "../db.server";
-import { authRole, authUserAssignment } from "../../drizzle/schema";
+import { authRole, authUserAssignment, hub } from "../../drizzle/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { permissionService } from "./permission.server";
 
@@ -7,8 +7,8 @@ export const hubStaffService = {
   /**
    * Assigns (or updates) a role for a user in a hub.
    *
-   * The invoking user must have MANAGE_MODERATORS. After the DB write,
-   * delegates cache invalidation to Iris.
+   * The invoking user must have MANAGE_MODERATORS.
+   * Only the Hub Owner can assign the MANAGER role.
    */
   async assignRole(
     invokerUserId: string,
@@ -17,6 +17,26 @@ export const hubStaffService = {
     roleName: string
   ): Promise<{ success: boolean; error?: string }> {
     await permissionService.assertCanPerform(invokerUserId, hubId, "MANAGE_MODERATORS");
+
+    // Fetch Hub owner
+    const [hubRecord] = await db
+      .select({ ownerId: hub.ownerId })
+      .from(hub)
+      .where(eq(hub.id, hubId))
+      .limit(1);
+
+    if (!hubRecord) {
+      return { success: false, error: "Hub not found." };
+    }
+
+    if (targetUserId === hubRecord.ownerId) {
+      return { success: false, error: "You cannot modify roles for the hub owner." };
+    }
+
+    const isAssigningManager = roleName.toUpperCase().includes("MANAGER");
+    if (isAssigningManager && invokerUserId !== hubRecord.ownerId) {
+      return { success: false, error: "Only the hub owner can assign the Manager role." };
+    }
 
     try {
       // Look up matching authRole row
@@ -31,7 +51,7 @@ export const hubStaffService = {
       }
 
       const [existingAssignment] = await db
-        .select({ id: authUserAssignment.id })
+        .select({ id: authUserAssignment.id, roleName: authRole.name })
         .from(authUserAssignment)
         .innerJoin(authRole, eq(authRole.id, authUserAssignment.roleId))
         .where(
@@ -41,6 +61,11 @@ export const hubStaffService = {
           )
         )
         .limit(1);
+
+      // If target is already a manager, only owner can modify
+      if (existingAssignment?.roleName?.toUpperCase().includes("MANAGER") && invokerUserId !== hubRecord.ownerId) {
+        return { success: false, error: "Only the hub owner can modify managers." };
+      }
 
       const assignmentId = existingAssignment?.id ?? crypto.randomUUID();
 
@@ -71,6 +96,7 @@ export const hubStaffService = {
 
   /**
    * Removes every authUserAssignment row for targetUserId that belongs to a role with authRole.hubId === hubId.
+   * Only the Hub Owner can remove managers.
    */
   async removeRole(
     invokerUserId: string,
@@ -78,6 +104,37 @@ export const hubStaffService = {
     hubId: string
   ): Promise<{ success: boolean; error?: string }> {
     await permissionService.assertCanPerform(invokerUserId, hubId, "MANAGE_MODERATORS");
+
+    const [hubRecord] = await db
+      .select({ ownerId: hub.ownerId })
+      .from(hub)
+      .where(eq(hub.id, hubId))
+      .limit(1);
+
+    if (!hubRecord) {
+      return { success: false, error: "Hub not found." };
+    }
+
+    if (targetUserId === hubRecord.ownerId) {
+      return { success: false, error: "You cannot remove the hub owner." };
+    }
+
+    // Check if target is a manager
+    const existingRoles = await db
+      .select({ name: authRole.name })
+      .from(authUserAssignment)
+      .innerJoin(authRole, eq(authRole.id, authUserAssignment.roleId))
+      .where(
+        and(
+          eq(authUserAssignment.userId, targetUserId),
+          eq(authRole.hubId, hubId)
+        )
+      );
+
+    const isManager = existingRoles.some((r) => r.name.toUpperCase().includes("MANAGER"));
+    if (isManager && invokerUserId !== hubRecord.ownerId) {
+      return { success: false, error: "Only the hub owner can remove managers." };
+    }
 
     try {
       const result = await db
@@ -106,6 +163,7 @@ export const hubStaffService = {
       return { success: false, error: "Failed to remove role." };
     }
   },
+
 
   /**
    * Returns all staff members with explicit role mappings inside this hub,

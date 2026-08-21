@@ -37,7 +37,8 @@ export const safetyService = {
 
   async adjudicate(actorId: string, hubId: string, input: { reviewItemId: string; resolution: "APPROVE" | "REJECT" | "EXPIRE"; reason: string; expectedVersion: number }) {
     await permissionService.assertCanPerform(actorId, hubId, "MODERATE_MESSAGES");
-    const result = await polarizerClient.adjudicateHeld(actorId, input);
+    const result = await polarizerClient.adjudicateHeld(actorId, hubId, input);
     return { state: result.state, version: Number(result.version), deliveryPending: input.resolution === "APPROVE" };
   },
 };
+

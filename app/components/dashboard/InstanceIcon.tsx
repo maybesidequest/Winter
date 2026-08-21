@@ -5,7 +5,8 @@ interface InstanceIconProps {
   name: string;
   initials: string;
   color?: string;
-  memberCount: number;
+  iconUrl?: string | null;
+  memberCount?: number;
   type: "server" | "hub";
   isActive: boolean;
   onClick: () => void;
@@ -15,6 +16,7 @@ export function InstanceIcon({
   name,
   initials,
   color = "#5b4ccb",
+  iconUrl,
   memberCount,
   type,
   isActive,
@@ -43,7 +45,7 @@ export function InstanceIcon({
       {/* Circular / Squircle Avatar */}
       <button
         type="button"
-        className={`relative flex items-center justify-center w-12 h-12 text-sm font-bold tracking-wider transition-all duration-150 select-none ${
+        className={`relative flex items-center justify-center w-12 h-12 text-sm font-bold tracking-wider transition-all duration-150 select-none overflow-hidden ${
           isActive
             ? "rounded-2xl ring-2 ring-[#8175ee] scale-105"
             : "rounded-3xl hover:rounded-2xl hover:scale-105"
@@ -57,8 +59,13 @@ export function InstanceIcon({
         }}
         aria-label={`${name} (${type})`}
       >
-        <span className="font-['Sora'] font-bold text-xs uppercase leading-none">{initials}</span>
+        {iconUrl ? (
+          <img src={iconUrl} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="font-['Sora'] font-bold text-xs uppercase leading-none">{initials}</span>
+        )}
       </button>
+
 
       {/* Floating Dark Tooltip on Right */}
       {isHovered && (
