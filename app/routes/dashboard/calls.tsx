@@ -1,4 +1,5 @@
 import { useParams } from "react-router";
+import { ThunderboltOutlined, HistoryOutlined } from "@ant-design/icons";
 import { PlaceholderView } from "~/components/dashboard/PlaceholderView";
 
 export default function CallsRoute() {
@@ -17,7 +18,7 @@ export default function CallsRoute() {
           : "Spontaneous 1:1 cross-server text connections currently active across the InterChat network."
       }
       tag={isHistory ? "Archive" : "Realtime Matchmaking"}
-      icon="⚡"
+      iconNode={isHistory ? <HistoryOutlined /> : <ThunderboltOutlined />}
       backTo="/dashboard"
       backLabel="Return to Dashboard"
     />

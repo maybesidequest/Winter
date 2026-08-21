@@ -1,4 +1,12 @@
+import type { ReactNode } from "react";
 import { useParams, Link } from "react-router";
+import {
+  CloudServerOutlined,
+  RobotOutlined,
+  NumberOutlined,
+  FileTextOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
 import { mockServers } from "~/data/dashboard-mock";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 
@@ -10,7 +18,8 @@ export default function ServerWorkspace() {
   const server = mockServers.find((s) => s.id === serverId) || {
     id: serverId || "srv-1",
     name: "Discord Server",
-    icon: "🛡️",
+    initials: "DS",
+    iconType: "guild" as const,
     color: "#2a7198",
     memberCount: 1200,
     health: "healthy" as const,
@@ -22,38 +31,38 @@ export default function ServerWorkspace() {
     uptime: "99.9%",
   };
 
-  const viewTitles: Record<string, { title: string; desc: string; icon: string }> = {
+  const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
     overview: {
       title: "Server Overview",
       desc: "Connected channels, bot connection status, and call usage statistics.",
-      icon: "📊",
+      icon: <CloudServerOutlined />,
     },
     "bot-config": {
       title: "Bot Configuration",
       desc: "Command prefixes, automated webhook dispatch, and channel routing policies.",
-      icon: "🤖",
+      icon: <RobotOutlined />,
     },
     channels: {
       title: "Channel Management",
       desc: "Assign specific Discord text channels to Hub bridges and Call lobbies.",
-      icon: "#",
+      icon: <NumberOutlined />,
     },
     logs: {
       title: "Server Audit Logs",
       desc: "Recent message relays, call invitations, and moderation action logs.",
-      icon: "📝",
+      icon: <FileTextOutlined />,
     },
     settings: {
       title: "Server Settings",
       desc: "NSFW filter toggles, match pings, server visibility, and bot permissions.",
-      icon: "⚙️",
+      icon: <SettingOutlined />,
     },
   };
 
   const currentView = viewTitles[view] || {
     title: `${view[0].toUpperCase()}${view.slice(1)}`,
     desc: `Manage ${view} for ${server.name}.`,
-    icon: "🛡️",
+    icon: <CloudServerOutlined />,
   };
 
   return (
@@ -75,36 +84,39 @@ export default function ServerWorkspace() {
       />
 
       <div
-        className="p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
+        className="relative overflow-hidden p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
         style={{
           background: "rgba(21, 20, 36, 0.85)",
           borderColor: "rgba(255, 255, 255, 0.09)",
-          boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
         }}
       >
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-white/10 shadow-lg"
-          style={{ backgroundColor: server.color }}
-        >
-          {currentView.icon}
-        </div>
+        <div className="dashboard-card-contours--sky pointer-events-none" aria-hidden="true" />
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#2a7198]/20 text-sky-300 border border-[#2a7198]/40">
-            {server.name}
-          </span>
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
-            {server.channels} Active Channels · {server.latency} Latency
-          </span>
-        </div>
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-1 border border-white/10 text-white"
+            style={{ backgroundColor: server.color }}
+          >
+            {currentView.icon}
+          </div>
 
-        <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
-        <p className="text-sm text-white/60 max-w-md leading-relaxed">
-          {currentView.desc}
-        </p>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#2a7198]/20 text-sky-300 border border-[#2a7198]/40">
+              {server.name}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
+              {server.channels} Active Channels · {server.latency} Latency
+            </span>
+          </div>
 
-        <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
-          Tab view configured according to Discord <code className="text-sky-400">/server manage</code> specifications.
+          <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
+          <p className="text-sm text-white/60 max-w-md leading-relaxed">
+            {currentView.desc}
+          </p>
+
+          <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
+            Tab view configured according to Discord <code className="text-sky-400">/server manage</code> specifications.
+          </div>
         </div>
       </div>
     </div>

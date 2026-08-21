@@ -1,5 +1,17 @@
-import { ArrowRightOutlined, PlusOutlined } from "@ant-design/icons";
 import { Link } from "react-router";
+import {
+  PlusOutlined,
+  ArrowRightOutlined,
+  ClusterOutlined,
+  CloudServerOutlined,
+  ThunderboltOutlined,
+  MessageOutlined,
+  SendOutlined,
+  PhoneOutlined,
+  LinkOutlined,
+  SafetyCertificateOutlined,
+  DisconnectOutlined,
+} from "@ant-design/icons";
 import {
   mockDashboardMetrics,
   mockRecentActivities,
@@ -13,6 +25,23 @@ export function DashboardHome() {
   const activities = mockRecentActivities;
   const servers = mockServers.slice(0, 5);
 
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "broadcast":
+        return <SendOutlined className="text-white text-xs" />;
+      case "call":
+        return <PhoneOutlined className="text-white text-xs" />;
+      case "join":
+        return <LinkOutlined className="text-white text-xs" />;
+      case "automod":
+        return <SafetyCertificateOutlined className="text-white text-xs" />;
+      case "call_ended":
+        return <DisconnectOutlined className="text-white text-xs" />;
+      default:
+        return <MessageOutlined className="text-white text-xs" />;
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto">
       {/* Page Header */}
@@ -24,7 +53,7 @@ export function DashboardHome() {
           <div className="flex items-center gap-3">
             <Link
               to="/dashboard/browse"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-150 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-2"
             >
               <span>Explore Hubs</span>
               <ArrowRightOutlined className="text-[10px]" />
@@ -32,7 +61,7 @@ export function DashboardHome() {
 
             <Link
               to="/dashboard/calls"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#5b4ccb] hover:bg-[#6959dc] shadow-md shadow-[#5b4ccb]/30 transition-all duration-150 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#5b4ccb] hover:bg-[#6959dc] transition-all flex items-center gap-2"
             >
               <PlusOutlined />
               <span>Start a Call</span>
@@ -41,53 +70,66 @@ export function DashboardHome() {
         }
       />
 
-      {/* Row 1: Four Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <MetricCard
-          title="Active Hubs"
-          value={metrics.activeHubs}
-          trend={metrics.activeHubsTrend}
-          icon="🌐"
-          iconBg="rgba(91, 76, 203, 0.2)"
-        />
-        <MetricCard
-          title="Connected Servers"
-          value={metrics.connectedServers}
-          trend={metrics.connectedServersTrend}
-          icon="🛡️"
-          iconBg="rgba(143, 211, 255, 0.15)"
-        />
-        <MetricCard
-          title="Active Calls"
-          value={metrics.activeCalls}
-          trend={metrics.activeCallsTrend}
-          icon="⚡"
-          iconBg="rgba(255, 140, 115, 0.15)"
-        />
-        <MetricCard
-          title="Messages Today"
-          value={metrics.messagesToday}
-          trend={metrics.messagesTodayTrend}
-          icon="💬"
-          iconBg="rgba(126, 212, 147, 0.15)"
-        />
+      {/* Row 1: Four Metric Cards inside Creem-style Group Container with Atlas Contours */}
+      <div
+        className="relative overflow-hidden p-3 md:p-4 rounded-3xl border"
+        style={{
+          background: "rgba(17, 18, 27, 0.6)",
+          borderColor: "rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <MetricCard
+            title="Active Hubs"
+            value={metrics.activeHubs}
+            trend={metrics.activeHubsTrend}
+            icon={<ClusterOutlined className="text-[#8175ee]" />}
+            iconBg="rgba(91, 76, 203, 0.2)"
+            contourClass="dashboard-card-contours--subtle"
+          />
+          <MetricCard
+            title="Connected Servers"
+            value={metrics.connectedServers}
+            trend={metrics.connectedServersTrend}
+            icon={<CloudServerOutlined className="text-[#8fd3ff]" />}
+            iconBg="rgba(143, 211, 255, 0.15)"
+            contourClass="dashboard-card-contours--sky"
+          />
+          <MetricCard
+            title="Active Calls"
+            value={metrics.activeCalls}
+            trend={metrics.activeCallsTrend}
+            icon={<ThunderboltOutlined className="text-[#ff8c73]" />}
+            iconBg="rgba(255, 140, 115, 0.15)"
+            contourClass="dashboard-card-contours--coral"
+          />
+          <MetricCard
+            title="Messages Today"
+            value={metrics.messagesToday}
+            trend={metrics.messagesTodayTrend}
+            icon={<MessageOutlined className="text-[#7ed493]" />}
+            iconBg="rgba(126, 212, 147, 0.15)"
+            contourClass="dashboard-card-contours--sage"
+          />
+        </div>
       </div>
 
-      {/* Row 2: Two Wider Cards */}
+      {/* Row 2: Two Wider Cards with Atlas Contours */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Recent Activity (7 cols) */}
         <div
-          className="lg:col-span-7 p-6 rounded-2xl border flex flex-col justify-between"
+          className="relative overflow-hidden lg:col-span-7 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
             background: "rgba(21, 20, 36, 0.85)",
             borderColor: "rgba(255, 255, 255, 0.09)",
-            boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <div>
+          <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
+          <div className="relative z-10">
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
               <div className="flex items-center gap-2.5">
-                <span className="text-base">📡</span>
+                <SendOutlined className="text-sm text-violet-400" />
                 <h3 className="text-base font-bold text-white font-['Sora']">Recent Activity</h3>
               </div>
               <span className="text-xs font-semibold text-white/40">Realtime relay</span>
@@ -99,15 +141,15 @@ export function DashboardHome() {
                   key={act.id}
                   className="p-3.5 rounded-xl border flex items-start gap-3.5 transition-colors duration-150 hover:bg-white/[0.02]"
                   style={{
-                    background: "rgba(17, 18, 27, 0.4)",
+                    background: "rgba(17, 18, 27, 0.5)",
                     borderColor: "rgba(255, 255, 255, 0.06)",
                   }}
                 >
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0 border border-white/10"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10"
                     style={{ backgroundColor: act.badgeColor || "#5b4ccb" }}
                   >
-                    {act.icon}
+                    {getActivityIcon(act.type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -128,7 +170,7 @@ export function DashboardHome() {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between">
+          <div className="relative z-10 mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between">
             <span className="text-xs text-white/40">Filtered by active servers</span>
             <Link
               to="/dashboard/browse"
@@ -141,17 +183,17 @@ export function DashboardHome() {
 
         {/* Right: Server Health (5 cols) */}
         <div
-          className="lg:col-span-5 p-6 rounded-2xl border flex flex-col justify-between"
+          className="relative overflow-hidden lg:col-span-5 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
             background: "rgba(21, 20, 36, 0.85)",
             borderColor: "rgba(255, 255, 255, 0.09)",
-            boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <div>
+          <div className="dashboard-card-contours--sky pointer-events-none" aria-hidden="true" />
+          <div className="relative z-10">
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
               <div className="flex items-center gap-2.5">
-                <span className="text-base">🟢</span>
+                <CloudServerOutlined className="text-sm text-[#7ed493]" />
                 <h3 className="text-base font-bold text-white font-['Sora']">Server Health</h3>
               </div>
               <span className="text-xs font-semibold text-[#7ed493]">All Systems Operational</span>
@@ -166,16 +208,16 @@ export function DashboardHome() {
                     key={srv.id}
                     className="p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors duration-150 hover:bg-white/[0.02]"
                     style={{
-                      background: "rgba(17, 18, 27, 0.4)",
+                      background: "rgba(17, 18, 27, 0.5)",
                       borderColor: "rgba(255, 255, 255, 0.06)",
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 font-['Sora']"
                         style={{ backgroundColor: srv.color }}
                       >
-                        {srv.icon}
+                        {srv.initials}
                       </div>
                       <div className="min-w-0">
                         <strong className="text-xs font-bold text-white truncate block">
@@ -190,8 +232,9 @@ export function DashboardHome() {
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <span className="text-xs font-mono text-white/50">{srv.latency}</span>
                       <span
-                        className={`w-2.5 h-2.5 rounded-full ${isWarning ? "bg-[#ff8c73]" : "bg-[#7ed493]"
-                          }`}
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          isWarning ? "bg-[#ff8c73]" : "bg-[#7ed493]"
+                        }`}
                         title={isWarning ? "Elevated latency" : "Healthy"}
                       />
                     </div>
@@ -201,7 +244,7 @@ export function DashboardHome() {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between">
+          <div className="relative z-10 mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between">
             <span className="text-xs text-white/40">Average latency: 24ms</span>
             <Link
               to="/dashboard/servers/srv-1/overview"

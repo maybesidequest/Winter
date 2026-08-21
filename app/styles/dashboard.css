@@ -894,3 +894,36 @@
 .animate-slideRight {
   animation: slideRight 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Subtle background contour effects for cards matching homepage / Creem cards */
+.dashboard-card-contours {
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  background:
+    repeating-radial-gradient(ellipse at 85% 30%, transparent 0 36px, currentColor 37px 38px, transparent 39px 68px),
+    repeating-radial-gradient(ellipse at 5% 80%, transparent 0 44px, currentColor 45px 46px, transparent 47px 81px);
+  color: #8175ee;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.dashboard-card-contours--subtle {
+  opacity: 0.08;
+  color: #8175ee;
+}
+
+.dashboard-card-contours--sky {
+  color: #8fd3ff;
+  opacity: 0.10;
+}
+
+.dashboard-card-contours--coral {
+  color: #ff8c73;
+  opacity: 0.10;
+}
+
+.dashboard-card-contours--sage {
+  color: #7ed493;
+  opacity: 0.10;
+}

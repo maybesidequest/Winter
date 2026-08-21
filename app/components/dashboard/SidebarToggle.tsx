@@ -1,3 +1,5 @@
+import { CloudServerOutlined, ClusterOutlined } from "@ant-design/icons";
+
 interface SidebarToggleProps {
   value: "servers" | "hubs";
   onChange: (value: "servers" | "hubs") => void;
@@ -15,32 +17,32 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
       <button
         type="button"
         onClick={() => onChange("servers")}
-        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${value === "servers"
-            ? "text-white shadow-md"
+        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+          value === "servers"
+            ? "text-white"
             : "text-white/50 hover:text-white/80 hover:bg-white/5"
-          }`}
+        }`}
         style={{
           background: value === "servers" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "servers" ? "0 2px 8px rgba(91, 76, 203, 0.4)" : "none",
         }}
       >
-        <span>🛡️</span>
+        <CloudServerOutlined className="text-sm" />
         <span>Servers</span>
       </button>
 
       <button
         type="button"
         onClick={() => onChange("hubs")}
-        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${value === "hubs"
-            ? "text-white shadow-md"
+        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+          value === "hubs"
+            ? "text-white"
             : "text-white/50 hover:text-white/80 hover:bg-white/5"
-          }`}
+        }`}
         style={{
           background: value === "hubs" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "hubs" ? "0 2px 8px rgba(91, 76, 203, 0.4)" : "none",
         }}
       >
-        <span>🌐</span>
+        <ClusterOutlined className="text-sm" />
         <span>Hubs</span>
       </button>
     </div>

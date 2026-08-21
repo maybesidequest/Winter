@@ -1,5 +1,6 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import type { ReactNode } from "react";
 import { Link } from "react-router";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { PageHeader } from "./PageHeader";
 
 interface PlaceholderViewProps {
@@ -7,7 +8,7 @@ interface PlaceholderViewProps {
   title: string;
   description: string;
   tag?: string;
-  icon?: string;
+  iconNode?: ReactNode;
   backTo?: string;
   backLabel?: string;
 }
@@ -17,7 +18,7 @@ export function PlaceholderView({
   title,
   description,
   tag,
-  icon = "⚡",
+  iconNode,
   backTo = "/dashboard",
   backLabel = "Back to Dashboard",
 }: PlaceholderViewProps) {
@@ -39,28 +40,33 @@ export function PlaceholderView({
       />
 
       <div
-        className="p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
+        className="relative overflow-hidden p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
         style={{
           background: "rgba(21, 20, 36, 0.85)",
           borderColor: "rgba(255, 255, 255, 0.09)",
-          boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
         }}
       >
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl mb-2">
-          {icon}
-        </div>
+        <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
 
-        {tag && (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#5b4ccb]/20 text-violet-300 border border-[#5b4ccb]/40">
-            {tag}
-          </span>
-        )}
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          {iconNode && (
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-1 text-violet-400">
+              {iconNode}
+            </div>
+          )}
 
-        <h3 className="text-xl font-bold text-white font-['Sora']">{title}</h3>
-        <p className="text-sm text-white/60 max-w-md leading-relaxed">{description}</p>
+          {tag && (
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#5b4ccb]/20 text-violet-300 border border-[#5b4ccb]/40">
+              {tag}
+            </span>
+          )}
 
-        <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
-          InterChat Control Plane · Configured via Discord & Web Dashboard
+          <h3 className="text-xl font-bold text-white font-['Sora']">{title}</h3>
+          <p className="text-sm text-white/60 max-w-md leading-relaxed">{description}</p>
+
+          <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
+            InterChat Control Plane · Configured via Discord & Web Dashboard
+          </div>
         </div>
       </div>
     </div>

@@ -16,7 +16,8 @@ export interface MockHub {
   id: string;
   name: string;
   tag: string;
-  icon: string;
+  initials: string;
+  iconType: "global" | "code" | "game" | "palette";
   color: string;
   memberCount: number;
   serverCount: number;
@@ -29,7 +30,8 @@ export interface MockHub {
 export interface MockServer {
   id: string;
   name: string;
-  icon: string;
+  initials: string;
+  iconType: "guild" | "anime" | "code" | "rocket" | "pixel" | "vapor" | "coffee" | "radio";
   color: string;
   memberCount: number;
   health: "healthy" | "warning" | "offline";
@@ -47,7 +49,6 @@ export interface MockActivity {
   title: string;
   description: string;
   timestamp: string;
-  icon: string;
   serverName: string;
   badgeColor?: string;
 }
@@ -55,9 +56,9 @@ export interface MockActivity {
 export interface MockCallHistory {
   id: string;
   caller: string;
-  callerIcon: string;
+  callerInitials: string;
   receiver: string;
-  receiverIcon: string;
+  receiverInitials: string;
   hub: string;
   duration: string;
   date: string;
@@ -85,7 +86,8 @@ export const mockHubs: MockHub[] = [
     id: "hub-1",
     name: "Global Lounge",
     tag: "GLOBAL",
-    icon: "🌐",
+    initials: "GL",
+    iconType: "global",
     color: "#5b4ccb",
     memberCount: 3840,
     serverCount: 18,
@@ -98,7 +100,8 @@ export const mockHubs: MockHub[] = [
     id: "hub-2",
     name: "Tech & Code",
     tag: "DEV",
-    icon: "💻",
+    initials: "TC",
+    iconType: "code",
     color: "#2a7198",
     memberCount: 1920,
     serverCount: 8,
@@ -111,7 +114,8 @@ export const mockHubs: MockHub[] = [
     id: "hub-3",
     name: "Gaming Nexus",
     tag: "GAME",
-    icon: "🎮",
+    initials: "GN",
+    iconType: "game",
     color: "#b44c3d",
     memberCount: 2450,
     serverCount: 11,
@@ -124,7 +128,8 @@ export const mockHubs: MockHub[] = [
     id: "hub-4",
     name: "Creator Studio",
     tag: "ART",
-    icon: "🎨",
+    initials: "CS",
+    iconType: "palette",
     color: "#477353",
     memberCount: 860,
     serverCount: 5,
@@ -139,7 +144,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-1",
     name: "Garden Guild",
-    icon: "🌿",
+    initials: "GG",
+    iconType: "guild",
     color: "#477353",
     memberCount: 1420,
     health: "healthy",
@@ -153,7 +159,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-2",
     name: "Anime Club",
-    icon: "⛩️",
+    initials: "AC",
+    iconType: "anime",
     color: "#b44c3d",
     memberCount: 890,
     health: "healthy",
@@ -167,7 +174,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-3",
     name: "TypeScript Devs",
-    icon: "🔷",
+    initials: "TS",
+    iconType: "code",
     color: "#2a7198",
     memberCount: 3200,
     health: "healthy",
@@ -181,7 +189,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-4",
     name: "Indie Hackers",
-    icon: "🚀",
+    initials: "IH",
+    iconType: "rocket",
     color: "#5b4ccb",
     memberCount: 1150,
     health: "healthy",
@@ -195,7 +204,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-5",
     name: "Pixel Den",
-    icon: "👾",
+    initials: "PD",
+    iconType: "pixel",
     color: "#8175ee",
     memberCount: 670,
     health: "warning",
@@ -209,7 +219,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-6",
     name: "Vapor Lounge",
-    icon: "🌆",
+    initials: "VL",
+    iconType: "vapor",
     color: "#ff8c73",
     memberCount: 930,
     health: "healthy",
@@ -223,8 +234,9 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-7",
     name: "Cozy Corner",
-    icon: "☕",
-    color: "#cfe8d4",
+    initials: "CC",
+    iconType: "coffee",
+    color: "#477353",
     memberCount: 450,
     health: "healthy",
     latency: "31ms",
@@ -237,7 +249,8 @@ export const mockServers: MockServer[] = [
   {
     id: "srv-8",
     name: "Synthwave Haven",
-    icon: "📻",
+    initials: "SH",
+    iconType: "radio",
     color: "#8fd3ff",
     memberCount: 580,
     health: "healthy",
@@ -268,7 +281,6 @@ export const mockRecentActivities: MockActivity[] = [
     title: "Broadcast relayed",
     description: "Global Lounge relayed 14 messages to Garden Guild and 11 other servers",
     timestamp: "3m ago",
-    icon: "📡",
     serverName: "Garden Guild",
     badgeColor: "#5b4ccb",
   },
@@ -278,9 +290,8 @@ export const mockRecentActivities: MockActivity[] = [
     title: "Call connected",
     description: "Anime Club initiated a 1:1 text call with Pixel Den (#meet-someone)",
     timestamp: "12m ago",
-    icon: "⚡",
     serverName: "Anime Club",
-    badgeColor: "#8fd3ff",
+    badgeColor: "#2a7198",
   },
   {
     id: "act-3",
@@ -288,9 +299,8 @@ export const mockRecentActivities: MockActivity[] = [
     title: "New server linked",
     description: "Indie Hackers joined the Tech & Code hub via invite token",
     timestamp: "34m ago",
-    icon: "🔗",
     serverName: "Indie Hackers",
-    badgeColor: "#7ed493",
+    badgeColor: "#477353",
   },
   {
     id: "act-4",
@@ -298,9 +308,8 @@ export const mockRecentActivities: MockActivity[] = [
     title: "Automod policy triggered",
     description: "Polarizer filtered an explicit image broadcast attempt in Gaming Nexus",
     timestamp: "1h ago",
-    icon: "🛡️",
     serverName: "Gaming Nexus",
-    badgeColor: "#ff8c73",
+    badgeColor: "#b44c3d",
   },
   {
     id: "act-5",
@@ -308,7 +317,6 @@ export const mockRecentActivities: MockActivity[] = [
     title: "Call concluded",
     description: "Vapor Lounge and Cozy Corner concluded a 28-minute call with 72 messages",
     timestamp: "2h ago",
-    icon: "📞",
     serverName: "Vapor Lounge",
     badgeColor: "#8175ee",
   },
@@ -318,9 +326,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-1",
     caller: "Garden Guild",
-    callerIcon: "🌿",
+    callerInitials: "GG",
     receiver: "Pixel Den",
-    receiverIcon: "👾",
+    receiverInitials: "PD",
     hub: "Global Lounge",
     duration: "14m 22s",
     date: "Today at 2:15 PM",
@@ -331,9 +339,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-2",
     caller: "Anime Club",
-    callerIcon: "⛩️",
+    callerInitials: "AC",
     receiver: "Cozy Corner",
-    receiverIcon: "☕",
+    receiverInitials: "CC",
     hub: "Gaming Nexus",
     duration: "32m 05s",
     date: "Today at 11:40 AM",
@@ -344,9 +352,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-3",
     caller: "TypeScript Devs",
-    callerIcon: "🔷",
+    callerInitials: "TS",
     receiver: "Indie Hackers",
-    receiverIcon: "🚀",
+    receiverInitials: "IH",
     hub: "Tech & Code",
     duration: "4m 12s",
     date: "Yesterday at 8:30 PM",
@@ -357,9 +365,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-4",
     caller: "Vapor Lounge",
-    callerIcon: "🌆",
+    callerInitials: "VL",
     receiver: "Synthwave Haven",
-    receiverIcon: "📻",
+    receiverInitials: "SH",
     hub: "Global Lounge",
     duration: "19m 50s",
     date: "Yesterday at 3:10 PM",
@@ -370,9 +378,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-5",
     caller: "Garden Guild",
-    callerIcon: "🌿",
+    callerInitials: "GG",
     receiver: "Anime Club",
-    receiverIcon: "⛩️",
+    receiverInitials: "AC",
     hub: "Global Lounge",
     duration: "0m 00s",
     date: "Oct 18, 2026",
@@ -383,9 +391,9 @@ export const mockCallHistory: MockCallHistory[] = [
   {
     id: "call-6",
     caller: "Pixel Den",
-    callerIcon: "👾",
+    callerInitials: "PD",
     receiver: "Vapor Lounge",
-    receiverIcon: "🌆",
+    receiverInitials: "VL",
     hub: "Gaming Nexus",
     duration: "45m 18s",
     date: "Oct 17, 2026",
