@@ -44,7 +44,17 @@ export function MiddleSidebar({
     context = { type: "hub", id: params.hubId, hub };
     if (hub) {
       currentTitle = hub.metadata.name;
-      currentIcon = <ClusterOutlined className="text-sm text-violet-400" />;
+      currentIcon = hub.spec.iconUrl ? (
+        <img
+          src={hub.spec.iconUrl}
+          alt={hub.metadata.name}
+          className="w-full h-full object-cover rounded-md"
+        />
+      ) : (
+        <span className="text-xs font-bold text-violet-400 font-['Sora']">
+          {hub.metadata.name.slice(0, 2).toUpperCase()}
+        </span>
+      );
     } else {
       currentTitle = "Hub Workspace";
     }
@@ -53,7 +63,17 @@ export function MiddleSidebar({
     context = { type: "server", id: params.serverId, server };
     if (server) {
       currentTitle = server.metadata.name;
-      currentIcon = <CloudServerOutlined className="text-sm text-sky-400" />;
+      currentIcon = server.metadata.iconUrl ? (
+        <img
+          src={server.metadata.iconUrl}
+          alt={server.metadata.name}
+          className="w-full h-full object-cover rounded-md"
+        />
+      ) : (
+        <span className="text-xs font-bold text-sky-400 font-['Sora']">
+          {server.metadata.name.slice(0, 2).toUpperCase()}
+        </span>
+      );
     } else {
       currentTitle = "Server Workspace";
     }
@@ -64,6 +84,7 @@ export function MiddleSidebar({
     context = { type: "browse" };
     currentTitle = "Hub Directory";
   }
+
 
 
   return (

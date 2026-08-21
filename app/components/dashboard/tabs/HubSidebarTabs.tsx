@@ -18,7 +18,7 @@ interface HubSidebarTabsProps {
   onNavigate?: () => void;
 }
 
-export function HubSidebarTabs({ hubId, onNavigate }: HubSidebarTabsProps) {
+export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const hubItems = [
@@ -30,7 +30,7 @@ export function HubSidebarTabs({ hubId, onNavigate }: HubSidebarTabsProps) {
   ];
 
   return (
-    <div className="flex flex-col gap-4 py-1">
+    <div className="flex flex-col gap-3 py-1">
       <NavLink
         to="/dashboard"
         end
@@ -47,6 +47,27 @@ export function HubSidebarTabs({ hubId, onNavigate }: HubSidebarTabsProps) {
         <span>Dashboard Home</span>
       </NavLink>
 
+      {/* Hub Identity Header */}
+      {hub && (
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+          <div className="w-7 h-7 rounded-lg overflow-hidden bg-violet-900/40 border border-violet-400/20 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 font-['Sora']">
+            {hub.spec.iconUrl ? (
+              <img src={hub.spec.iconUrl} alt={hub.metadata.name} className="w-full h-full object-cover" />
+            ) : (
+              <span>{hub.metadata.name.slice(0, 2).toUpperCase()}</span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="text-xs font-bold text-white truncate block font-['Sora']">
+              {hub.metadata.name}
+            </span>
+            <span className="text-[10px] text-white/50 block">
+              {hub.metadata.effectiveRole || "Hub"}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1">
         <button
           type="button"
@@ -56,6 +77,7 @@ export function HubSidebarTabs({ hubId, onNavigate }: HubSidebarTabsProps) {
           <span>Hub Controls</span>
           <span className="text-[10px]">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
+
 
         {!collapsed && (
           <nav className="flex flex-col gap-1 mt-0.5">

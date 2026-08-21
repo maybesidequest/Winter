@@ -106,9 +106,13 @@ export function GeneralSidebarTabs({
                     }`
                   }
                 >
-                  <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
-                    <ClusterOutlined />
-                  </span>
+                  <div className="w-5 h-5 rounded-md overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-[10px] font-bold text-violet-300 flex-shrink-0">
+                    {h.spec.iconUrl ? (
+                      <img src={h.spec.iconUrl} alt={h.metadata.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{h.metadata.name.slice(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
                   <span className="truncate">{h.metadata.name}</span>
                 </NavLink>
               ))

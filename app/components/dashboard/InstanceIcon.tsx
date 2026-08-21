@@ -82,7 +82,7 @@ export function InstanceIcon({
           <div className="flex flex-col gap-0.5">
             <span className="font-bold text-white text-[13px] font-['Sora']">{name}</span>
             <span className="text-[11px] font-normal text-white/60">
-              {memberCount.toLocaleString()} members · {type === "hub" ? "Hub" : "Server"}
+              {type === "hub" ? "Hub" : "Discord Server"}
             </span>
           </div>
           {/* Caret pointing left */}
@@ -92,3 +92,4 @@ export function InstanceIcon({
     </div>
   );
 }
+
