@@ -95,7 +95,7 @@ export default function DashboardLayout() {
 
       {/* Main Content Area (Zone C: Routed Outlet) */}
       <main
-        className="flex-1 min-h-screen md:ml-[312px] p-4 sm:p-6 md:p-10 transition-all"
+        className="flex-1 min-h-screen md:ml-[344px] p-4 sm:p-6 md:p-10 transition-all"
         style={{
           background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
         }}
