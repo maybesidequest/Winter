@@ -204,6 +204,14 @@ export const hubService = {
       }
 
       const updates: any = {};
+      if (input.name !== undefined) updates.name = input.name;
+      if (input.shortDescription !== undefined) updates.shortDescription = input.shortDescription;
+      if (input.description !== undefined) updates.description = input.description;
+      if (input.iconUrl !== undefined) updates.iconUrl = input.iconUrl ? input.iconUrl.trim() : null;
+      if (input.bannerUrl !== undefined) updates.bannerUrl = input.bannerUrl ? input.bannerUrl.trim() : null;
+      if (input.language !== undefined) updates.language = input.language;
+      if (input.region !== undefined) updates.region = input.region;
+      if (input.visibility !== undefined) updates.visibility = input.visibility;
       if (input.nsfw !== undefined) updates.nsfw = input.nsfw;
       if (input.locked !== undefined) updates.locked = input.locked;
       if (input.appealCooldownHours !== undefined) updates.appealCooldownHours = input.appealCooldownHours;

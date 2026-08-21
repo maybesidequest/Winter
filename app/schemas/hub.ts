@@ -50,10 +50,18 @@ export type CreateHubInput = z.infer<typeof createHubSchema>;
 
 export const patchHubConfigSchema = z.object({
   hubId: z.string(),
+  name: z.string().min(1).max(100).optional(),
+  shortDescription: z.string().max(100).optional().nullable(),
+  description: z.string().max(1024).optional().nullable(),
+  iconUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional().nullable(),
+  bannerUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional().nullable(),
+  language: z.string().optional().nullable(),
+  region: z.string().optional().nullable(),
+  visibility: HubVisibility.optional(),
   nsfw: z.boolean().optional(),
   locked: z.boolean().optional(),
   appealCooldownHours: z.number().min(0).max(8760).optional(),
-  welcomeMessage: z.string().max(2000).optional(),
+  welcomeMessage: z.string().max(2000).optional().nullable(),
   settings: z.number().int().min(0).optional(),
 });
 

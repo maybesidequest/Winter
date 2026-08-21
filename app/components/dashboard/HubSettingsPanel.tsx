@@ -18,12 +18,12 @@ const SETTINGS_TOGGLES: { flag: keyof typeof HubSettingsFlags; label: string; de
 ];
 
 type HubSettingsPanelProps = {
-  activeConfig: DashboardHubConfig;
+  settings: number;
+  canEdit: boolean;
   onToggleFlag: (flag: string, enabled: boolean) => void;
 };
 
-export function HubSettingsPanel({ activeConfig, onToggleFlag }: HubSettingsPanelProps) {
-  const canEdit = activeConfig.permissions.MANAGE_HUB_SETTINGS;
+export function HubSettingsPanel({ settings, canEdit, onToggleFlag }: HubSettingsPanelProps) {
 
   return (
     <DashboardSectionCard title={<DashboardSectionTitle>Hub Settings</DashboardSectionTitle>}>
@@ -47,7 +47,7 @@ export function HubSettingsPanel({ activeConfig, onToggleFlag }: HubSettingsPane
             </Text>
           </div>
           <DepthToggle
-            checked={hasSettingsFlag(activeConfig.settings, flag)}
+            checked={hasSettingsFlag(settings, flag)}
             onChange={(checked) => onToggleFlag(flag, checked)}
             disabled={!canEdit}
             aria-label={label}

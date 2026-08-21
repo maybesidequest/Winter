@@ -881,28 +881,93 @@
 }
 
 .dashboard-input,
-.dashboard-select,
-.dashboard-textarea {
+.dashboard-select {
+  --edge: rgba(255, 255, 255, 0.1);
   width: 100%;
   min-height: 42px;
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--edge);
   border-radius: 10px;
   background: rgba(20, 20, 25, 0.5);
   color: #ffffff;
+  box-shadow: 0 1.5px 0 0 var(--edge);
+  transition: color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, background-color 150ms ease;
 }
 
 .dashboard-input:focus,
-.dashboard-select:focus,
-.dashboard-textarea:focus {
-  border-color: rgba(129, 117, 238, 0.6);
+.dashboard-select:focus {
+  --edge: rgba(129, 117, 238, 0.6);
+  border-color: var(--edge);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(129, 117, 238, 0.2);
+  box-shadow: 0 2px 0 0 var(--edge), 0 0 0 2px rgba(129, 117, 238, 0.2);
 }
 
+.dashboard-input:disabled,
+.dashboard-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+/* Creem.io-Inspired Glassmorphic Textarea with Flat-Depth Shadow and Active Translate */
 .dashboard-textarea {
-  min-height: 110px;
+  --edge: rgba(255, 255, 255, 0.1);
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 96px;
   resize: vertical;
+  padding: 10px 14px;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: rgba(20, 20, 25, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1.5px 0 0 var(--edge);
+  transition: color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, background-color 150ms ease;
+}
+
+.dashboard-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dashboard-textarea:hover:not(:disabled) {
+  --edge: rgba(255, 255, 255, 0.16);
+  background: rgba(20, 20, 25, 0.65);
+}
+
+.dashboard-textarea:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0.5px 0 0 var(--edge);
+}
+
+.dashboard-textarea:focus,
+.dashboard-textarea:focus-visible {
+  --edge: #8175ee;
+  border-color: var(--edge);
+  outline: none;
+  background: rgba(20, 20, 25, 0.75);
+  box-shadow: 0 2px 0 0 var(--edge), 0 0 0 2px rgba(129, 117, 238, 0.2);
+}
+
+.dashboard-textarea:disabled {
+  cursor: not-allowed;
+  resize: none;
+  color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(20, 20, 25, 0.25);
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.dashboard-textarea[data-invalid="true"],
+.dashboard-textarea[aria-invalid="true"] {
+  --edge: #ef4444;
+  border-color: var(--edge);
+  box-shadow: 0 1.5px 0 0 var(--edge), 0 0 0 1px rgba(239, 68, 68, 0.25);
 }
 
 .dashboard-toggle-row {

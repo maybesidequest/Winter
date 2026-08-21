@@ -1,124 +1,187 @@
-import type { ReactNode } from "react";
-import { useParams, Link } from "react-router";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ClusterOutlined,
-  LineChartOutlined,
-  TeamOutlined,
-  FileProtectOutlined,
   SettingOutlined,
+  ApiOutlined,
+  ExclamationCircleOutlined,
+  ArrowLeftOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
-import { mockHubs } from "~/data/dashboard-mock";
+import { message } from "antd";
+import { orpc } from "~/lib/orpc";
 import { PageHeader } from "~/components/dashboard/PageHeader";
+import { HubOverview } from "~/components/dashboard/HubOverview";
+import { HubRoutes } from "~/components/dashboard/HubRoutes";
+import { HubSettings } from "~/components/dashboard/HubSettings";
+import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
+import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
+import type { HubConnectionResource } from "~/resources/connection";
+
+const TABS = [
+  { id: "overview", label: "Overview", icon: ClusterOutlined },
+  { id: "routes", label: "Connected Routes", icon: ApiOutlined },
+  { id: "settings", label: "Settings & Profile", icon: SettingOutlined },
+  { id: "modules", label: "Broadcast Modules", icon: AppstoreOutlined },
+] as const;
 
 export default function HubWorkspace() {
   const params = useParams();
-  const hubId = params.hubId;
-  const view = params.view || params.tab || "overview";
+  const hubId = params.hubId || "";
+  const activeTab = params.view || "overview";
+  const queryClient = useQueryClient();
 
-  const hub = mockHubs.find((h) => h.id === hubId) || {
-    id: hubId || "hub-1",
-    name: "Hub Workspace",
-    tag: "HUB",
-    initials: "HW",
-    iconType: "global" as const,
-    color: "#5b4ccb",
-    memberCount: 2500,
-    serverCount: 12,
-    description: "Multi-server channel bridge and moderation zone.",
-    category: "Community",
-    locked: false,
-    visibility: "PUBLIC" as const,
-  };
+  const { data: hubs = [], isLoading, isError } = useQuery(orpc.hub.getUserHubs.queryOptions());
+  const hub = hubs.find((h) => h.metadata.id === hubId);
 
-  const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
-    overview: {
-      title: "Hub Overview",
-      desc: "Live broadcast status, active member count, and linked server health.",
-      icon: <ClusterOutlined />,
-    },
-    analytics: {
-      title: "Hub Analytics",
-      desc: "Message velocity, cross-server engagement, and peak interaction hours.",
-      icon: <LineChartOutlined />,
-    },
-    members: {
-      title: "Hub Members & Roles",
-      desc: "Server representatives, moderators, and cross-server permissions.",
-      icon: <TeamOutlined />,
-    },
-    rules: {
-      title: "Hub Rules & Policies",
-      desc: "Automated content moderation rules, keyword filters, and broadcast limits.",
-      icon: <FileProtectOutlined />,
-    },
-    settings: {
-      title: "Hub Settings",
-      desc: "Hub name, icon, invite codes, public directory listing, and archive state.",
-      icon: <SettingOutlined />,
-    },
-  };
+  const { data: connections = [], isLoading: connectionsLoading } = useQuery(
+    orpc.hub.getConnections.queryOptions({ input: { hubId } })
+  );
 
-  const currentView = viewTitles[view] || {
-    title: `${view[0].toUpperCase()}${view.slice(1)}`,
-    desc: `Manage ${view} for ${hub.name}.`,
-    icon: <ClusterOutlined />,
+  const patchMutation = useMutation(
+    orpc.hub.patchConfig.mutationOptions({
+      onSuccess: async () => {
+        message.success("Hub settings saved successfully.");
+        await queryClient.invalidateQueries({
+          queryKey: orpc.hub.getUserHubs.queryOptions().queryKey,
+        });
+      },
+      onError: (err) => {
+        message.error(err.message || "Failed to save hub configuration.");
+      },
+    })
+  );
+
+  const toggleRouteMutation = useMutation(
+    orpc.hub.toggleConnection.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey,
+        });
+      },
+    })
+  );
+
+  const disconnectRouteMutation = useMutation(
+    orpc.hub.disconnectConnection.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey,
+        });
+      },
+    })
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full animate-pulse">
+        <div className="h-10 w-64 bg-white/[0.08] rounded-xl" />
+        <div className="h-64 w-full bg-white/[0.05] rounded-3xl" />
+      </div>
+    );
+  }
+
+  if (isError || !hub) {
+    return (
+      <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
+        <div className="p-6 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-200 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <ExclamationCircleOutlined className="text-red-400 text-lg" />
+            <h3 className="text-base font-bold text-white m-0">Hub Not Found</h3>
+          </div>
+          <p className="text-xs text-white/60">
+            This Hub does not exist or you do not have permission to view its control plane.
+          </p>
+          <Link to="/dashboard/hubs" className="dashboard-btn-secondary w-fit px-4 py-2 text-xs font-bold mt-2">
+            <ArrowLeftOutlined /> Back to Hubs
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const canEdit = hub.metadata.permissions.MANAGE_HUB_SETTINGS;
+  const canManageConnections = hub.metadata.permissions.MANAGE_CONNECTIONS;
+
+  const handleToggleModuleFlag = (flag: string, enabled: boolean) => {
+    const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
+    patchMutation.mutate({ hubId, settings: updatedSettings });
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-6xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <PageHeader
         eyebrow="Hub Control Plane"
-        title={`${hub.name} · ${currentView.title}`}
-        description={hub.description}
+        title={hub.metadata.name}
+        description={hub.spec.shortDescription || hub.spec.description || "Manage settings, linked routes, and moderation."}
         actions={
           <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-            >
-              Dashboard
+            <Link to="/dashboard/hubs" className="dashboard-btn-secondary px-4 py-2 text-xs font-bold">
+              <ArrowLeftOutlined />
+              <span>All Hubs</span>
             </Link>
           </div>
         }
       />
 
-      <div
-        className="relative overflow-hidden p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
-        style={{
-          background: "rgba(21, 20, 36, 0.85)",
-          borderColor: "rgba(10, 8, 23, 0.75)",
-          boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
-        }}
-      >
-        <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
-
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-1 border border-white/10 text-white"
-            style={{ backgroundColor: hub.color }}
+      {/* Workspace Tabs Navigation */}
+      <div className="dashboard-tabs">
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <Link
+            key={id}
+            to={`/dashboard/hubs/${hubId}/${id}`}
+            aria-current={activeTab === id ? "page" : undefined}
+            className="flex items-center gap-2"
           >
-            {currentView.icon}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#5b4ccb]/20 text-violet-300 border border-[#5b4ccb]/40">
-              {hub.name}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
-              {hub.serverCount} Servers
-            </span>
-          </div>
-
-          <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
-          <p className="text-sm text-white/60 max-w-md leading-relaxed">
-            {currentView.desc}
-          </p>
-
-          <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
-            Tab view configured according to Discord <code className="text-violet-400">/hub manage</code> specifications.
-          </div>
-        </div>
+            <Icon />
+            <span>{label}</span>
+          </Link>
+        ))}
       </div>
+
+      {/* Tab Content Rendering */}
+      {activeTab === "overview" && <HubOverview hub={hub} />}
+
+      {activeTab === "routes" && (
+        <HubRoutes
+          connections={connections}
+          canManage={canManageConnections}
+          pending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
+          onToggle={(conn) =>
+            toggleRouteMutation.mutate({
+              hubId,
+              connectionId: conn.metadata.id,
+              enabled: !conn.spec.connected,
+            })
+          }
+          onDisconnect={(conn) =>
+            disconnectRouteMutation.mutate({
+              hubId,
+              connectionId: conn.metadata.id,
+            })
+          }
+        />
+      )}
+
+      {activeTab === "settings" && (
+        <HubSettings
+          hub={hub}
+          canEdit={canEdit}
+          saving={patchMutation.isPending}
+          onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
+        />
+      )}
+
+      {activeTab === "modules" && (
+        <div className="max-w-4xl">
+          <HubSettingsPanel
+            settings={hub.spec.settings}
+            canEdit={canEdit}
+            onToggleFlag={handleToggleModuleFlag}
+          />
+        </div>
+      )}
     </div>
   );
 }
