@@ -24,10 +24,8 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
         }`}
         style={{
           background: value === "servers" ? "#5b4ccb" : "transparent",
-          borderTop: value === "servers" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid transparent",
-          borderLeft: value === "servers" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
-          borderRight: value === "servers" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
-          borderBottom: value === "servers" ? "3px solid #3b2fa8" : "3px solid transparent",
+          border: value === "servers" ? "1px solid #7d70e8" : "1px solid transparent",
+          boxShadow: value === "servers" ? "0 1.5px 0 0 #7d70e8" : undefined,
         }}
       >
         <CloudServerOutlined className="text-[15px]" />
@@ -37,17 +35,15 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
       <button
         type="button"
         onClick={() => onChange("hubs")}
-        className={`flex-1 py-2 px-3 rounded-lg text-[13px] font-bold transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+        className={`flex-1 py-2 px-3 rounded-lg text-[13px] font-bold transition-all duration-120 flex items-center justify-center gap-2 cursor-pointer ${
           value === "hubs"
             ? "text-white"
             : "text-white/50 hover:text-white/80 hover:bg-white/5"
         }`}
         style={{
           background: value === "hubs" ? "#5b4ccb" : "transparent",
-          borderTop: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid transparent",
-          borderLeft: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
-          borderRight: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
-          borderBottom: value === "hubs" ? "3px solid #3b2fa8" : "3px solid transparent",
+          border: value === "hubs" ? "1px solid #7d70e8" : "1px solid transparent",
+          boxShadow: value === "hubs" ? "0 1.5px 0 0 #7d70e8" : undefined,
         }}
       >
         <ClusterOutlined className="text-[15px]" />

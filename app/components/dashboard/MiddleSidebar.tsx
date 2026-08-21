@@ -99,11 +99,8 @@ export function MiddleSidebar({
                 : isHub
                 ? "linear-gradient(135deg, #201e35 0%, #151424 100%)"
                 : "linear-gradient(135deg, #182333 0%, #151424 100%)",
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRight: "1px solid rgba(255, 255, 255, 0.08)",
-              borderBottom: "2.5px solid #0f0e1a",
-              boxShadow: "none",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
             }}
           >
             {/* Wavy / Contour Pattern Placeholder when no custom banner */}

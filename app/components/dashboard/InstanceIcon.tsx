@@ -79,11 +79,8 @@ export function InstanceIcon({
           style={{
             backgroundColor: color || "#242238",
             color: "#ffffff",
-            borderTop: "1px solid rgba(255, 255, 255, 0.16)",
-            borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
-            borderRight: "1px solid rgba(255, 255, 255, 0.10)",
-            borderBottom: isActive ? "3px solid #3c309e" : "3px solid #100f1c",
-            boxShadow: "none",
+            border: isActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: isActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.12)",
           }}
           aria-label={`${name} (${type})`}
         >
