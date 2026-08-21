@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   HomeOutlined,
@@ -6,9 +5,22 @@ import {
   CompassOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
+import { Tooltip } from "antd";
 import type { ServerResource } from "~/resources/server";
 import type { HubResource } from "~/resources/hub";
 import { InstanceIcon } from "./InstanceIcon";
+
+const tooltipStyles = {
+  root: { pointerEvents: "none" as const },
+  body: {
+    background: "rgba(17, 18, 27, 0.96)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.14)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+    padding: "6px 12px",
+  },
+};
 
 interface IconRailProps {
   instanceType: "servers" | "hubs";
@@ -27,10 +39,6 @@ export function IconRail({
 }: IconRailProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [homeHover, setHomeHover] = useState(false);
-  const [plusHover, setPlusHover] = useState(false);
-  const [browseHover, setBrowseHover] = useState(false);
-  const [callsHover, setCallsHover] = useState(false);
 
   const isHomeActive = location.pathname === "/dashboard";
   const isBrowseActive = location.pathname.startsWith("/dashboard/browse");
@@ -57,7 +65,6 @@ export function IconRail({
           type: "hub" as const,
         }));
 
-
   return (
     <aside
       className="w-[72px] h-screen fixed top-0 left-0 z-40 flex flex-col items-center py-3 select-none"
@@ -68,61 +75,48 @@ export function IconRail({
       aria-label="Instance Rail"
     >
       {/* 1. Top Home/Dashboard Icon */}
-      <div
-        className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer"
-        onMouseEnter={() => setHomeHover(true)}
-        onMouseLeave={() => setHomeHover(false)}
-      >
-        {/* Active Pill Indicator - No Glow */}
+      <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+        {/* Active Pill Indicator */}
         <span
           className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
             isHomeActive
               ? "h-9 bg-[#8175ee] opacity-100 scale-100"
-              : homeHover
-              ? "h-5 bg-white/60 opacity-80 scale-100"
-              : "h-2 bg-transparent opacity-0 scale-50"
+              : "h-2 bg-transparent opacity-0 scale-50 group-hover:h-5 group-hover:bg-white/60 group-hover:opacity-80 group-hover:scale-100"
           }`}
         />
 
-        <Link
-          to="/dashboard"
-          className={`relative flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
-            isHomeActive
-              ? "rounded-2xl bg-[#5b4ccb] text-white ring-2 ring-[#8175ee] scale-105"
-              : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl hover:scale-105"
-          }`}
-          style={{
-            border: isHomeActive
-              ? "2px solid rgba(255, 255, 255, 0.4)"
-              : "1px solid rgba(255, 255, 255, 0.12)",
-          }}
-          aria-label="Dashboard Home"
+        <Tooltip
+          placement="right"
+          mouseEnterDelay={0.05}
+          title={<span className="font-bold text-white text-[13px] font-['Sora']">Dashboard Home</span>}
+          styles={tooltipStyles}
+          arrow={false}
         >
-          <HomeOutlined className="text-xl" />
-        </Link>
-
-        {/* Floating Tooltip */}
-        {homeHover && (
-          <div
-            className="absolute left-[76px] z-50 flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none transition-opacity duration-150 animate-fadeIn"
+          <Link
+            to="/dashboard"
+            className={`relative flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
+              isHomeActive
+                ? "rounded-2xl bg-[#5b4ccb] text-white"
+                : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
+            }`}
             style={{
-              background: "rgba(17, 18, 27, 0.95)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255, 255, 255, 0.14)",
-              color: "#f7f5ef",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              boxShadow: isHomeActive
+                ? "0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
+                : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
             }}
+            aria-label="Dashboard Home"
           >
-            <span className="font-bold text-white text-[13px] font-['Sora']">Dashboard Home</span>
-            <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
-          </div>
-        )}
+            <HomeOutlined className="text-xl" />
+          </Link>
+        </Tooltip>
       </div>
 
       {/* Divider */}
       <div className="w-8 h-[1px] my-2 bg-white/10 rounded-full flex-shrink-0" />
 
       {/* 2. Middle Scrollable Instance List */}
-      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden dark-scrollbar flex flex-col items-center py-1 gap-1">
+      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col items-center py-1 gap-1">
         {isLoading ? (
           <div className="flex flex-col items-center gap-2 py-1 w-full animate-pulse">
             {[1, 2, 3, 4].map((i) => (
@@ -166,129 +160,98 @@ export function IconRail({
       {/* 3. Bottom Global Actions */}
       <div className="w-full flex flex-col items-center gap-1 flex-shrink-0">
         {/* Create Button [+] */}
-        <div
-          className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer"
-          onMouseEnter={() => setPlusHover(true)}
-          onMouseLeave={() => setPlusHover(false)}
-        >
-          <button
-            type="button"
-            onClick={onOpenCreate}
-            className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#19172b] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#11121b] hover:rounded-2xl hover:scale-105 transition-all duration-150 border border-white/10 cursor-pointer"
-            aria-label="Create new Hub or Server"
+        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+          <Tooltip
+            placement="right"
+            mouseEnterDelay={0.05}
+            title={<span className="font-bold text-white text-[13px] font-['Sora']">Create Hub</span>}
+            styles={tooltipStyles}
+            arrow={false}
           >
-            <PlusOutlined className="text-lg font-bold" />
-          </button>
-          {plusHover && (
-            <div
-              className="absolute left-[76px] z-50 flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none"
+            <button
+              type="button"
+              onClick={onOpenCreate}
+              className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#19172b] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#11121b] hover:rounded-2xl transition-all duration-150 border border-white/10 cursor-pointer"
               style={{
-                background: "rgba(17, 18, 27, 0.95)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255, 255, 255, 0.14)",
-                color: "#f7f5ef",
+                boxShadow: "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
               }}
+              aria-label="Create new Hub"
             >
-              <span className="font-bold text-white text-[13px] font-['Sora']">
-                Create Hub
-              </span>
-              <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
-            </div>
-          )}
+              <PlusOutlined className="text-lg font-bold" />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Explore / Browse */}
-        <div
-          className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer"
-          onMouseEnter={() => setBrowseHover(true)}
-          onMouseLeave={() => setBrowseHover(false)}
-        >
+        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <span
             className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
               isBrowseActive
                 ? "h-9 bg-[#8175ee] opacity-100 scale-100"
-                : browseHover
-                ? "h-5 bg-white/60 opacity-80 scale-100"
-                : "h-2 bg-transparent opacity-0 scale-50"
+                : "h-2 bg-transparent opacity-0 scale-50 group-hover:h-5 group-hover:bg-white/60 group-hover:opacity-80 group-hover:scale-100"
             }`}
           />
-          <Link
-            to="/dashboard/browse"
-            className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
-              isBrowseActive
-                ? "rounded-2xl bg-[#2a7198] text-white ring-2 ring-[#8fd3ff] scale-105"
-                : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#2a7198] hover:text-white hover:rounded-2xl hover:scale-105"
-            }`}
-            style={{
-              border: isBrowseActive
-                ? "2px solid rgba(255, 255, 255, 0.4)"
-                : "1px solid rgba(255, 255, 255, 0.12)",
-            }}
-            aria-label="Browse Hubs"
+          <Tooltip
+            placement="right"
+            mouseEnterDelay={0.05}
+            title={<span className="font-bold text-white text-[13px] font-['Sora']">Explore Hubs</span>}
+            styles={tooltipStyles}
+            arrow={false}
           >
-            <CompassOutlined className="text-xl" />
-          </Link>
-          {browseHover && (
-            <div
-              className="absolute left-[76px] z-50 flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none"
+            <Link
+              to="/dashboard/browse"
+              className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
+                isBrowseActive
+                  ? "rounded-2xl bg-[#2a7198] text-white"
+                  : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#2a7198] hover:text-white hover:rounded-2xl"
+              }`}
               style={{
-                background: "rgba(17, 18, 27, 0.95)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255, 255, 255, 0.14)",
-                color: "#f7f5ef",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                boxShadow: isBrowseActive
+                  ? "0 3px 0 0 #183e54, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
+                  : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
               }}
+              aria-label="Browse Hubs"
             >
-              <span className="font-bold text-white text-[13px] font-['Sora']">Explore Hubs</span>
-              <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
-            </div>
-          )}
+              <CompassOutlined className="text-xl" />
+            </Link>
+          </Tooltip>
         </div>
 
         {/* Global Calls */}
-        <div
-          className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer"
-          onMouseEnter={() => setCallsHover(true)}
-          onMouseLeave={() => setCallsHover(false)}
-        >
+        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <span
             className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
               isCallsActive
                 ? "h-9 bg-[#8175ee] opacity-100 scale-100"
-                : callsHover
-                ? "h-5 bg-white/60 opacity-80 scale-100"
-                : "h-2 bg-transparent opacity-0 scale-50"
+                : "h-2 bg-transparent opacity-0 scale-50 group-hover:h-5 group-hover:bg-white/60 group-hover:opacity-80 group-hover:scale-100"
             }`}
           />
-          <Link
-            to="/dashboard/calls"
-            className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
-              isCallsActive
-                ? "rounded-2xl bg-[#5b4ccb] text-white ring-2 ring-[#8175ee] scale-105"
-                : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl hover:scale-105"
-            }`}
-            style={{
-              border: isCallsActive
-                ? "2px solid rgba(255, 255, 255, 0.4)"
-                : "1px solid rgba(255, 255, 255, 0.12)",
-            }}
-            aria-label="Global Calls"
+          <Tooltip
+            placement="right"
+            mouseEnterDelay={0.05}
+            title={<span className="font-bold text-white text-[13px] font-['Sora']">Global Calls</span>}
+            styles={tooltipStyles}
+            arrow={false}
           >
-            <ThunderboltOutlined className="text-xl" />
-          </Link>
-          {callsHover && (
-            <div
-              className="absolute left-[76px] z-50 flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none"
+            <Link
+              to="/dashboard/calls"
+              className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
+                isCallsActive
+                  ? "rounded-2xl bg-[#5b4ccb] text-white"
+                  : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
+              }`}
               style={{
-                background: "rgba(17, 18, 27, 0.95)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255, 255, 255, 0.14)",
-                color: "#f7f5ef",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                boxShadow: isCallsActive
+                  ? "0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
+                  : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
               }}
+              aria-label="Global Calls"
             >
-              <span className="font-bold text-white text-[13px] font-['Sora']">Global Calls</span>
-              <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
-            </div>
-          )}
+              <ThunderboltOutlined className="text-xl" />
+            </Link>
+          </Tooltip>
         </div>
       </div>
     </aside>

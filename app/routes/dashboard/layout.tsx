@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation, useLoaderData } from "react-router";
+import { Outlet, useLocation, useLoaderData, useNavigate } from "react-router";
 import type { Route } from "./+types/layout";
 import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import { ConfigProvider, theme } from "antd";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "~/lib/orpc";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
+import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { requireUser } from "~/services/auth.server";
 import "~/styles/dashboard.css";
 
@@ -19,8 +20,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function DashboardLayout() {
   const { user } = useLoaderData<typeof loader>();
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [instanceType, setInstanceType] = useState<"servers" | "hubs">("servers");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreateHubOpen, setIsCreateHubOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: servers = [], isLoading: serversLoading } = useQuery(
@@ -67,7 +71,8 @@ export default function DashboardLayout() {
         {/* Mobile Top Navigation Bar */}
         <header className="md:hidden sticky top-0 z-40 h-14 bg-[#151424]/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="text-lg">InterChat</span>
+            <img src="/images/interchat.png" alt="InterChat Logo" className="w-6 h-6 rounded-md object-contain" />
+            <span className="text-[15.5px] font-['Sora'] font-extrabold tracking-wide text-white">InterChat</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/30 text-violet-300 font-semibold border border-violet-500/30">
               {instanceType === "hubs" ? "Hubs" : "Servers"}
             </span>
@@ -90,13 +95,14 @@ export default function DashboardLayout() {
             servers={servers}
             hubs={hubs}
             isLoading={isLoading}
-            onOpenCreate={() => setIsSettingsOpen(true)}
+            onOpenCreate={() => setIsCreateHubOpen(true)}
           />
           <MiddleSidebar
             instanceType={instanceType}
             servers={servers}
             hubs={hubs}
             isLoading={isLoading}
+            user={user}
             onToggleInstanceType={setInstanceType}
             onOpenSettings={() => setIsSettingsOpen(true)}
           />
@@ -120,7 +126,7 @@ export default function DashboardLayout() {
                 isLoading={isLoading}
                 onOpenCreate={() => {
                   setMobileMenuOpen(false);
-                  setIsSettingsOpen(true);
+                  setIsCreateHubOpen(true);
                 }}
               />
               <div className="flex-1 bg-[#151424]">
@@ -129,6 +135,7 @@ export default function DashboardLayout() {
                   servers={servers}
                   hubs={hubs}
                   isLoading={isLoading}
+                  user={user}
                   onToggleInstanceType={setInstanceType}
                   onOpenSettings={() => {
                     setMobileMenuOpen(false);
@@ -143,7 +150,7 @@ export default function DashboardLayout() {
 
         {/* Main Content Area (Zone C: Routed Outlet) */}
         <main
-          className="flex-1 min-h-screen md:ml-[344px] p-4 sm:p-6 md:p-10 transition-all"
+          className="flex-1 min-h-screen md:ml-[360px] p-4 sm:p-6 md:p-10 transition-all"
           style={{
             background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
           }}
@@ -155,6 +162,20 @@ export default function DashboardLayout() {
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
+        />
+
+        {/* Create Hub Wizard Modal */}
+        <CreateHubWizard
+          mode="modal"
+          open={isCreateHubOpen}
+          onCancel={() => setIsCreateHubOpen(false)}
+          isFirstHub={hubs.length === 0}
+          onCreated={async (hubId) => {
+            await queryClient.invalidateQueries({
+              queryKey: orpc.hub.getUserHubs.queryOptions().queryKey,
+            });
+            navigate(`/dashboard/hubs/${hubId}/overview`);
+          }}
         />
       </div>
     </ConfigProvider>

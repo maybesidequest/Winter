@@ -3,7 +3,7 @@ import { useLoaderData, useParams, Link } from "react-router";
 import type { Route } from "./+types/server-workspace";
 import {
   CloudServerOutlined,
-  ThunderboltOutlined,
+  PhoneOutlined,
   ApartmentOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
@@ -55,9 +55,9 @@ export default function ServerWorkspace() {
       icon: <CloudServerOutlined />,
     },
     calls: {
-      title: "Calls & Userphone",
+      title: "Userphone",
       desc: `Allowed matchmaking channels and call privacy/behavior toggles for ${server.metadata.name}.`,
-      icon: <ThunderboltOutlined />,
+      icon: <PhoneOutlined />,
     },
     bridges: {
       title: "Hub Bridges",

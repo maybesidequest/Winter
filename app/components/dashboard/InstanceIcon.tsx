@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Tooltip } from "antd";
 
 interface InstanceIconProps {
   id: string;
@@ -31,7 +32,7 @@ export function InstanceIcon({
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
     >
-      {/* Active Pill Indicator on Left Edge - Clean, no glow */}
+      {/* Active Pill Indicator on Left Edge */}
       <span
         className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
           isActive
@@ -42,53 +43,55 @@ export function InstanceIcon({
         }`}
       />
 
-      {/* Circular / Squircle Avatar */}
-      <button
-        type="button"
-        className={`relative flex items-center justify-center w-12 h-12 text-sm font-bold tracking-wider transition-all duration-150 select-none overflow-hidden ${
-          isActive
-            ? "rounded-2xl ring-2 ring-[#8175ee] scale-105"
-            : "rounded-3xl hover:rounded-2xl hover:scale-105"
-        }`}
-        style={{
-          backgroundColor: color || "#242238",
-          color: "#ffffff",
-          border: isActive
-            ? "2px solid rgba(255, 255, 255, 0.4)"
-            : "1px solid rgba(255, 255, 255, 0.12)",
-        }}
-        aria-label={`${name} (${type})`}
-      >
-        {iconUrl ? (
-          <img src={iconUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          <span className="font-['Sora'] font-bold text-xs uppercase leading-none">{initials}</span>
-        )}
-      </button>
-
-
-      {/* Floating Dark Tooltip on Right */}
-      {isHovered && (
-        <div
-          className="absolute left-[76px] z-50 flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none transition-opacity duration-150 animate-fadeIn"
-          style={{
-            background: "rgba(17, 18, 27, 0.95)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid rgba(255, 255, 255, 0.14)",
-            color: "#f7f5ef",
-          }}
-        >
-          <div className="flex flex-col gap-0.5">
-            <span className="font-bold text-white text-[13px] font-['Sora']">{name}</span>
-            <span className="text-[11px] font-normal text-white/60">
+      {/* Circular / Squircle Avatar with Tooltip */}
+      <Tooltip
+        placement="right"
+        mouseEnterDelay={0.05}
+        title={
+          <div className="flex flex-col py-0.5">
+            <span className="font-bold text-white text-[13px] font-['Sora'] leading-tight">{name}</span>
+            <span className="text-[11px] font-normal text-white/60 leading-tight mt-0.5">
               {type === "hub" ? "Hub" : "Discord Server"}
             </span>
           </div>
-          {/* Caret pointing left */}
-          <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-[rgba(17,18,27,0.95)]" />
-        </div>
-      )}
+        }
+        styles={{
+          root: { pointerEvents: "none" },
+          body: {
+            background: "rgba(17, 18, 27, 0.96)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255, 255, 255, 0.14)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+            padding: "6px 12px",
+          },
+        }}
+        arrow={false}
+      >
+        <button
+          type="button"
+          className={`relative flex items-center justify-center w-12 h-12 text-sm font-bold tracking-wider transition-all duration-150 select-none overflow-hidden cursor-pointer ${
+            isActive
+              ? "rounded-2xl"
+              : "rounded-3xl hover:rounded-2xl"
+          }`}
+          style={{
+            backgroundColor: color || "#242238",
+            color: "#ffffff",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: isActive
+              ? "0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
+              : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
+          }}
+          aria-label={`${name} (${type})`}
+        >
+          {iconUrl ? (
+            <img src={iconUrl} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-['Sora'] font-bold text-xs uppercase leading-none">{initials}</span>
+          )}
+        </button>
+      </Tooltip>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import {
-  CloudServerOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   PlusOutlined,

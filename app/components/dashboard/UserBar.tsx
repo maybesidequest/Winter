@@ -3,14 +3,17 @@ import {
   BellOutlined,
   ReadOutlined,
 } from "@ant-design/icons";
-import { mockCurrentUser } from "~/data/dashboard-mock";
+import type { User } from "~/services/auth.server";
 
 interface UserBarProps {
+  user?: User;
   onOpenSettings: () => void;
 }
 
-export function UserBar({ onOpenSettings }: UserBarProps) {
-  const user = mockCurrentUser;
+export function UserBar({ user, onOpenSettings }: UserBarProps) {
+  const username = user?.username || "Alex";
+  const avatarUrl = user?.avatarUrl;
+  const isStaff = user?.isStaff ?? false;
 
   return (
     <div
@@ -18,33 +21,46 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
       style={{
         background: "rgba(17, 18, 27, 0.75)",
         borderColor: "rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 3px 0 0 rgba(10, 8, 23, 0.7)",
+        boxShadow: "0 4px 0 0 #090814, 0 4px 8px 0 rgba(0, 0, 0, 0.5)",
       }}
     >
-      {/* User Avatar with Initial & Name */}
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        <div className="w-8.5 h-8.5 rounded-full bg-[#5b4ccb] flex items-center justify-center text-sm font-bold text-white flex-shrink-0 font-['Sora'] shadow-sm border border-white/10">
-          {user.name.charAt(0)}
+      {/* Clickable User Avatar & Details Section */}
+      <button
+        type="button"
+        onClick={onOpenSettings}
+        className="flex items-center gap-2.5 min-w-0 flex-1 p-1 -m-1 rounded-xl text-left hover:bg-white/[0.04] transition-colors cursor-pointer group"
+        aria-label="Open User Settings"
+      >
+        <div className="relative w-8.5 h-8.5 rounded-full bg-[#5b4ccb] flex items-center justify-center text-sm font-bold text-white flex-shrink-0 font-['Sora'] shadow-sm border border-white/10 overflow-hidden group-hover:ring-2 group-hover:ring-violet-400/50 transition-all">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span>{username.charAt(0).toUpperCase()}</span>
+          )}
         </div>
 
         <div className="min-w-0 flex flex-col justify-center">
-          <span className="text-[13px] font-bold text-white truncate leading-tight font-['Sora']">
-            {user.name}
+          <span className="text-[13px] font-bold text-white truncate leading-tight font-['Sora'] group-hover:text-violet-300 transition-colors">
+            {username}
           </span>
-          <span className="text-[11.5px] text-white/50 truncate leading-tight mt-0.5">
-            {user.role}
+          <span className="text-[11px] text-white/50 truncate leading-tight mt-0.5">
+            {isStaff ? "InterChat Staff" : "Hub Owner"}
           </span>
         </div>
-      </div>
+      </button>
 
-      {/* Action Icons (Tactile keycap buttons like Creem) */}
+      {/* Action Icons with 3D tactile back shadow */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <button
           type="button"
           aria-label="Notifications"
           title="Notifications"
           onClick={onOpenSettings}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="dashboard-keycap-btn w-8 h-8 rounded-lg"
         >
           <BellOutlined className="text-sm" />
         </button>
@@ -53,7 +69,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
           type="button"
           aria-label="Documentation"
           title="Documentation"
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="dashboard-keycap-btn w-8 h-8 rounded-lg"
           onClick={() => window.open("https://interchat.gg/docs", "_blank")}
         >
           <ReadOutlined className="text-sm" />
@@ -64,7 +80,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
           onClick={onOpenSettings}
           aria-label="User Settings"
           title="Settings"
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="dashboard-keycap-btn w-8 h-8 rounded-lg"
         >
           <SettingOutlined className="text-sm" />
         </button>

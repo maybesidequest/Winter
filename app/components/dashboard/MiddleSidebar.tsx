@@ -1,4 +1,4 @@
-import { useLocation, useParams, useNavigate } from "react-router";
+import { useLocation, useParams, useNavigate, Link } from "react-router";
 import {
   DownOutlined,
   ClusterOutlined,
@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import type { ServerResource } from "~/resources/server";
 import type { HubResource } from "~/resources/hub";
+import type { User } from "~/services/auth.server";
 import { SidebarToggle } from "./SidebarToggle";
 import { SidebarTabs, type SidebarContext } from "./SidebarTabs";
 import { UserBar } from "./UserBar";
@@ -16,6 +17,7 @@ interface MiddleSidebarProps {
   servers?: ServerResource[];
   hubs?: HubResource[];
   isLoading?: boolean;
+  user?: User;
   onToggleInstanceType: (type: "servers" | "hubs") => void;
   onOpenSettings: () => void;
   onNavigate?: () => void;
@@ -26,6 +28,7 @@ export function MiddleSidebar({
   servers = [],
   hubs = [],
   isLoading = false,
+  user,
   onToggleInstanceType,
   onOpenSettings,
   onNavigate,
@@ -89,7 +92,7 @@ export function MiddleSidebar({
 
   return (
     <aside
-      className="w-[272px] h-screen fixed top-0 left-[72px] z-30 flex flex-col justify-between p-3.5 select-none"
+      className="w-[288px] h-screen fixed top-0 left-[72px] z-30 flex flex-col justify-between p-3.5 select-none"
       style={{
         background: "#151424",
         borderRight: "1px solid rgba(255, 255, 255, 0.08)",
@@ -100,21 +103,29 @@ export function MiddleSidebar({
       <div className="flex flex-col gap-3.5 overflow-y-auto dark-scrollbar flex-1 pr-1">
         {/* Brand Header */}
         <div className="flex items-center justify-between px-1.5 pt-1.5 pb-3 border-b border-white/[0.08]">
-          <div className="flex items-center gap-2">
-            <span className="font-['Sora'] font-extrabold text-[15px] tracking-wider text-white">
-              INTERCHAT
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2.5 hover:opacity-90 transition-opacity cursor-pointer"
+          >
+            <img
+              src="/images/interchat.png"
+              alt="InterChat Logo"
+              className="w-6 h-6 rounded-md object-contain"
+            />
+            <span className="font-['Sora'] font-extrabold text-[15.5px] tracking-wide text-white">
+              InterChat
             </span>
-          </div>
+          </Link>
         </div>
 
         {/* Workspace Selector Dropdown Pill (Creem style) */}
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
-          className="flex items-center justify-between p-2.5 px-3 min-h-[44px] rounded-xl border transition-colors duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer"
+          className="flex items-center justify-between p-2.5 px-3 min-h-[44px] rounded-xl border transition-all duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 active:translate-y-[1px] cursor-pointer"
           style={{
             borderColor: "rgba(255, 255, 255, 0.08)",
-            boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
+            boxShadow: "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
           }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -145,7 +156,7 @@ export function MiddleSidebar({
 
       {/* Bottom User Bar */}
       <div className="pt-2.5 mt-auto border-t border-white/[0.08] flex-shrink-0">
-        <UserBar onOpenSettings={onOpenSettings} />
+        <UserBar user={user} onOpenSettings={onOpenSettings} />
       </div>
     </aside>
   );
