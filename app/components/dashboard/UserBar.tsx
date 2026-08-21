@@ -20,8 +20,11 @@ export function UserBar({ user, onOpenSettings }: UserBarProps) {
       className="p-2.5 px-3 min-h-[58px] rounded-2xl flex items-center justify-between gap-2.5 border select-none transition-all duration-150"
       style={{
         background: "rgba(17, 18, 27, 0.75)",
-        borderColor: "rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 4px 0 0 #121219, 0 4px 8px 0 rgba(0, 0, 0, 0.5)",
+        borderTop: "1px solid rgba(255, 255, 255, 0.10)",
+        borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
+        borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+        borderBottom: "3px solid #0d0c16",
+        boxShadow: "none",
       }}
     >
       {/* Clickable User Avatar & Details Section */}

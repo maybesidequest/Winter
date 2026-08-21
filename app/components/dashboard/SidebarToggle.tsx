@@ -24,7 +24,10 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
         }`}
         style={{
           background: value === "servers" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "servers" ? "0 2.5px 0 0 #3a3258, 0 2px 4px 0 rgba(17, 14, 33, 0.45)" : undefined,
+          borderTop: value === "servers" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid transparent",
+          borderLeft: value === "servers" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
+          borderRight: value === "servers" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
+          borderBottom: value === "servers" ? "3px solid #3b2fa8" : "3px solid transparent",
         }}
       >
         <CloudServerOutlined className="text-[15px]" />
@@ -41,7 +44,10 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
         }`}
         style={{
           background: value === "hubs" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "hubs" ? "0 2.5px 0 0 #3a3258, 0 2px 4px 0 rgba(17, 14, 33, 0.45)" : undefined,
+          borderTop: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid transparent",
+          borderLeft: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
+          borderRight: value === "hubs" ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid transparent",
+          borderBottom: value === "hubs" ? "3px solid #3b2fa8" : "3px solid transparent",
         }}
       >
         <ClusterOutlined className="text-[15px]" />

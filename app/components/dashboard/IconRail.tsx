@@ -101,10 +101,11 @@ export function IconRail({
                 : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
             }`}
             style={{
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              boxShadow: isHomeActive
-                ? "0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
-                : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.16)",
+              borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
+              borderRight: "1px solid rgba(255, 255, 255, 0.10)",
+              borderBottom: isHomeActive ? "3px solid #3c309e" : "3px solid #100f1c",
+              boxShadow: "none",
             }}
             aria-label="Dashboard Home"
           >
@@ -172,9 +173,13 @@ export function IconRail({
             <button
               type="button"
               onClick={onOpenCreate}
-              className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#19172b] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#11121b] hover:rounded-2xl transition-all duration-150 border border-white/10 cursor-pointer"
+              className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#19172b] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#11121b] hover:rounded-2xl transition-all duration-150 cursor-pointer"
               style={{
-                boxShadow: "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
+                borderTop: "1px solid rgba(255, 255, 255, 0.16)",
+                borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
+                borderRight: "1px solid rgba(255, 255, 255, 0.10)",
+                borderBottom: "3px solid #100f1c",
+                boxShadow: "none",
               }}
               aria-label="Create new Hub"
             >
@@ -207,10 +212,11 @@ export function IconRail({
                   : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#2a7198] hover:text-white hover:rounded-2xl"
               }`}
               style={{
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: isBrowseActive
-                  ? "0 3px 0 0 #183e54, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
-                  : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
+                borderTop: "1px solid rgba(255, 255, 255, 0.16)",
+                borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
+                borderRight: "1px solid rgba(255, 255, 255, 0.10)",
+                borderBottom: isBrowseActive ? "3px solid #1b4e69" : "3px solid #100f1c",
+                boxShadow: "none",
               }}
               aria-label="Browse Hubs"
             >
@@ -243,10 +249,11 @@ export function IconRail({
                   : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
               }`}
               style={{
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: isCallsActive
-                  ? "0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)"
-                  : "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
+                borderTop: "1px solid rgba(255, 255, 255, 0.16)",
+                borderLeft: "1px solid rgba(255, 255, 255, 0.10)",
+                borderRight: "1px solid rgba(255, 255, 255, 0.10)",
+                borderBottom: isCallsActive ? "3px solid #3c309e" : "3px solid #100f1c",
+                boxShadow: "none",
               }}
               aria-label="Global Calls"
             >
