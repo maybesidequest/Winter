@@ -1,39 +1,158 @@
-import { PlusOutlined, TeamOutlined } from "@ant-design/icons";
+import { PlusOutlined, TeamOutlined, ArrowRightOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { orpc } from "~/lib/orpc";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
-import { PageHeader, ResourceAvatar } from "~/components/dashboard/WorkspacePrimitives";
+import { PageHeader } from "~/components/dashboard/PageHeader";
+import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 
 export default function HubsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: hubs = [], isLoading, isError } = useQuery(orpc.hub.getUserHubs.queryOptions());
-  return <>
-    <PageHeader eyebrow="Places" title="Hubs" description="Persistent spaces where connected Discord communities share conversation, rules, and a moderation team." actions={<button className="dashboard-button dashboard-button--primary" type="button" onClick={() => setCreateOpen(true)}><PlusOutlined /> Create Hub</button>} />
-    {isError && <div className="dashboard-alert">Your Hub access could not be verified. No permissions have been changed.</div>}
-    <section className="dashboard-section">
-      <div className="dashboard-panel dashboard-panel--wide">
-        {hubs.map((hub) => <div className="dashboard-row" key={hub.metadata.id}>
-          <div className="dashboard-row__identity"><ResourceAvatar name={hub.metadata.name} imageUrl={hub.spec.iconUrl} /><div><strong>{hub.metadata.name}</strong><small>{hub.spec.shortDescription || hub.spec.description}</small></div></div>
-          <div className="dashboard-row__meta">{hub.status.connectionCount} routes · {hub.status.weeklyMessageCount} messages this week</div>
-          <span className={`dashboard-status${hub.spec.locked ? " dashboard-status--attention" : ""}`}>{hub.spec.locked ? "Locked" : hub.spec.visibility}</span>
-          <Link className="dashboard-row__action" to={`/dashboard/hubs/${hub.metadata.id}/overview`}>Manage</Link>
-        </div>)}
-        {!isLoading && hubs.length === 0 && <div className="dashboard-empty"><TeamOutlined /><h3>No accessible Hubs</h3><p>Create one here or ask a Hub owner to add you to their team.</p></div>}
+
+  return (
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
+      <PageHeader
+        eyebrow="Places"
+        title="Hubs"
+        description="Persistent spaces where connected Discord communities share conversation, rules, and a moderation team."
+        actions={
+          <button
+            className="dashboard-btn-primary px-4 py-2 text-xs font-bold"
+            type="button"
+            onClick={() => setCreateOpen(true)}
+          >
+            <PlusOutlined />
+            <span>Create Hub</span>
+          </button>
+        }
+      />
+
+      {isError && (
+        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200 text-sm flex items-center gap-3">
+          <ExclamationCircleOutlined className="text-red-400 text-base flex-shrink-0" />
+          <span>Your Hub access could not be verified. No permissions have been changed.</span>
+        </div>
+      )}
+
+      <div
+        className="rounded-2xl border overflow-hidden flex flex-col"
+        style={dashboardGlassCardStyle}
+      >
+        {isLoading ? (
+          <div className="flex flex-col divide-y divide-white/[0.06]">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-5 flex items-center justify-between gap-4 animate-pulse">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.08]" />
+                  <div className="flex flex-col gap-1.5">
+                    <div className="w-36 h-4 rounded bg-white/[0.08]" />
+                    <div className="w-24 h-3 rounded bg-white/[0.05]" />
+                  </div>
+                </div>
+                <div className="w-20 h-4 rounded bg-white/[0.06] hidden sm:block" />
+                <div className="w-16 h-7 rounded-lg bg-white/[0.06]" />
+              </div>
+            ))}
+          </div>
+        ) : hubs.length > 0 ? (
+          <div className="flex flex-col divide-y divide-white/[0.06]">
+            {hubs.map((hub) => (
+              <div
+                key={hub.metadata.id}
+                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
+              >
+                {/* Identity */}
+                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-xs font-bold text-violet-300 flex-shrink-0 font-['Sora'] shadow-sm">
+                    {hub.spec.iconUrl ? (
+                      <img
+                        src={hub.spec.iconUrl}
+                        alt={hub.metadata.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{hub.metadata.name.slice(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-bold text-white truncate font-['Sora']">
+                      {hub.metadata.name}
+                    </div>
+                    <div className="text-xs text-white/50 truncate max-w-md">
+                      {hub.spec.shortDescription || hub.spec.description || "No description provided."}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta Details */}
+                <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 text-xs">
+                  <div className="text-white/60 hidden md:block">
+                    <span className="font-semibold text-white/90">{hub.status.connectionCount}</span> routes
+                    <span className="mx-1.5 text-white/20">·</span>
+                    <span className="font-semibold text-white/90">
+                      {hub.status.weeklyMessageCount}
+                    </span> messages this week
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                        hub.spec.locked
+                          ? "bg-red-500/15 text-red-300 border-red-500/30"
+                          : "bg-violet-500/15 text-violet-300 border-violet-500/30"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          hub.spec.locked ? "bg-red-400" : "bg-violet-400"
+                        }`}
+                      />
+                      {hub.spec.locked ? "Locked" : hub.spec.visibility}
+                    </span>
+                  </div>
+
+                  {/* Action Button */}
+                  <Link
+                    to={`/dashboard/hubs/${hub.metadata.id}/overview`}
+                    className="dashboard-btn-secondary px-4 py-1.5 text-xs font-bold"
+                  >
+                    <span>Manage</span>
+                    <ArrowRightOutlined className="text-[10px]" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white/40">
+              <TeamOutlined />
+            </div>
+            <h3 className="text-base font-bold text-white font-['Sora']">No accessible Hubs</h3>
+            <p className="text-xs text-white/50 max-w-sm">
+              Create one here or ask a Hub owner to add you to their team.
+            </p>
+          </div>
+        )}
       </div>
-    </section>
-    <CreateHubWizard
-      mode="modal"
-      open={createOpen}
-      onCancel={() => setCreateOpen(false)}
-      isFirstHub={hubs.length === 0}
-      onCreated={async (hubId) => {
-        await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
-        navigate(`/dashboard/hubs/${hubId}/overview`);
-      }}
-    />
-  </>;
+
+      <CreateHubWizard
+        mode="modal"
+        open={createOpen}
+        onCancel={() => setCreateOpen(false)}
+        isFirstHub={hubs.length === 0}
+        onCreated={async (hubId) => {
+          await queryClient.invalidateQueries({
+            queryKey: orpc.hub.getUserHubs.queryOptions().queryKey,
+          });
+          navigate(`/dashboard/hubs/${hubId}/overview`);
+        }}
+      />
+    </div>
+  );
 }

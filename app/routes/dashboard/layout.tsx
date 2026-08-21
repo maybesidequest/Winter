@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useLoaderData } from "react-router";
 import type { Route } from "./+types/layout";
 import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
+import { ConfigProvider, theme } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { orpc } from "~/lib/orpc";
 import { IconRail } from "~/components/dashboard/IconRail";
@@ -47,100 +48,116 @@ export default function DashboardLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#11121b] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
-      {/* Mobile Top Navigation Bar */}
-      <header className="md:hidden sticky top-0 z-40 h-14 bg-[#151424]/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className="text-lg">InterChat</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/30 text-violet-300 font-semibold border border-violet-500/30">
-            {instanceType === "hubs" ? "Hubs" : "Servers"}
-          </span>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: "#8175ee",
+          colorBgBase: "#11121b",
+          colorBgContainer: "rgba(20, 20, 25, 0.5)",
+          colorBgElevated: "#181726",
+          colorBorder: "rgba(255, 255, 255, 0.1)",
+          colorText: "#ffffff",
+          colorTextSecondary: "rgba(255, 255, 255, 0.65)",
+          borderRadius: 10,
+        },
+      }}
+    >
+      <div className="min-h-screen bg-[#11121b] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
+        {/* Mobile Top Navigation Bar */}
+        <header className="md:hidden sticky top-0 z-40 h-14 bg-[#151424]/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="text-lg">InterChat</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/30 text-violet-300 font-semibold border border-violet-500/30">
+              {instanceType === "hubs" ? "Hubs" : "Servers"}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+          </button>
+        </header>
+
+        {/* Desktop Persistent Left Zones (Rail + Middle Sidebar) */}
+        <div className="hidden md:flex">
+          <IconRail
+            instanceType={instanceType}
+            servers={servers}
+            hubs={hubs}
+            isLoading={isLoading}
+            onOpenCreate={() => setIsSettingsOpen(true)}
+          />
+          <MiddleSidebar
+            instanceType={instanceType}
+            servers={servers}
+            hubs={hubs}
+            isLoading={isLoading}
+            onToggleInstanceType={setInstanceType}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white cursor-pointer"
-          aria-label="Toggle Navigation Menu"
-        >
-          {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
-        </button>
-      </header>
-
-      {/* Desktop Persistent Left Zones (Rail + Middle Sidebar) */}
-      <div className="hidden md:flex">
-        <IconRail
-          instanceType={instanceType}
-          servers={servers}
-          hubs={hubs}
-          isLoading={isLoading}
-          onOpenCreate={() => setIsSettingsOpen(true)}
-        />
-        <MiddleSidebar
-          instanceType={instanceType}
-          servers={servers}
-          hubs={hubs}
-          isLoading={isLoading}
-          onToggleInstanceType={setInstanceType}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-        />
-      </div>
-
-      {/* Mobile Slide-Over Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-
-          {/* Drawer Panel */}
-          <div className="relative z-10 flex h-full max-w-[320px] w-full shadow-2xl animate-slideRight">
-            <IconRail
-              instanceType={instanceType}
-              servers={servers}
-              hubs={hubs}
-              isLoading={isLoading}
-              onOpenCreate={() => {
-                setMobileMenuOpen(false);
-                setIsSettingsOpen(true);
-              }}
+        {/* Mobile Slide-Over Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="flex-1 bg-[#151424]">
-              <MiddleSidebar
+
+            {/* Drawer Panel */}
+            <div className="relative z-10 flex h-full max-w-[320px] w-full shadow-2xl animate-slideRight">
+              <IconRail
                 instanceType={instanceType}
                 servers={servers}
                 hubs={hubs}
                 isLoading={isLoading}
-                onToggleInstanceType={setInstanceType}
-                onOpenSettings={() => {
+                onOpenCreate={() => {
                   setMobileMenuOpen(false);
                   setIsSettingsOpen(true);
                 }}
-                onNavigate={() => setMobileMenuOpen(false)}
               />
+              <div className="flex-1 bg-[#151424]">
+                <MiddleSidebar
+                  instanceType={instanceType}
+                  servers={servers}
+                  hubs={hubs}
+                  isLoading={isLoading}
+                  onToggleInstanceType={setInstanceType}
+                  onOpenSettings={() => {
+                    setMobileMenuOpen(false);
+                    setIsSettingsOpen(true);
+                  }}
+                  onNavigate={() => setMobileMenuOpen(false)}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Main Content Area (Zone C: Routed Outlet) */}
-      <main
-        className="flex-1 min-h-screen md:ml-[344px] p-4 sm:p-6 md:p-10 transition-all"
-        style={{
-          background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
-        }}
-      >
-        <Outlet context={{ user, servers, hubs, isLoading }} />
-      </main>
+        {/* Main Content Area (Zone C: Routed Outlet) */}
+        <main
+          className="flex-1 min-h-screen md:ml-[344px] p-4 sm:p-6 md:p-10 transition-all"
+          style={{
+            background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
+          }}
+        >
+          <Outlet context={{ user, servers, hubs, isLoading }} />
+        </main>
 
-      {/* Global Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-    </div>
+        {/* Global Settings Modal */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      </div>
+    </ConfigProvider>
   );
 }
 

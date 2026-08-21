@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router";
 import {
-  HomeOutlined,
   DownOutlined,
   UpOutlined,
   CloudServerOutlined,
@@ -28,44 +27,7 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
   ];
 
   return (
-    <div className="flex flex-col gap-3 py-1">
-      <NavLink
-        to="/dashboard"
-        end
-        onClick={onNavigate}
-        className={({ isActive }) =>
-          `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
-            isActive
-              ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
-              : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
-          }`
-        }
-      >
-        <HomeOutlined className="text-[17px] text-white/90" />
-        <span>Dashboard Home</span>
-      </NavLink>
-
-      {/* Server Identity Header */}
-      {server && (
-        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-          <div className="w-7 h-7 rounded-lg overflow-hidden bg-sky-900/40 border border-sky-400/20 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 font-['Sora']">
-            {server.metadata.iconUrl ? (
-              <img src={server.metadata.iconUrl} alt={server.metadata.name} className="w-full h-full object-cover" />
-            ) : (
-              <span>{server.metadata.name.slice(0, 2).toUpperCase()}</span>
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold text-white truncate block font-['Sora']">
-              {server.metadata.name}
-            </span>
-            <span className="text-[10px] text-white/50 block">
-              {server.status.botInstalled ? "InterChat Active" : "Setup Required"}
-            </span>
-          </div>
-        </div>
-      )}
-
+    <div className="flex flex-col gap-1 py-1">
       <div className="flex flex-col gap-1">
         <button
           type="button"
