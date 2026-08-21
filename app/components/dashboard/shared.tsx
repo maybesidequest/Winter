@@ -12,7 +12,7 @@ export const dashboardGlassCardStyle: CSSProperties = {
   background: "rgba(20, 20, 25, 0.4)",
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid rgba(10, 8, 23, 0.75)",
   boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
 };
 

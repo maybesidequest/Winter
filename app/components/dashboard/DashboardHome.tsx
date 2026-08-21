@@ -83,7 +83,7 @@ export function DashboardHome() {
         className="relative overflow-hidden p-3 md:p-4 rounded-3xl border"
         style={{
           background: "rgba(17, 18, 27, 0.6)",
-          borderColor: "rgba(255, 255, 255, 0.08)",
+          borderColor: "rgba(10, 8, 23, 0.75)",
           boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
         }}
       >
@@ -131,7 +131,7 @@ export function DashboardHome() {
           className="relative overflow-hidden lg:col-span-7 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
             background: "rgba(21, 20, 36, 0.85)",
-            borderColor: "rgba(255, 255, 255, 0.09)",
+            borderColor: "rgba(10, 8, 23, 0.75)",
             boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >
@@ -197,7 +197,7 @@ export function DashboardHome() {
           className="relative overflow-hidden lg:col-span-5 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
             background: "rgba(21, 20, 36, 0.85)",
-            borderColor: "rgba(255, 255, 255, 0.09)",
+            borderColor: "rgba(10, 8, 23, 0.75)",
             boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >

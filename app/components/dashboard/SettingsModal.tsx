@@ -85,7 +85,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className="relative overflow-hidden p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border"
                 style={{
                   background: "rgba(21, 20, 36, 0.85)",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
+                  borderColor: "rgba(10, 8, 23, 0.75)",
                   boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
                 }}
               >
