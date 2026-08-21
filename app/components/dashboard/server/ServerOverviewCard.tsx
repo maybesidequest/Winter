@@ -65,6 +65,7 @@ export function ServerOverviewCard({ server, botClientId = "904791550993072230" 
             ...dashboardGlassCardStyle,
             borderColor: "rgba(52, 211, 153, 0.25)",
             background: "rgba(16, 185, 129, 0.06)",
+            boxShadow: "0 4px 0 0 rgba(52, 211, 153, 0.25)",
           }}
         >
           <div className="flex items-center gap-3">
