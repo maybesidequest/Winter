@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Select, Switch, message } from "antd";
+import { Select, message } from "antd";
 import { SaveOutlined, LockOutlined, ThunderboltOutlined } from "@ant-design/icons";
-import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { dashboardGlassCardStyle, DepthToggle } from "~/components/dashboard/shared";
 import type { DiscordChannelResource, ServerResource } from "~/resources/server";
 import { orpcClient as orpc } from "~/lib/orpc";
 
@@ -149,10 +149,11 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
                   {toggle.description}
                 </span>
               </div>
-              <Switch
+              <DepthToggle
                 disabled={!isInstalled}
                 checked={Boolean(spec[toggle.key])}
                 onChange={(checked) => updateToggle(toggle.key, checked)}
+                aria-label={toggle.label}
               />
             </div>
           ))}

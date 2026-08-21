@@ -1,5 +1,5 @@
-import { Divider, Switch, Typography } from "antd";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { Typography } from "antd";
+import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
 import { HubSettingsFlags, hasSettingsFlag } from "../../schemas/hub";
 import type { DashboardHubConfig } from "./types";
 
@@ -46,13 +46,11 @@ export function HubSettingsPanel({ activeConfig, onToggleFlag }: HubSettingsPane
               {desc}
             </Text>
           </div>
-          <Switch
+          <DepthToggle
             checked={hasSettingsFlag(activeConfig.settings, flag)}
             onChange={(checked) => onToggleFlag(flag, checked)}
-            style={{
-              background: hasSettingsFlag(activeConfig.settings, flag) ? "#9146ff" : "rgba(255,255,255,0.2)",
-            }}
             disabled={!canEdit}
+            aria-label={label}
           />
         </div>
       ))}
