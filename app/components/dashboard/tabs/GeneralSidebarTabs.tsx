@@ -42,14 +42,14 @@ export function GeneralSidebarTabs({
         end
         onClick={onNavigate}
         className={({ isActive }) =>
-          `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+          `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
             isActive
-              ? "bg-white/[0.08] text-white font-bold"
+              ? "active bg-white/[0.08] text-white font-bold"
               : "text-white/85 hover:text-white hover:bg-white/[0.06]"
           }`
         }
       >
-        <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+        <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
           <HomeOutlined />
         </span>
         <span>Home</span>
@@ -72,14 +72,14 @@ export function GeneralSidebarTabs({
               to="/dashboard/browse"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold"
+                    ? "active bg-white/[0.08] text-white font-bold"
                     : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                 }`
               }
             >
-              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
                 <CompassOutlined />
               </span>
               <span>Explore Directory</span>
@@ -101,14 +101,14 @@ export function GeneralSidebarTabs({
                   to={`/dashboard/hubs/${h.metadata.id}/overview`}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                    `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold"
+                        ? "active bg-white/[0.08] text-white font-bold"
                         : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                     }`
                   }
                 >
-                  <div className="w-5 h-5 rounded-md overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-[10px] font-bold text-violet-300 flex-shrink-0">
+                  <div className="w-5 h-5 rounded-md overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-[10px] font-bold text-violet-300 group-hover:text-violet-200 group-hover:border-violet-400/40 transition-colors duration-150 flex-shrink-0">
                     {h.spec.iconUrl ? (
                       <img src={h.spec.iconUrl} alt={h.metadata.name} className="w-full h-full object-cover" />
                     ) : (
@@ -141,14 +141,14 @@ export function GeneralSidebarTabs({
               end
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold"
+                    ? "active bg-white/[0.08] text-white font-bold"
                     : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                 }`
               }
             >
-              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
                 <CloudServerOutlined />
               </span>
               <span>All Servers</span>
@@ -170,14 +170,14 @@ export function GeneralSidebarTabs({
                   to={`/dashboard/servers/${s.metadata.id}/overview`}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                    `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold"
+                        ? "active bg-white/[0.08] text-white font-bold"
                         : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                     }`
                   }
                 >
-                  <div className="w-5 h-5 rounded-md overflow-hidden bg-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                  <div className="w-5 h-5 rounded-md overflow-hidden bg-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0 group-hover:bg-white/20 transition-colors duration-150">
                     {s.metadata.iconUrl ? (
                       <img src={s.metadata.iconUrl} alt={s.metadata.name} className="w-full h-full object-cover" />
                     ) : (
@@ -211,14 +211,14 @@ export function GeneralSidebarTabs({
               end
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold"
+                    ? "active bg-white/[0.08] text-white font-bold"
                     : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                 }`
               }
             >
-              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
                 <ThunderboltOutlined />
               </span>
               <span>Active Lobbies</span>
@@ -228,14 +228,14 @@ export function GeneralSidebarTabs({
               to="/dashboard/calls/history"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold"
+                    ? "active bg-white/[0.08] text-white font-bold"
                     : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                 }`
               }
             >
-              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
                 <HistoryOutlined />
               </span>
               <span>Call History</span>

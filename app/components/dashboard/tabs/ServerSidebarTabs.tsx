@@ -47,14 +47,14 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
                 to={`/dashboard/servers/${serverId}/${item.path}`}
                 onClick={onNavigate}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
+                  `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                     isActive
-                      ? "bg-white/[0.08] text-white font-bold"
+                      ? "active bg-white/[0.08] text-white font-bold"
                       : "text-white/85 hover:text-white hover:bg-white/[0.06]"
                   }`
                 }
               >
-                <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+                <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
