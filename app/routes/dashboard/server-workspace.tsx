@@ -83,7 +83,7 @@ export default function ServerWorkspace() {
           <div className="flex items-center gap-3">
             <Link
               to="/dashboard/servers"
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+              className="dashboard-btn-secondary px-4 py-2 text-xs font-bold"
             >
               All Servers
             </Link>

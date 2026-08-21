@@ -61,7 +61,7 @@ export function ServerBridgesCard({ server, bridges }: ServerBridgesCardProps) {
           </div>
           <Link
             to="/dashboard/browse"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all mt-2"
+            className="dashboard-btn-secondary px-4 py-2 text-xs font-semibold mt-2"
           >
             <span>Explore Hub Directory</span>
             <ArrowRightOutlined className="text-[10px]" />

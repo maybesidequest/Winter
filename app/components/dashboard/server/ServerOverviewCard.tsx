@@ -52,7 +52,7 @@ export function ServerOverviewCard({ server, botClientId = "904791550993072230" 
             href={inviteUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#5b4ccb] hover:bg-[#6c5ce7] text-white font-bold text-sm shadow-lg shadow-violet-900/40 hover:scale-[1.02] transition-all cursor-pointer flex-shrink-0"
+            className="dashboard-btn-primary px-5 py-3 text-sm flex-shrink-0"
           >
             <PlusOutlined />
             <span>Add to Discord</span>
@@ -130,13 +130,13 @@ export function ServerOverviewCard({ server, botClientId = "904791550993072230" 
           <div className="flex items-center gap-2">
             <Link
               to={`/dashboard/servers/${server.metadata.id}/calls`}
-              className="flex-1 py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-center text-white/80 hover:text-white transition-all"
+              className="dashboard-btn-secondary flex-1 py-2 px-3 text-xs font-semibold text-center"
             >
               Call Settings
             </Link>
             <Link
               to={`/dashboard/servers/${server.metadata.id}/bridges`}
-              className="flex-1 py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-center text-white/80 hover:text-white transition-all"
+              className="dashboard-btn-secondary flex-1 py-2 px-3 text-xs font-semibold text-center"
             >
               Hub Bridges
             </Link>

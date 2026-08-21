@@ -89,7 +89,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
           type="button"
           disabled={!isInstalled}
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-lg shadow-rose-900/30 transition-all cursor-pointer self-start sm:self-auto"
+          className="dashboard-btn-danger px-4 py-2 text-xs self-start sm:self-auto"
         >
           <PlusOutlined />
           <span>Add Block</span>
@@ -161,7 +161,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
                       >
                         <button
                           type="button"
-                          className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1"
+                          className="dashboard-btn-danger-subtle px-2.5 py-1 text-xs"
                         >
                           <DeleteOutlined />
                           <span>Unblock</span>
