@@ -49,7 +49,9 @@ export function GeneralSidebarTabs({
           }`
         }
       >
-        <HomeOutlined className="text-[17px] text-white/90" />
+        <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
+          <HomeOutlined />
+        </span>
         <span>Home</span>
       </NavLink>
 
@@ -77,7 +79,7 @@ export function GeneralSidebarTabs({
                 }`
               }
             >
-              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
                 <CompassOutlined />
               </span>
               <span>Explore Directory</span>
@@ -146,7 +148,7 @@ export function GeneralSidebarTabs({
                 }`
               }
             >
-              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
                 <CloudServerOutlined />
               </span>
               <span>All Servers</span>
@@ -216,7 +218,7 @@ export function GeneralSidebarTabs({
                 }`
               }
             >
-              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
                 <ThunderboltOutlined />
               </span>
               <span>Active Lobbies</span>
@@ -233,7 +235,7 @@ export function GeneralSidebarTabs({
                 }`
               }
             >
-              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
+              <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
                 <HistoryOutlined />
               </span>
               <span>Call History</span>

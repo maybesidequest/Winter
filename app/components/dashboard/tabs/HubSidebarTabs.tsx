@@ -56,7 +56,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
                   }`
                 }
               >
-                <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
+                <span className="text-[17px] text-[#827d9c] flex items-center justify-center w-5">
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
