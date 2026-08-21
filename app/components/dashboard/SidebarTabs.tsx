@@ -65,14 +65,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           end
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+            `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
               isActive
-                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
             }`
           }
         >
-          <HomeOutlined className="text-base" />
+          <HomeOutlined className="text-[17px] text-white/90" />
           <span>Dashboard Home</span>
         </NavLink>
 
@@ -81,10 +81,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           <button
             type="button"
             onClick={() => toggleSection("hub_controls")}
-            className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#8175ee] hover:text-[#9f95f4] transition-colors cursor-pointer"
+            className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#9f95f4] hover:text-[#b8b0f8] transition-colors cursor-pointer"
           >
             <span>Hub Controls</span>
-            <span className="text-[9px]">
+            <span className="text-[10px]">
               {collapsedSections.hub_controls ? <DownOutlined /> : <UpOutlined />}
             </span>
           </button>
@@ -97,14 +97,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
                   to={`/dashboard/hubs/${hub.id}/${item.path}`}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                    `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                        : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                        : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                     }`
                   }
                 >
-                  <span className="text-base text-white/80 flex items-center justify-center w-5">{item.icon}</span>
+                  <span className="text-[17px] text-white/90 flex items-center justify-center w-5">{item.icon}</span>
                   <span>{item.label}</span>
                 </NavLink>
               ))}
@@ -133,14 +133,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           end
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+            `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
               isActive
-                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
             }`
           }
         >
-          <HomeOutlined className="text-base" />
+          <HomeOutlined className="text-[17px] text-white/90" />
           <span>Dashboard Home</span>
         </NavLink>
 
@@ -148,10 +148,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           <button
             type="button"
             onClick={() => toggleSection("server_controls")}
-            className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#8fd3ff] hover:text-[#bae6fd] transition-colors cursor-pointer"
+            className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#93c5fd] hover:text-[#bfdbfe] transition-colors cursor-pointer"
           >
             <span>Server Controls</span>
-            <span className="text-[9px]">
+            <span className="text-[10px]">
               {collapsedSections.server_controls ? <DownOutlined /> : <UpOutlined />}
             </span>
           </button>
@@ -164,14 +164,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
                   to={`/dashboard/servers/${server.id}/${item.path}`}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                    `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                        : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                        : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                     }`
                   }
                 >
-                  <span className="text-base text-white/80 flex items-center justify-center w-5">{item.icon}</span>
+                  <span className="text-[17px] text-white/90 flex items-center justify-center w-5">{item.icon}</span>
                   <span>{item.label}</span>
                 </NavLink>
               ))}
@@ -191,14 +191,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         end
         onClick={onNavigate}
         className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+          `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
             isActive
-              ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-              : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+              ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+              : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
           }`
         }
       >
-        <HomeOutlined className="text-base" />
+        <HomeOutlined className="text-[17px] text-white/90" />
         <span>Home</span>
       </NavLink>
 
@@ -207,10 +207,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         <button
           type="button"
           onClick={() => toggleSection("community")}
-          className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#8175ee] hover:text-[#9f95f4] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#9f95f4] hover:text-[#b8b0f8] transition-colors cursor-pointer"
         >
           <span>Community & Hubs</span>
-          <span className="text-[9px]">
+          <span className="text-[10px]">
             {collapsedSections.community ? <DownOutlined /> : <UpOutlined />}
           </span>
         </button>
@@ -221,14 +221,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/hubs/hub-1/overview"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <ClusterOutlined />
               </span>
               <span>Hubs Overview</span>
@@ -238,14 +238,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/browse"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <CompassOutlined />
               </span>
               <span>Explore Directory</span>
@@ -259,10 +259,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         <button
           type="button"
           onClick={() => toggleSection("servers")}
-          className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#8fd3ff] hover:text-[#bae6fd] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#93c5fd] hover:text-[#bfdbfe] transition-colors cursor-pointer"
         >
           <span>Discord Servers</span>
-          <span className="text-[9px]">
+          <span className="text-[10px]">
             {collapsedSections.servers ? <DownOutlined /> : <UpOutlined />}
           </span>
         </button>
@@ -273,14 +273,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/servers/srv-1/overview"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <CloudServerOutlined />
               </span>
               <span>Connected Servers</span>
@@ -290,14 +290,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/servers/srv-1/bot-config"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <RobotOutlined />
               </span>
               <span>Bot Configuration</span>
@@ -311,10 +311,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         <button
           type="button"
           onClick={() => toggleSection("calls")}
-          className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#ff8c73] hover:text-[#ffb3a3] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#fdba74] hover:text-[#fed7aa] transition-colors cursor-pointer"
         >
           <span>Realtime Calls</span>
-          <span className="text-[9px]">
+          <span className="text-[10px]">
             {collapsedSections.calls ? <DownOutlined /> : <UpOutlined />}
           </span>
         </button>
@@ -326,14 +326,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               end
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <ThunderboltOutlined />
               </span>
               <span>Active Lobbies</span>
@@ -343,14 +343,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/calls/history"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <HistoryOutlined />
               </span>
               <span>Call History</span>
@@ -364,10 +364,10 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         <button
           type="button"
           onClick={() => toggleSection("insights")}
-          className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold tracking-wider uppercase text-[#7ed493] hover:text-[#a3e8b3] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#86efac] hover:text-[#bbf7d0] transition-colors cursor-pointer"
         >
           <span>Insights & Safety</span>
-          <span className="text-[9px]">
+          <span className="text-[10px]">
             {collapsedSections.insights ? <DownOutlined /> : <UpOutlined />}
           </span>
         </button>
@@ -378,14 +378,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/hubs/hub-1/analytics"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <LineChartOutlined />
               </span>
               <span>Network Analytics</span>
@@ -395,14 +395,14 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               to="/dashboard/hubs/hub-1/rules"
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
-                    : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.08]"
+                    : "text-white/85 hover:text-white hover:bg-white/[0.06] border border-transparent"
                 }`
               }
             >
-              <span className="text-base text-white/80 flex items-center justify-center w-5">
+              <span className="text-[17px] text-white/90 flex items-center justify-center w-5">
                 <SafetyCertificateOutlined />
               </span>
               <span>Safety & Moderation</span>

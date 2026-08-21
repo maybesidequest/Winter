@@ -65,9 +65,9 @@ export function MiddleSidebar({
       {/* Top Section */}
       <div className="flex flex-col gap-3.5 overflow-y-auto dark-scrollbar flex-1 pr-1">
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-1 pt-1 pb-2.5 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between px-1.5 pt-1.5 pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
-            <span className="font-['Sora'] font-extrabold text-sm tracking-wider text-white">
+            <span className="font-['Sora'] font-extrabold text-[15px] tracking-wider text-white">
               INTERCHAT
             </span>
           </div>
@@ -77,21 +77,21 @@ export function MiddleSidebar({
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
-          className="flex items-center justify-between p-2.5 px-3 rounded-xl border transition-colors duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer"
+          className="flex items-center justify-between p-2.5 px-3 min-h-[44px] rounded-xl border transition-colors duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer"
           style={{
             borderColor: "rgba(255, 255, 255, 0.08)",
             boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
           }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
               {currentIcon}
             </div>
-            <span className="text-[13px] font-bold text-white truncate font-['Sora']">
+            <span className="text-[14px] font-bold text-white truncate font-['Sora']">
               {currentTitle}
             </span>
           </div>
-          <DownOutlined className="text-[10px] text-white/40 flex-shrink-0 ml-1.5" />
+          <DownOutlined className="text-xs text-white/40 flex-shrink-0 ml-1.5" />
         </button>
 
         {/* Servers vs Hubs Toggle */}

@@ -17,7 +17,7 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
       <button
         type="button"
         onClick={() => onChange("servers")}
-        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+        className={`flex-1 py-2 px-3 rounded-lg text-[13px] font-bold transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
           value === "servers"
             ? "text-white"
             : "text-white/50 hover:text-white/80 hover:bg-white/5"
@@ -27,14 +27,14 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
           boxShadow: value === "servers" ? "0 2px 0 0 rgba(10, 8, 23, 0.6)" : undefined,
         }}
       >
-        <CloudServerOutlined className="text-sm" />
+        <CloudServerOutlined className="text-[15px]" />
         <span>Servers</span>
       </button>
 
       <button
         type="button"
         onClick={() => onChange("hubs")}
-        className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+        className={`flex-1 py-2 px-3 rounded-lg text-[13px] font-bold transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
           value === "hubs"
             ? "text-white"
             : "text-white/50 hover:text-white/80 hover:bg-white/5"
@@ -44,7 +44,7 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
           boxShadow: value === "hubs" ? "0 2px 0 0 rgba(10, 8, 23, 0.6)" : undefined,
         }}
       >
-        <ClusterOutlined className="text-sm" />
+        <ClusterOutlined className="text-[15px]" />
         <span>Hubs</span>
       </button>
     </div>
