@@ -13,7 +13,7 @@
   --dash-coral: #ff8c73;
   --dash-sky: #8fd3ff;
   --dash-danger: #b93838;
-  --dash-shadow: 0 10px 30px rgba(17, 18, 27, 0.09);
+  --dash-shadow: 0 4px 0 0 rgba(17, 18, 27, 0.15);
   --dash-sidebar: 256px;
 }
 
@@ -25,7 +25,7 @@
   --dash-muted: #aaa9b4;
   --dash-border: rgba(255, 255, 255, 0.12);
   --dash-violet-soft: #302b5e;
-  --dash-shadow: 0 12px 34px rgba(0, 0, 0, 0.25);
+  --dash-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.45);
 }
 
 .dashboard-root {

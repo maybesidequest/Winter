@@ -44,6 +44,7 @@ export function PlaceholderView({
         style={{
           background: "rgba(21, 20, 36, 0.85)",
           borderColor: "rgba(255, 255, 255, 0.09)",
+          boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
         }}
       >
         <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
