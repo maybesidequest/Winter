@@ -4,6 +4,9 @@ import {
   DownOutlined,
   UpOutlined,
   ClusterOutlined,
+  ApiOutlined,
+  SafetyCertificateOutlined,
+  AppstoreOutlined,
   ApartmentOutlined,
   FileProtectOutlined,
   LineChartOutlined,
@@ -22,9 +25,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "analytics", label: "Analytics", icon: <LineChartOutlined /> },
-    { path: "members", label: "Members & Staff", icon: <ApartmentOutlined /> },
+    { path: "connections", label: "Connected Bridges", icon: <ApiOutlined /> },
+    { path: "safety", label: "Safety & Moderation", icon: <SafetyCertificateOutlined /> },
+    { path: "modules", label: "Broadcast Modules", icon: <AppstoreOutlined /> },
     { path: "rules", label: "Rules & Policies", icon: <FileProtectOutlined /> },
+    { path: "members", label: "Members & Staff", icon: <ApartmentOutlined /> },
+    { path: "analytics", label: "Analytics", icon: <LineChartOutlined /> },
     { path: "settings", label: "Hub Settings", icon: <SettingOutlined /> },
   ];
 

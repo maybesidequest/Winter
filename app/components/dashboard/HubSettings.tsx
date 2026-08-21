@@ -1,225 +1,217 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  PictureOutlined,
-  SafetyCertificateOutlined,
-  MessageOutlined,
+  SettingOutlined,
+  GlobalOutlined,
+  WarningOutlined,
   CheckOutlined,
-  InfoCircleOutlined,
+  UserSwitchOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { DepthToggle, dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { HubResource } from "~/resources/hub";
-import type { PatchHubConfigInput } from "~/schemas/hub";
+import type { PatchHubConfigInput, HubVisibilityType } from "~/schemas/hub";
+
+interface HubSettingsProps {
+  hub: HubResource;
+  canEdit: boolean;
+  isOwner?: boolean;
+  saving: boolean;
+  onSave: (changes: Partial<PatchHubConfigInput>) => void;
+  onDeleteHub?: () => void;
+  onTransferOwnership?: (newOwnerId: string) => void;
+  onNukeMessages?: () => void;
+}
 
 export function HubSettings({
   hub,
   canEdit,
+  isOwner = false,
   saving,
   onSave,
-}: {
-  hub: HubResource;
-  canEdit: boolean;
-  saving: boolean;
-  onSave: (changes: Partial<PatchHubConfigInput>) => void;
-}) {
-  const [iconUrl, setIconUrl] = useState(hub.spec.iconUrl || "");
-  const [bannerUrl, setBannerUrl] = useState(hub.spec.bannerUrl || "");
-  const [shortDescription, setShortDescription] = useState(hub.spec.shortDescription || "");
-  const [description, setDescription] = useState(hub.spec.description || "");
-  const [welcomeMessage, setWelcomeMessage] = useState(hub.spec.welcomeMessage || "");
-  const [locked, setLocked] = useState(hub.spec.locked);
-  const [nsfw, setNsfw] = useState(hub.spec.nsfw);
-  const [appealCooldownHours, setAppealCooldownHours] = useState(hub.spec.appealCooldownHours ?? 168);
+  onDeleteHub,
+  onTransferOwnership,
+  onNukeMessages,
+}: HubSettingsProps) {
+  const [visibility, setVisibility] = useState<HubVisibilityType>(hub.spec.visibility);
+  const [language, setLanguage] = useState(hub.spec.language || "English");
+  const [region, setRegion] = useState(hub.spec.region || "Global");
+  const [transferTarget, setTransferTarget] = useState("");
 
-  useEffect(() => {
-    setIconUrl(hub.spec.iconUrl || "");
-    setBannerUrl(hub.spec.bannerUrl || "");
-    setShortDescription(hub.spec.shortDescription || "");
-    setDescription(hub.spec.description || "");
-    setWelcomeMessage(hub.spec.welcomeMessage || "");
-    setLocked(hub.spec.locked);
-    setNsfw(hub.spec.nsfw);
-    setAppealCooldownHours(hub.spec.appealCooldownHours ?? 168);
-  }, [hub]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      iconUrl: iconUrl.trim() || null,
-      bannerUrl: bannerUrl.trim() || null,
-      shortDescription: shortDescription.trim() || null,
-      description: description.trim() || null,
-      welcomeMessage: welcomeMessage.trim() || null,
-      locked,
-      nsfw,
-      appealCooldownHours: Number(appealCooldownHours) || 0,
+      visibility,
+      language: language.trim() || null,
+      region: region.trim() || null,
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-4xl">
-      {!canEdit && (
-        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm flex items-center gap-3">
-          <InfoCircleOutlined className="text-amber-400 text-base flex-shrink-0" />
-          <span>Your current Hub capabilities allow viewing these settings, but not modifying them.</span>
-        </div>
-      )}
-
-      {/* Profile & Branding Section */}
-      <div className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
+    <div className="flex flex-col gap-6 max-w-4xl w-full">
+      {/* Directory & Localization */}
+      <form onSubmit={handleSaveGeneral} className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
         <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
-          <PictureOutlined className="text-violet-400 text-base" />
-          <h3 className="text-base font-bold text-white font-['Sora'] m-0">Branding & Profile</h3>
+          <GlobalOutlined className="text-violet-400 text-base" />
+          <h3 className="text-base font-bold text-white font-['Sora'] m-0">Directory & Localization</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90">Icon URL</label>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-xs font-bold text-violet-300 flex-shrink-0">
-                {iconUrl ? (
-                  <img src={iconUrl} alt="Icon preview" className="w-full h-full object-cover" />
-                ) : (
-                  <span>{hub.metadata.name.slice(0, 2).toUpperCase()}</span>
-                )}
-              </div>
-              <input
-                type="url"
-                className="dashboard-input text-xs"
-                placeholder="https://example.com/icon.png"
-                value={iconUrl}
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold text-white/90">Directory Visibility</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: "PUBLIC" as const, title: "Public", desc: "Listed in the explore directory. Any server can request to join." },
+              { id: "UNLISTED" as const, title: "Unlisted", desc: "Hidden from search. Servers can only join via invite code." },
+              { id: "PRIVATE" as const, title: "Private", desc: "Invite-only. Hub managers must explicitly accept server requests." },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
                 disabled={!canEdit}
-                onChange={(e) => setIconUrl(e.target.value)}
-              />
-            </div>
-            <span className="text-[11px] text-white/40">Square image for directory cards & avatar lists.</span>
+                onClick={() => setVisibility(opt.id)}
+                className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all ${
+                  visibility === opt.id
+                    ? "bg-violet-500/15 border-violet-400 text-white shadow-sm"
+                    : "bg-white/[0.02] border-white/[0.08] text-white/70 hover:bg-white/[0.05]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <strong className="text-xs font-bold">{opt.title}</strong>
+                  {visibility === opt.id && <span className="w-2 h-2 rounded-full bg-violet-400" />}
+                </div>
+                <span className="text-[11px] text-white/50 leading-relaxed">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-white/90">Primary Language</label>
+            <input
+              type="text"
+              className="dashboard-input text-xs"
+              value={language}
+              disabled={!canEdit}
+              onChange={(e) => setLanguage(e.target.value)}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90">Banner URL</label>
+            <label className="text-xs font-bold text-white/90">Target Region</label>
             <input
-              type="url"
+              type="text"
               className="dashboard-input text-xs"
-              placeholder="https://example.com/banner.png"
-              value={bannerUrl}
+              value={region}
               disabled={!canEdit}
-              onChange={(e) => setBannerUrl(e.target.value)}
+              onChange={(e) => setRegion(e.target.value)}
             />
-            <span className="text-[11px] text-white/40">Wide background banner for explore pages.</span>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <label className="text-xs font-bold text-white/90">Short Tagline</label>
-            <span className="text-[11px] text-white/40">{shortDescription.length}/100</span>
+        {canEdit && (
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="dashboard-btn-primary px-5 py-2 text-xs font-bold"
+            >
+              <CheckOutlined />
+              <span>{saving ? "Saving..." : "Save Settings"}</span>
+            </button>
           </div>
-          <input
-            type="text"
-            className="dashboard-input text-xs"
-            placeholder="A short punchy summary for listings..."
-            maxLength={100}
-            value={shortDescription}
-            disabled={!canEdit}
-            onChange={(e) => setShortDescription(e.target.value)}
-          />
-        </div>
+        )}
+      </form>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <label className="text-xs font-bold text-white/90">Full Description</label>
-            <span className="text-[11px] text-white/40">{description.length}/1024</span>
+      {/* Ownership Transfer */}
+      {isOwner && onTransferOwnership && (
+        <div className="rounded-2xl p-6 border flex flex-col gap-4" style={dashboardGlassCardStyle}>
+          <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
+            <UserSwitchOutlined className="text-amber-400 text-base" />
+            <h3 className="text-base font-bold text-white font-['Sora'] m-0">Transfer Ownership</h3>
           </div>
-          <textarea
-            className="dashboard-textarea min-h-[90px]"
-            placeholder="Provide a detailed explanation of your Hub's purpose, topic, and community guidelines..."
-            maxLength={1024}
-            value={description}
-            disabled={!canEdit}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Community & Welcome Message Section */}
-      <div className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
-        <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
-          <MessageOutlined className="text-violet-400 text-base" />
-          <h3 className="text-base font-bold text-white font-['Sora'] m-0">Welcome Broadcast</h3>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <label className="text-xs font-bold text-white/90">Join Announcement Message</label>
-            <span className="text-[11px] text-white/40">{welcomeMessage.length}/2000</span>
-          </div>
-          <textarea
-            className="dashboard-textarea min-h-[110px]"
-            placeholder="Broadcasted automatically across all connected servers whenever a new community links to this Hub..."
-            maxLength={2000}
-            value={welcomeMessage}
-            disabled={!canEdit}
-            onChange={(e) => setWelcomeMessage(e.target.value)}
-          />
-          <span className="text-[11px] text-white/40">Markdown formatting is fully supported.</span>
-        </div>
-      </div>
-
-      {/* Safety & Moderation Controls */}
-      <div className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
-        <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
-          <SafetyCertificateOutlined className="text-violet-400 text-base" />
-          <h3 className="text-base font-bold text-white font-['Sora'] m-0">Safety & Moderation</h3>
-        </div>
-
-        <div className="dashboard-toggle-row">
-          <div>
-            <strong className="text-xs font-bold text-white">Lock Network Activity</strong>
-            <small className="text-[11px] text-white/50">Temporarily pause new cross-server messages while staff handles incidents.</small>
-          </div>
-          <DepthToggle checked={locked} disabled={!canEdit} onChange={setLocked} aria-label="Lock network activity" />
-        </div>
-
-        <div className="dashboard-toggle-row">
-          <div>
-            <strong className="text-xs font-bold text-white">Age-Restricted (NSFW)</strong>
-            <small className="text-[11px] text-white/50">Mark this Hub as intended strictly for 18+ adult communities.</small>
-          </div>
-          <DepthToggle checked={nsfw} disabled={!canEdit} onChange={setNsfw} aria-label="Age-restricted NSFW" />
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-          <div>
-            <strong className="text-xs font-bold text-white block">Appeal Cooldown Period</strong>
-            <small className="text-[11px] text-white/50 block">Waiting time required before banned users can submit a new sanction appeal.</small>
-          </div>
-          <div className="flex items-center gap-2">
+          <p className="text-xs text-white/60 m-0">
+            Transfer primary ownership and billing controls of this Hub to another Discord user. This action cannot be undone.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <input
-              type="number"
-              min={0}
-              max={8760}
-              className="dashboard-input w-24 text-xs font-bold text-center"
-              value={appealCooldownHours}
-              disabled={!canEdit}
-              onChange={(e) => setAppealCooldownHours(Number(e.target.value))}
+              type="text"
+              placeholder="Target Discord User ID..."
+              value={transferTarget}
+              onChange={(e) => setTransferTarget(e.target.value)}
+              className="dashboard-input text-xs flex-1"
             />
-            <span className="text-xs text-white/60 font-medium">hours ({Math.round(appealCooldownHours / 24)} days)</span>
+            <button
+              type="button"
+              disabled={!transferTarget.trim()}
+              onClick={() => {
+                if (confirm(`Transfer full ownership of "${hub.metadata.name}" to user ${transferTarget}?`)) {
+                  onTransferOwnership(transferTarget.trim());
+                }
+              }}
+              className="dashboard-btn-secondary px-4 py-2 text-xs font-bold text-amber-300 border-amber-500/30"
+            >
+              Transfer Ownership
+            </button>
           </div>
-        </div>
-      </div>
-
-      {/* Action Footer */}
-      {canEdit && (
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="dashboard-btn-primary px-6 py-2.5 text-xs font-bold shadow-md"
-          >
-            <CheckOutlined />
-            <span>{saving ? "Saving Changes..." : "Save Hub Configuration"}</span>
-          </button>
         </div>
       )}
-    </form>
+
+      {/* Danger Zone */}
+      {canEdit && (
+        <div
+          className="rounded-2xl p-6 border flex flex-col gap-4"
+          style={{
+            background: "rgba(239, 68, 68, 0.04)",
+            borderColor: "rgba(239, 68, 68, 0.2)",
+          }}
+        >
+          <div className="flex items-center gap-2.5 pb-3 border-b border-red-500/20">
+            <WarningOutlined className="text-red-400 text-base" />
+            <h3 className="text-base font-bold text-red-300 font-['Sora'] m-0">Danger Zone</h3>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 border-b border-red-500/10">
+            <div>
+              <strong className="text-xs font-bold text-white block">Purge Message History</strong>
+              <small className="text-[11px] text-white/50 block">Permanently delete stored relay message logs for this Hub.</small>
+            </div>
+            {onNukeMessages && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Are you sure you want to nuke all stored messages in this Hub?")) {
+                    onNukeMessages();
+                  }
+                }}
+                className="dashboard-btn-danger px-4 py-1.5 text-xs font-bold flex-shrink-0"
+              >
+                Purge History
+              </button>
+            )}
+          </div>
+
+          {isOwner && onDeleteHub && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+              <div>
+                <strong className="text-xs font-bold text-white block">Delete Hub Permanently</strong>
+                <small className="text-[11px] text-white/50 block">Destroys all server connections, custom rules, and audit logs.</small>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Permanently delete "${hub.metadata.name}"? This cannot be undone.`)) {
+                    onDeleteHub();
+                  }
+                }}
+                className="dashboard-btn-danger px-4 py-1.5 text-xs font-bold flex-shrink-0"
+              >
+                <DeleteOutlined />
+                <span>Delete Hub</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
