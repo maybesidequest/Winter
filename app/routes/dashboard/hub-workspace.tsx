@@ -21,14 +21,6 @@ import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
 import type { HubConnectionResource } from "~/resources/connection";
 
-const TABS = [
-  { id: "overview", label: "Overview", icon: ClusterOutlined },
-  { id: "connections", label: "Connected Bridges", icon: ApiOutlined },
-  { id: "safety", label: "Safety & Moderation", icon: SafetyCertificateOutlined },
-  { id: "modules", label: "Broadcast Modules", icon: AppstoreOutlined },
-  { id: "settings", label: "Hub Settings", icon: SettingOutlined },
-] as const;
-
 export default function HubWorkspace() {
   const params = useParams();
   const hubId = params.hubId || "";
@@ -148,13 +140,52 @@ export default function HubWorkspace() {
     const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
     patchMutation.mutate({ hubId, settings: updatedSettings });
   };
+  const viewTitles: Record<string, { title: string; desc: string }> = {
+    overview: {
+      title: "Overview",
+      desc: hub.spec.shortDescription || hub.spec.description || "Live presence, identity, and network stats.",
+    },
+    connections: {
+      title: "Connected Bridges",
+      desc: "Active Discord server bridges, linked channels, and message forwarding.",
+    },
+    safety: {
+      title: "Safety & Moderation",
+      desc: "Sanction appeal throttles, network activity lock, and audit streams.",
+    },
+    modules: {
+      title: "Broadcast Modules",
+      desc: "Configure packet relay features, media filters, and spam protection.",
+    },
+    rules: {
+      title: "Rules & Policies",
+      desc: "Automated content moderation rules, keyword filters, and broadcast limits.",
+    },
+    members: {
+      title: "Members & Staff",
+      desc: "Server representatives, moderators, and cross-server permissions.",
+    },
+    analytics: {
+      title: "Analytics",
+      desc: "Message velocity, cross-server engagement, and peak interaction hours.",
+    },
+    settings: {
+      title: "Hub Settings",
+      desc: "Directory visibility, localization, ownership transfer, and danger zone.",
+    },
+  };
+
+  const currentView = viewTitles[activeTab] || {
+    title: `${activeTab[0].toUpperCase()}${activeTab.slice(1)}`,
+    desc: `Manage ${activeTab} for ${hub.metadata.name}.`,
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <PageHeader
         eyebrow="Hub Control Plane"
-        title={hub.metadata.name}
-        description={hub.spec.shortDescription || hub.spec.description || "Manage identity, linked bridges, and moderation."}
+        title={`${hub.metadata.name} · ${currentView.title}`}
+        description={currentView.desc}
         actions={
           <div className="flex items-center gap-3">
             <Link to="/dashboard/hubs" className="dashboard-btn-secondary px-4 py-2 text-xs font-bold">
@@ -164,21 +195,6 @@ export default function HubWorkspace() {
           </div>
         }
       />
-
-      {/* Workspace Tabs Navigation */}
-      <div className="dashboard-tabs">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <Link
-            key={id}
-            to={`/dashboard/hubs/${hubId}/${id}`}
-            aria-current={activeTab === id ? "page" : undefined}
-            className="flex items-center gap-2"
-          >
-            <Icon />
-            <span>{label}</span>
-          </Link>
-        ))}
-      </div>
 
       {/* Tab Content Rendering */}
       {activeTab === "overview" && (

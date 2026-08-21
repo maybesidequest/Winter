@@ -5,9 +5,9 @@ import {
   GlobalOutlined,
   PictureOutlined,
   CheckOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { MetricCard } from "~/components/dashboard/MetricCard";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 
@@ -47,35 +47,26 @@ export function HubOverview({ hub, canEdit = false, saving = false, onSave }: Hu
     <div className="flex flex-col gap-6 max-w-5xl w-full">
       {/* Network Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl p-5 border flex items-center justify-between" style={dashboardGlassCardStyle}>
-          <div>
-            <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Connected Bridges</span>
-            <strong className="text-2xl font-bold text-white font-['Sora'] block mt-1">{hub.status.connectionCount}</strong>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-lg text-violet-300">
-            <ClusterOutlined />
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-5 border flex items-center justify-between" style={dashboardGlassCardStyle}>
-          <div>
-            <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Weekly Messages</span>
-            <strong className="text-2xl font-bold text-white font-['Sora'] block mt-1">{hub.status.weeklyMessageCount}</strong>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-lg text-sky-300">
-            <MessageOutlined />
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-5 border flex items-center justify-between" style={dashboardGlassCardStyle}>
-          <div>
-            <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Directory Visibility</span>
-            <strong className="text-2xl font-bold text-white font-['Sora'] block mt-1 capitalize">{hub.spec.visibility.toLowerCase()}</strong>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-lg text-emerald-300">
-            <GlobalOutlined />
-          </div>
-        </div>
+        <MetricCard
+          title="Connected Bridges"
+          value={hub.status.connectionCount}
+          icon={<ClusterOutlined className="text-violet-300 text-lg" />}
+          iconBg="rgba(129, 117, 238, 0.18)"
+        />
+        <MetricCard
+          title="Weekly Messages"
+          value={hub.status.weeklyMessageCount}
+          icon={<MessageOutlined className="text-sky-300 text-lg" />}
+          iconBg="rgba(143, 211, 255, 0.18)"
+          contourClass="dashboard-card-contours--sky"
+        />
+        <MetricCard
+          title="Directory Visibility"
+          value={hub.spec.visibility.charAt(0) + hub.spec.visibility.slice(1).toLowerCase()}
+          icon={<GlobalOutlined className="text-emerald-300 text-lg" />}
+          iconBg="rgba(126, 212, 147, 0.18)"
+          contourClass="dashboard-card-contours--sage"
+        />
       </div>
 
       {/* Hero Visual Presentation Card */}
