@@ -1,125 +1,101 @@
 import type { ReactNode } from "react";
-import { useParams, Link } from "react-router";
+import { useLoaderData, useParams, Link } from "react-router";
+import type { Route } from "./+types/server-workspace";
 import {
   CloudServerOutlined,
-  RobotOutlined,
-  NumberOutlined,
-  FileTextOutlined,
-  SettingOutlined,
+  ThunderboltOutlined,
+  ApartmentOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import { mockServers } from "~/data/dashboard-mock";
 import { PageHeader } from "~/components/dashboard/PageHeader";
+import { requireUser } from "~/services/auth.server";
+import { serverService } from "~/services/server.server";
+import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
+import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCallSettingsCard";
+import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
+import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
+import type {
+  DiscordChannelResource,
+  ServerBlockResource,
+  ServerBridgeResource,
+  ServerResource,
+} from "~/resources/server";
+
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const user = await requireUser(request);
+  const serverId = params.serverId;
+  if (!serverId) {
+    throw new Response("Server not found", { status: 404 });
+  }
+
+  const server = await serverService.get(user.id, serverId);
+  const [channels, bridges, blocks] = await Promise.all([
+    server.status.botInstalled ? serverService.channels(user.id, serverId) : Promise.resolve([]),
+    server.status.botInstalled ? serverService.bridges(user.id, serverId) : Promise.resolve([]),
+    server.status.botInstalled ? serverService.blocklist(user.id, serverId) : Promise.resolve([]),
+  ]);
+
+  return {
+    server,
+    channels,
+    bridges,
+    blocks,
+  };
+}
 
 export default function ServerWorkspace() {
+  const { server, channels, bridges, blocks } = useLoaderData<typeof loader>();
   const params = useParams();
-  const serverId = params.serverId;
-  const view = params.view || params.tab || "overview";
-
-  const server = mockServers.find((s) => s.id === serverId) || {
-    id: serverId || "srv-1",
-    name: "Discord Server",
-    initials: "DS",
-    iconType: "guild" as const,
-    color: "#2a7198",
-    memberCount: 1200,
-    health: "healthy" as const,
-    latency: "22ms",
-    channels: 4,
-    botInstalled: true,
-    callCount: 25,
-    region: "US-East",
-    uptime: "99.9%",
-  };
+  const view = params.view || "overview";
 
   const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
     overview: {
       title: "Server Overview",
-      desc: "Connected channels, bot connection status, and call usage statistics.",
+      desc: `Status, bridge summary, and call statistics for ${server.metadata.name}.`,
       icon: <CloudServerOutlined />,
     },
-    "bot-config": {
-      title: "Bot Configuration",
-      desc: "Command prefixes, automated webhook dispatch, and channel routing policies.",
-      icon: <RobotOutlined />,
+    calls: {
+      title: "Calls & Userphone",
+      desc: `Allowed matchmaking channels and call privacy/behavior toggles for ${server.metadata.name}.`,
+      icon: <ThunderboltOutlined />,
     },
-    channels: {
-      title: "Channel Management",
-      desc: "Assign specific Discord text channels to Hub bridges and Call lobbies.",
-      icon: <NumberOutlined />,
+    bridges: {
+      title: "Hub Bridges",
+      desc: `Active Discord channel bridges connected to cross-server Hubs in ${server.metadata.name}.`,
+      icon: <ApartmentOutlined />,
     },
-    logs: {
-      title: "Server Audit Logs",
-      desc: "Recent message relays, call invitations, and moderation action logs.",
-      icon: <FileTextOutlined />,
-    },
-    settings: {
-      title: "Server Settings",
-      desc: "NSFW filter toggles, match pings, server visibility, and bot permissions.",
-      icon: <SettingOutlined />,
+    blocklist: {
+      title: "Server Blocklist",
+      desc: `Users and servers blocked from interacting with ${server.metadata.name} in Calls and Hubs.`,
+      icon: <SafetyCertificateOutlined />,
     },
   };
 
-  const currentView = viewTitles[view] || {
-    title: `${view[0].toUpperCase()}${view.slice(1)}`,
-    desc: `Manage ${view} for ${server.name}.`,
-    icon: <CloudServerOutlined />,
-  };
+  const currentView = viewTitles[view] || viewTitles.overview;
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <PageHeader
         eyebrow="Server Controls"
-        title={`${server.name} · ${currentView.title}`}
-        description={`Manage InterChat bridge settings and text call routes for ${server.name}.`}
+        title={`${server.metadata.name} · ${currentView.title}`}
+        description={currentView.desc}
         actions={
           <div className="flex items-center gap-3">
             <Link
-              to="/dashboard"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+              to="/dashboard/servers"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
             >
-              Dashboard
+              All Servers
             </Link>
           </div>
         }
       />
 
-      <div
-        className="relative overflow-hidden p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
-        style={{
-          background: "rgba(21, 20, 36, 0.85)",
-          borderColor: "rgba(255, 255, 255, 0.09)",
-          boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
-        }}
-      >
-        <div className="dashboard-card-contours--sky pointer-events-none" aria-hidden="true" />
-
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-1 border border-white/10 text-white"
-            style={{ backgroundColor: server.color }}
-          >
-            {currentView.icon}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#2a7198]/20 text-sky-300 border border-[#2a7198]/40">
-              {server.name}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
-              {server.channels} Active Channels · {server.latency} Latency
-            </span>
-          </div>
-
-          <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
-          <p className="text-sm text-white/60 max-w-md leading-relaxed">
-            {currentView.desc}
-          </p>
-
-          <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
-            Tab view configured according to Discord <code className="text-sky-400">/server manage</code> specifications.
-          </div>
-        </div>
-      </div>
+      {view === "overview" && <ServerOverviewCard server={server} />}
+      {view === "calls" && <ServerCallSettingsCard server={server} channels={channels} />}
+      {view === "bridges" && <ServerBridgesCard server={server} bridges={bridges} />}
+      {view === "blocklist" && <ServerBlocklistCard server={server} blocks={blocks} />}
     </div>
   );
 }
+

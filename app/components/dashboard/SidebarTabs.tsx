@@ -117,13 +117,12 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
 
   // If a specific Server is selected
   if (context.type === "server") {
-    const server = mockServers.find((s) => s.id === context.id) || mockServers[0];
+    const serverId = context.id;
     const serverItems = [
       { path: "overview", label: "Overview", icon: <CloudServerOutlined /> },
-      { path: "bot-config", label: "Bot Configuration", icon: <RobotOutlined /> },
-      { path: "channels", label: "Channels", icon: <NumberOutlined /> },
-      { path: "logs", label: "Audit Logs", icon: <FileTextOutlined /> },
-      { path: "settings", label: "Server Settings", icon: <SettingOutlined /> },
+      { path: "calls", label: "Calls & Userphone", icon: <ThunderboltOutlined /> },
+      { path: "bridges", label: "Hub Bridges", icon: <ApartmentOutlined /> },
+      { path: "blocklist", label: "Blocklist", icon: <SafetyCertificateOutlined /> },
     ];
 
     return (
@@ -161,7 +160,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               {serverItems.map((item) => (
                 <NavLink
                   key={item.path}
-                  to={`/dashboard/servers/${server.id}/${item.path}`}
+                  to={`/dashboard/servers/${serverId}/${item.path}`}
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[40px] rounded-xl text-[14px] font-semibold transition-all duration-150 ${
