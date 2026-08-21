@@ -15,6 +15,7 @@ interface MiddleSidebarProps {
   instanceType: "servers" | "hubs";
   servers?: ServerResource[];
   hubs?: HubResource[];
+  isLoading?: boolean;
   onToggleInstanceType: (type: "servers" | "hubs") => void;
   onOpenSettings: () => void;
   onNavigate?: () => void;
@@ -24,10 +25,12 @@ export function MiddleSidebar({
   instanceType,
   servers = [],
   hubs = [],
+  isLoading = false,
   onToggleInstanceType,
   onOpenSettings,
   onNavigate,
 }: MiddleSidebarProps) {
+
   const location = useLocation();
   const params = useParams();
   const navigate = useNavigate();
@@ -108,8 +111,15 @@ export function MiddleSidebar({
         <SidebarToggle value={instanceType} onChange={onToggleInstanceType} />
 
         {/* Collapsible Tabs */}
-        <SidebarTabs context={context} servers={servers} hubs={hubs} onNavigate={onNavigate} />
+        <SidebarTabs
+          context={context}
+          servers={servers}
+          hubs={hubs}
+          isLoading={isLoading}
+          onNavigate={onNavigate}
+        />
       </div>
+
 
 
       {/* Bottom User Bar */}

@@ -14,6 +14,7 @@ interface IconRailProps {
   instanceType: "servers" | "hubs";
   servers?: ServerResource[];
   hubs?: HubResource[];
+  isLoading?: boolean;
   onOpenCreate?: () => void;
 }
 
@@ -21,6 +22,7 @@ export function IconRail({
   instanceType,
   servers = [],
   hubs = [],
+  isLoading = false,
   onOpenCreate,
 }: IconRailProps) {
   const location = useLocation();
@@ -121,29 +123,41 @@ export function IconRail({
 
       {/* 2. Middle Scrollable Instance List */}
       <div className="flex-1 w-full overflow-y-auto overflow-x-hidden dark-scrollbar flex flex-col items-center py-1 gap-1">
-        {instances.map((inst) => {
-          const isHub = instanceType === "hubs";
-          const itemPath = isHub
-            ? `/dashboard/hubs/${inst.id}`
-            : `/dashboard/servers/${inst.id}`;
-          const isInstanceActive = location.pathname.startsWith(itemPath);
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-2 py-1 w-full animate-pulse">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="w-12 h-12 rounded-3xl bg-white/[0.05] border border-white/[0.06]"
+              />
+            ))}
+          </div>
+        ) : (
+          instances.map((inst) => {
+            const isHub = instanceType === "hubs";
+            const itemPath = isHub
+              ? `/dashboard/hubs/${inst.id}`
+              : `/dashboard/servers/${inst.id}`;
+            const isInstanceActive = location.pathname.startsWith(itemPath);
 
-          return (
-            <InstanceIcon
-              key={inst.id}
-              id={inst.id}
-              name={inst.name}
-              initials={inst.initials}
-              color={inst.color}
-              memberCount={inst.memberCount}
-              type={isHub ? "hub" : "server"}
-              isActive={isInstanceActive}
-              onClick={() => {
-                navigate(isHub ? `${itemPath}/overview` : `${itemPath}/overview`);
-              }}
-            />
-          );
-        })}
+            return (
+              <InstanceIcon
+                key={inst.id}
+                id={inst.id}
+                name={inst.name}
+                initials={inst.initials}
+                color={inst.color}
+                iconUrl={inst.iconUrl}
+                memberCount={inst.memberCount}
+                type={isHub ? "hub" : "server"}
+                isActive={isInstanceActive}
+                onClick={() => {
+                  navigate(isHub ? `${itemPath}/overview` : `${itemPath}/overview`);
+                }}
+              />
+            );
+          })
+        )}
       </div>
 
       {/* Divider */}

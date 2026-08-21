@@ -15,6 +15,7 @@ interface SidebarTabsProps {
   context: SidebarContext;
   servers?: ServerResource[];
   hubs?: HubResource[];
+  isLoading?: boolean;
   onNavigate?: () => void;
 }
 
@@ -22,6 +23,7 @@ export function SidebarTabs({
   context,
   servers = [],
   hubs = [],
+  isLoading = false,
   onNavigate,
 }: SidebarTabsProps) {
   if (context.type === "hub") {
@@ -32,5 +34,13 @@ export function SidebarTabs({
     return <ServerSidebarTabs serverId={context.id} server={context.server} onNavigate={onNavigate} />;
   }
 
-  return <GeneralSidebarTabs servers={servers} hubs={hubs} onNavigate={onNavigate} />;
+  return (
+    <GeneralSidebarTabs
+      servers={servers}
+      hubs={hubs}
+      isLoading={isLoading}
+      onNavigate={onNavigate}
+    />
+  );
 }
+

@@ -2,35 +2,35 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useLoaderData } from "react-router";
 import type { Route } from "./+types/layout";
 import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import { orpc } from "~/lib/orpc";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
 import { requireUser } from "~/services/auth.server";
-import { serverService } from "~/services/server.server";
-import { hubService } from "~/services/hub.server";
 import "~/styles/dashboard.css";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await requireUser(request);
-  const [servers, hubs] = await Promise.all([
-    serverService.list(user.id).catch((err) => {
-      console.error("Failed to load user servers:", err);
-      return [];
-    }),
-    hubService.getUserHubs(user.id).catch((err) => {
-      console.error("Failed to load user hubs:", err);
-      return [];
-    }),
-  ]);
-  return { user, servers, hubs };
+  return { user };
 }
 
 export default function DashboardLayout() {
-  const { user, servers, hubs } = useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
   const location = useLocation();
   const [instanceType, setInstanceType] = useState<"servers" | "hubs">("servers");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { data: servers = [], isLoading: serversLoading } = useQuery(
+    orpc.server.list.queryOptions({ staleTime: 60_000 })
+  );
+
+  const { data: hubs = [], isLoading: hubsLoading } = useQuery(
+    orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 })
+  );
+
+  const isLoading = instanceType === "servers" ? serversLoading : hubsLoading;
 
   // Auto-switch instance toggle based on current route
   useEffect(() => {
@@ -73,12 +73,14 @@ export default function DashboardLayout() {
           instanceType={instanceType}
           servers={servers}
           hubs={hubs}
+          isLoading={isLoading}
           onOpenCreate={() => setIsSettingsOpen(true)}
         />
         <MiddleSidebar
           instanceType={instanceType}
           servers={servers}
           hubs={hubs}
+          isLoading={isLoading}
           onToggleInstanceType={setInstanceType}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
@@ -99,6 +101,7 @@ export default function DashboardLayout() {
               instanceType={instanceType}
               servers={servers}
               hubs={hubs}
+              isLoading={isLoading}
               onOpenCreate={() => {
                 setMobileMenuOpen(false);
                 setIsSettingsOpen(true);
@@ -109,6 +112,7 @@ export default function DashboardLayout() {
                 instanceType={instanceType}
                 servers={servers}
                 hubs={hubs}
+                isLoading={isLoading}
                 onToggleInstanceType={setInstanceType}
                 onOpenSettings={() => {
                   setMobileMenuOpen(false);
@@ -128,7 +132,7 @@ export default function DashboardLayout() {
           background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
         }}
       >
-        <Outlet context={{ user, servers, hubs }} />
+        <Outlet context={{ user, servers, hubs, isLoading }} />
       </main>
 
       {/* Global Settings Modal */}
@@ -139,4 +143,5 @@ export default function DashboardLayout() {
     </div>
   );
 }
+
 
