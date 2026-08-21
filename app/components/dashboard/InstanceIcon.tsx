@@ -57,9 +57,10 @@ export function InstanceIcon({
         }
         styles={{
           root: { pointerEvents: "none" },
-          body: {
+          container: {
             background: "rgba(17, 18, 27, 0.96)",
             backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             border: "1px solid rgba(255, 255, 255, 0.14)",
             borderRadius: "8px",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
