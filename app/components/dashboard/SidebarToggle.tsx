@@ -24,7 +24,7 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
         }`}
         style={{
           background: value === "servers" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "servers" ? "0 2px 0 0 rgba(0, 0, 0, 0.4)" : undefined,
+          boxShadow: value === "servers" ? "0 2px 0 0 rgba(10, 8, 23, 0.6)" : undefined,
         }}
       >
         <CloudServerOutlined className="text-sm" />
@@ -41,7 +41,7 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
         }`}
         style={{
           background: value === "hubs" ? "#5b4ccb" : "transparent",
-          boxShadow: value === "hubs" ? "0 2px 0 0 rgba(0, 0, 0, 0.4)" : undefined,
+          boxShadow: value === "hubs" ? "0 2px 0 0 rgba(10, 8, 23, 0.6)" : undefined,
         }}
       >
         <ClusterOutlined className="text-sm" />

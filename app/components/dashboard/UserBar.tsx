@@ -18,7 +18,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
       style={{
         background: "rgba(17, 18, 27, 0.75)",
         borderColor: "rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 3px 0 0 rgba(0, 0, 0, 0.35)",
+        boxShadow: "0 3px 0 0 rgba(10, 8, 23, 0.7)",
       }}
     >
       {/* User Avatar with Initial & Name */}
@@ -44,7 +44,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
           aria-label="Notifications"
           title="Notifications"
           onClick={onOpenSettings}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(0,0,0,0.35)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
         >
           <BellOutlined className="text-xs" />
         </button>
@@ -53,7 +53,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
           type="button"
           aria-label="Documentation"
           title="Documentation"
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(0,0,0,0.35)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
           onClick={() => window.open("https://interchat.gg/docs", "_blank")}
         >
           <ReadOutlined className="text-xs" />
@@ -64,7 +64,7 @@ export function UserBar({ onOpenSettings }: UserBarProps) {
           onClick={onOpenSettings}
           aria-label="User Settings"
           title="Settings"
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(0,0,0,0.35)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] shadow-[0_2px_0_0_rgba(10,8,23,0.7)] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
         >
           <SettingOutlined className="text-xs" />
         </button>

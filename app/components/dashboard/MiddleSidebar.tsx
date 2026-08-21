@@ -80,7 +80,7 @@ export function MiddleSidebar({
           className="flex items-center justify-between p-2.5 px-3 rounded-xl border transition-colors duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer"
           style={{
             borderColor: "rgba(255, 255, 255, 0.08)",
-            boxShadow: "0 2px 0 0 rgba(0, 0, 0, 0.25)",
+            boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
           }}
         >
           <div className="flex items-center gap-2.5 min-w-0">

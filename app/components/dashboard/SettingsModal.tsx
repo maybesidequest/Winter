@@ -86,7 +86,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 style={{
                   background: "rgba(21, 20, 36, 0.85)",
                   borderColor: "rgba(255, 255, 255, 0.1)",
-                  boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+                  boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
                 }}
               >
                 <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
@@ -119,7 +119,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 style={{
                   background: "rgba(17, 18, 27, 0.5)",
                   borderColor: "rgba(255, 255, 255, 0.08)",
-                  boxShadow: "0 3px 0 0 rgba(0, 0, 0, 0.35)",
+                  boxShadow: "0 3px 0 0 rgba(10, 8, 23, 0.65)",
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   style={{
                     background: "rgba(21, 20, 36, 0.6)",
                     borderColor: "rgba(255, 255, 255, 0.08)",
-                    boxShadow: "0 3px 0 0 rgba(0, 0, 0, 0.35)",
+                    boxShadow: "0 3px 0 0 rgba(10, 8, 23, 0.65)",
                   }}
                 >
                   <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
@@ -162,7 +162,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   style={{
                     background: "rgba(21, 20, 36, 0.6)",
                     borderColor: "rgba(255, 255, 255, 0.08)",
-                    boxShadow: "0 3px 0 0 rgba(0, 0, 0, 0.35)",
+                    boxShadow: "0 3px 0 0 rgba(10, 8, 23, 0.65)",
                   }}
                 >
                   <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
@@ -200,7 +200,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       style={{
                         background: "rgba(21, 20, 36, 0.7)",
                         borderColor: "rgba(255, 255, 255, 0.08)",
-                        boxShadow: "0 2px 0 0 rgba(0, 0, 0, 0.3)",
+                        boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.5)",
                       }}
                     >
                       <div className="flex items-center gap-3">

@@ -23,7 +23,7 @@ export function MetricCard({
       style={{
         background: "rgba(21, 20, 36, 0.85)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+        boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
       }}
     >
       {/* Subtle Contour Effect from Homepage (Atlas Contours) */}

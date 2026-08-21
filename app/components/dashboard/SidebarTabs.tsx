@@ -67,7 +67,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
               isActive
-                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                 : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
             }`
           }
@@ -99,7 +99,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                         : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                     }`
                   }
@@ -135,7 +135,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
               isActive
-                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                 : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
             }`
           }
@@ -166,7 +166,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                       isActive
-                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                        ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                         : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                     }`
                   }
@@ -193,7 +193,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
         className={({ isActive }) =>
           `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
             isActive
-              ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+              ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
               : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
           }`
         }
@@ -223,7 +223,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -240,7 +240,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -275,7 +275,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -292,7 +292,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -328,7 +328,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -345,7 +345,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -380,7 +380,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }
@@ -397,7 +397,7 @@ export function SidebarTabs({ context, onNavigate }: SidebarTabsProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 min-h-[38px] rounded-xl text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(0,0,0,0.35)]"
+                    ? "bg-white/[0.08] text-white font-bold border border-white/[0.1] shadow-[0_2px_0_0_rgba(10,8,23,0.7)]"
                     : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
                 }`
               }

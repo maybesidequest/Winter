@@ -13,7 +13,7 @@ export const dashboardGlassCardStyle: CSSProperties = {
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
   border: "1px solid rgba(255,255,255,0.08)",
-  boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+  boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
 };
 
 const dashboardGlassCardStyles: NonNullable<CardProps["styles"]> = {

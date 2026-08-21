@@ -25,7 +25,7 @@
   --dash-muted: #aaa9b4;
   --dash-border: rgba(255, 255, 255, 0.12);
   --dash-violet-soft: #302b5e;
-  --dash-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.45);
+  --dash-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.75);
 }
 
 .dashboard-root {

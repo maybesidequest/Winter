@@ -76,7 +76,7 @@ export function DashboardHome() {
         style={{
           background: "rgba(17, 18, 27, 0.6)",
           borderColor: "rgba(255, 255, 255, 0.08)",
-          boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+          boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
         }}
       >
         <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
@@ -124,7 +124,7 @@ export function DashboardHome() {
           style={{
             background: "rgba(21, 20, 36, 0.85)",
             borderColor: "rgba(255, 255, 255, 0.09)",
-            boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+            boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >
           <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
@@ -145,7 +145,7 @@ export function DashboardHome() {
                   style={{
                     background: "rgba(17, 18, 27, 0.5)",
                     borderColor: "rgba(255, 255, 255, 0.06)",
-                    boxShadow: "0 2px 0 0 rgba(0, 0, 0, 0.3)",
+                    boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
                   }}
                 >
                   <div
@@ -190,7 +190,7 @@ export function DashboardHome() {
           style={{
             background: "rgba(21, 20, 36, 0.85)",
             borderColor: "rgba(255, 255, 255, 0.09)",
-            boxShadow: "0 4px 0 0 rgba(0, 0, 0, 0.45)",
+            boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >
           <div className="dashboard-card-contours--sky pointer-events-none" aria-hidden="true" />
@@ -214,7 +214,7 @@ export function DashboardHome() {
                     style={{
                       background: "rgba(17, 18, 27, 0.5)",
                       borderColor: "rgba(255, 255, 255, 0.06)",
-                      boxShadow: "0 2px 0 0 rgba(0, 0, 0, 0.3)",
+                      boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
