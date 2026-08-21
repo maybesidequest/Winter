@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useOutletContext } from "react-router";
 import {
   PlusOutlined,
   ArrowRightOutlined,
@@ -15,15 +15,23 @@ import {
 import {
   mockDashboardMetrics,
   mockRecentActivities,
-  mockServers,
 } from "~/data/dashboard-mock";
 import { MetricCard } from "./MetricCard";
 import { PageHeader } from "./PageHeader";
+import type { ServerResource } from "~/resources/server";
+import type { HubResource } from "~/resources/hub";
 
 export function DashboardHome() {
-  const metrics = mockDashboardMetrics;
+  const context = useOutletContext<{ servers?: ServerResource[]; hubs?: HubResource[] }>();
+  const servers = context?.servers || [];
+  const hubs = context?.hubs || [];
+  const metrics = {
+    ...mockDashboardMetrics,
+    activeHubs: hubs.length,
+    connectedServers: servers.length,
+  };
   const activities = mockRecentActivities;
-  const servers = mockServers.slice(0, 5);
+
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -184,7 +192,7 @@ export function DashboardHome() {
           </div>
         </div>
 
-        {/* Right: Server Health (5 cols) */}
+        {/* Right: Server Health / Manageable Servers (5 cols) */}
         <div
           className="relative overflow-hidden lg:col-span-5 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
@@ -197,65 +205,74 @@ export function DashboardHome() {
           <div className="relative z-10">
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
               <div className="flex items-center gap-2.5">
-                <CloudServerOutlined className="text-sm text-[#7ed493]" />
-                <h3 className="text-base font-bold text-white font-['Sora']">Server Health</h3>
+                <CloudServerOutlined className="text-sm text-sky-400" />
+                <h3 className="text-base font-bold text-white font-['Sora']">Connected Servers</h3>
               </div>
-              <span className="text-xs font-semibold text-[#7ed493]">All Systems Operational</span>
+              <span className="text-xs font-semibold text-sky-300">
+                {servers.length} Manageable
+              </span>
             </div>
 
             <div className="flex flex-col gap-2.5">
-              {servers.map((srv) => {
-                const isWarning = srv.health === "warning";
-
-                return (
-                  <div
-                    key={srv.id}
-                    className="p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors duration-150 hover:bg-white/[0.02]"
-                    style={{
-                      background: "rgba(17, 18, 27, 0.5)",
-                      borderColor: "rgba(255, 255, 255, 0.06)",
-                      boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
-                    }}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 font-['Sora']"
-                        style={{ backgroundColor: srv.color }}
-                      >
-                        {srv.initials}
-                      </div>
-                      <div className="min-w-0">
-                        <strong className="text-xs font-bold text-white truncate block">
-                          {srv.name}
-                        </strong>
-                        <span className="text-[11px] text-white/50 block">
-                          {srv.channels} channels · {srv.region}
-                        </span>
-                      </div>
+              {servers.slice(0, 5).map((srv) => (
+                <Link
+                  key={srv.metadata.id}
+                  to={`/dashboard/servers/${srv.metadata.id}/overview`}
+                  className="p-3 rounded-xl border flex items-center justify-between gap-3 transition-all duration-150 hover:bg-white/[0.05] group"
+                  style={{
+                    background: "rgba(17, 18, 27, 0.5)",
+                    borderColor: "rgba(255, 255, 255, 0.06)",
+                    boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
+                  }}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-sky-900/40 border border-sky-400/20 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 font-['Sora']">
+                      {srv.metadata.iconUrl ? (
+                        <img src={srv.metadata.iconUrl} alt={srv.metadata.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{srv.metadata.name.slice(0, 2).toUpperCase()}</span>
+                      )}
                     </div>
-
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-xs font-mono text-white/50">{srv.latency}</span>
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full ${
-                          isWarning ? "bg-[#ff8c73]" : "bg-[#7ed493]"
-                        }`}
-                        title={isWarning ? "Elevated latency" : "Healthy"}
-                      />
+                    <div className="min-w-0">
+                      <strong className="text-xs font-bold text-white group-hover:text-sky-300 transition-colors truncate block">
+                        {srv.metadata.name}
+                      </strong>
+                      <span className="text-[11px] text-white/50 block">
+                        {srv.status.callCount} calls · {srv.status.botInstalled ? "Installed" : "Needs Install"}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        srv.status.botInstalled
+                          ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
+                          : "bg-amber-500/10 text-amber-300 border-amber-500/20"
+                      }`}
+                    >
+                      {srv.status.botInstalled ? "Ready" : "Setup"}
+                    </span>
+                    <ArrowRightOutlined className="text-[10px] text-white/30 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Link>
+              ))}
+
+              {servers.length === 0 && (
+                <div className="py-8 text-center text-xs text-white/40">
+                  No manageable Discord servers found. Sign into Discord with Manage Server permissions.
+                </div>
+              )}
             </div>
           </div>
 
           <div className="relative z-10 mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between">
-            <span className="text-xs text-white/40">Average latency: 24ms</span>
+            <span className="text-xs text-white/40">Realtime OAuth synced</span>
             <Link
-              to="/dashboard/servers/srv-1/overview"
-              className="text-xs font-bold text-violet-400 hover:text-violet-300 transition-colors"
+              to="/dashboard/servers"
+              className="text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"
             >
-              Manage servers →
+              All servers ({servers.length}) →
             </Link>
           </div>
         </div>
@@ -263,3 +280,4 @@ export function DashboardHome() {
     </div>
   );
 }
+
