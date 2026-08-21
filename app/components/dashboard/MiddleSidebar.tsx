@@ -1,10 +1,4 @@
-import { useLocation, useParams, useNavigate, Link } from "react-router";
-import {
-  DownOutlined,
-  ClusterOutlined,
-  CloudServerOutlined,
-  AppstoreOutlined,
-} from "@ant-design/icons";
+import { useLocation, useParams, Link } from "react-router";
 import type { ServerResource } from "~/resources/server";
 import type { HubResource } from "~/resources/hub";
 import type { User } from "~/services/auth.server";
@@ -33,53 +27,20 @@ export function MiddleSidebar({
   onOpenSettings,
   onNavigate,
 }: MiddleSidebarProps) {
-
   const location = useLocation();
   const params = useParams();
-  const navigate = useNavigate();
 
   let context: SidebarContext = { type: "dashboard" };
   let currentTitle = "InterChat Workspace";
-  let currentIcon = <AppstoreOutlined className="text-sm text-violet-400" />;
 
   if (location.pathname.startsWith("/dashboard/hubs") && params.hubId) {
     const hub = hubs.find((h) => h.metadata.id === params.hubId);
     context = { type: "hub", id: params.hubId, hub };
-    if (hub) {
-      currentTitle = hub.metadata.name;
-      currentIcon = hub.spec.iconUrl ? (
-        <img
-          src={hub.spec.iconUrl}
-          alt={hub.metadata.name}
-          className="w-full h-full object-cover rounded-md"
-        />
-      ) : (
-        <span className="text-xs font-bold text-violet-400 font-['Sora']">
-          {hub.metadata.name.slice(0, 2).toUpperCase()}
-        </span>
-      );
-    } else {
-      currentTitle = "Hub Workspace";
-    }
+    currentTitle = hub ? hub.metadata.name : "Hub Workspace";
   } else if (location.pathname.startsWith("/dashboard/servers") && params.serverId) {
     const server = servers.find((s) => s.metadata.id === params.serverId);
     context = { type: "server", id: params.serverId, server };
-    if (server) {
-      currentTitle = server.metadata.name;
-      currentIcon = server.metadata.iconUrl ? (
-        <img
-          src={server.metadata.iconUrl}
-          alt={server.metadata.name}
-          className="w-full h-full object-cover rounded-md"
-        />
-      ) : (
-        <span className="text-xs font-bold text-sky-400 font-['Sora']">
-          {server.metadata.name.slice(0, 2).toUpperCase()}
-        </span>
-      );
-    } else {
-      currentTitle = "Server Workspace";
-    }
+    currentTitle = server ? server.metadata.name : "Server Workspace";
   } else if (location.pathname.startsWith("/dashboard/calls")) {
     context = { type: "calls" };
     currentTitle = "Global Calls";
@@ -89,6 +50,13 @@ export function MiddleSidebar({
   }
 
 
+
+  const isHub = context.type === "hub";
+  const isServer = context.type === "server";
+  const isEntityScoped = isHub || isServer;
+  const bannerUrl = context.type === "hub" ? context.hub?.spec.bannerUrl : undefined;
+  const isVerified = context.type === "hub" ? (context.hub?.status.verified ?? false) : false;
+  const isPartnered = context.type === "hub" ? (context.hub?.status.partnered ?? false) : false;
 
   return (
     <aside
@@ -118,26 +86,64 @@ export function MiddleSidebar({
           </Link>
         </div>
 
-        {/* Workspace Selector Dropdown Pill (Creem style) */}
-        <button
-          type="button"
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center justify-between p-2.5 px-3 min-h-[44px] rounded-xl border transition-all duration-150 text-left bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 active:translate-y-[1px] cursor-pointer"
-          style={{
-            borderColor: "rgba(255, 255, 255, 0.08)",
-            boxShadow: "0 3px 0 0 #090814, 0 2px 4px 0 rgba(0, 0, 0, 0.4)",
-          }}
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-              {currentIcon}
+        {/* Hub / Server Banner Card (Revolt / Discord style) */}
+        {isEntityScoped && (
+          <div
+            className="relative overflow-hidden rounded-xl w-full h-[76px] flex flex-col justify-end p-2.5 px-3 select-none flex-shrink-0"
+            style={{
+              background: bannerUrl
+                ? `url(${bannerUrl}) center/cover no-repeat`
+                : isHub
+                ? "linear-gradient(135deg, #201e35 0%, #151424 100%)"
+                : "linear-gradient(135deg, #182333 0%, #151424 100%)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: "0 4px 0 0 #121219, 0 4px 10px 0 rgba(0, 0, 0, 0.45)",
+            }}
+          >
+            {/* Wavy / Contour Pattern Placeholder when no custom banner */}
+            {!bannerUrl && (
+              <div
+                className={`dashboard-card-contours ${
+                  isHub ? "" : "dashboard-card-contours--sky"
+                } pointer-events-none`}
+                style={{ opacity: 0.22 }}
+                aria-hidden="true"
+              />
+            )}
+
+            {/* Bottom Gradient Overlay for maximum text contrast */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(14, 13, 24, 0.92) 0%, rgba(14, 13, 24, 0.4) 50%, rgba(14, 13, 24, 0.05) 100%)",
+              }}
+            />
+
+            {/* Content: Verified / Partnered Badge (if applicable) + Name */}
+            <div className="relative z-10 flex items-center gap-1.5 min-w-0">
+              {isVerified && (
+                <span
+                  title="Verified Hub"
+                  className="flex items-center justify-center w-4 h-4 rounded-full bg-violet-500/20 text-violet-300 border border-violet-400/40 text-[10px] flex-shrink-0 font-bold"
+                >
+                  ✓
+                </span>
+              )}
+              {isPartnered && !isVerified && (
+                <span
+                  title="Partnered Hub"
+                  className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] flex-shrink-0 font-bold"
+                >
+                  ★
+                </span>
+              )}
+              <span className="font-['Sora'] font-bold text-[14.5px] text-white tracking-wide truncate leading-none">
+                {currentTitle}
+              </span>
             </div>
-            <span className="text-[14px] font-bold text-white truncate font-['Sora']">
-              {currentTitle}
-            </span>
           </div>
-          <DownOutlined className="text-xs text-white/40 flex-shrink-0 ml-1.5" />
-        </button>
+        )}
 
         {/* Servers vs Hubs Toggle */}
         <SidebarToggle value={instanceType} onChange={onToggleInstanceType} />
