@@ -58,10 +58,10 @@ export function DashboardHome() {
         title="Dashboard"
         description="Overview of your hubs, connected servers, and live network activity."
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Link
               to="/dashboard/browse"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-2"
+              className="dashboard-btn-secondary !min-h-[34px] !px-3.5 !py-1.5 !text-xs !font-bold"
             >
               <span>Explore Hubs</span>
               <ArrowRightOutlined className="text-[10px]" />
@@ -69,7 +69,7 @@ export function DashboardHome() {
 
             <Link
               to="/dashboard/calls"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#5b4ccb] hover:bg-[#6959dc] transition-all flex items-center gap-2"
+              className="dashboard-btn-primary !min-h-[34px] !px-3.5 !py-1.5 !text-xs !font-bold"
             >
               <PlusOutlined />
               <span>Start a Call</span>
