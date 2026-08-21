@@ -558,54 +558,15 @@ Bad:
 
 If you need a new reusable structural style, add it to `app/components/dashboard/shared.tsx` and export it.
 
-## Toggle Switches & Interactive Depth
-All toggle switches must follow the **3D Depth standard** (`DepthToggle` exported from `~/components/dashboard/shared`):
-- **Never use zero-depth or flat switch toggles**.
-- **Track (Groove)**: Recessed pill tray with multi-layer inset shadows (`inset 0 2px 5px rgba(...)`).
-  - *Off state*: Dark recessed purple-gray groove (`#212028`).
-  - *On state*: InterChat accent lavender/purple (`#bfaefc` / `#cdc2f8`) retaining the recessed groove depth.
-- **Knob (Floating Button)**: Contained tactile circular button floating above the track with a soft dark-purple tinted drop shadow (`0 3px 6px rgba(...)`).
-  - *Off state*: Dark tactile disc (`#4c4b57` to `#353440`) with top-rim highlight.
-  - *On state*: Crisp white disc (`#ffffff`).
+## Toggle Switches & Flat-Depth Standard
+All toggle switches must follow the **Flat-Depth standard** (`DepthToggle` exported from `~/components/dashboard/shared`):
+- **Never use oversized or bulbous skeuomorphic switch toggles**.
+- **Track**: Clean, flat pill (`44px x 24px` standard size) with subtle recessed outline.
+  - *Off state*: Flat dark charcoal (`#2d2d34`) with a subtle `#1e1e24` border.
+  - *On state*: Flat pastel lavender/purple (`#c4b5fd`).
+- **Knob**: Flat circular disc (`18px`) sitting cleanly inside the track with a crisp bottom shadow ring.
+  - *Off state*: Flat solid slate disc (`#50505a`) with dark bottom shadow (`0 2px 0 0 #1c1c22`).
+  - *On state*: Pure flat white circle (`#ffffff`) with lavender bottom shadow (`0 2px 0 0 #9d87e8`).
 - **Reuse**: Always import and use `<DepthToggle checked={...} onChange={...} />` for settings, feature flags, and configuration toggles.
-
-## Button Design & Tactile Lift Standard
-All buttons must follow the **Tactile Lift standard** with theme-matched purple shadows.
-
-### 1. Remove All Glow Effects
-- **Never use glowing halos or neon aura box shadows** (e.g., `shadow-violet-900/40`, `shadow-[color]/50`).
-- Shadows must be directional offset-y drop shadows, not diffused radial halos.
-
-### 2. Theme-Matched Shadow Colors
-- All button and control shadows must derive from the **InterChat dark desaturated purple palette** (e.g., `#3a3258`, `rgba(14, 11, 28, 0.7)`, `rgba(10, 8, 23, 0.75)`).
-- Never use generic flat black (`shadow-black`) or plain gray (`shadow-gray-900`).
-
-### 3. Button Styles & States
-
-#### Primary Buttons (`.dashboard-btn-primary` / `.dashboard-button--primary`)
-- **Base State**:
-  - Background: Soft medium-light lavender (`#cdc2f8`), one shade lighter than settings tab `#5b4ccb`.
-  - Text: Dark purple-gray (`#14121e`) for strong contrast (no light text on light buttons).
-  - Border: 1px subtle border (`#b8abeb`), slightly darker than background.
-  - Radius: Thick rounded corners (`12px` - `14px` / `rounded-xl`).
-  - Shadow: Soft, medium theme drop shadow (`0 3px 0 0 #3a3258, 0 3px 6px 0 rgba(17, 14, 33, 0.45)`).
-- **Hover State**:
-  - Lift: Pop-out translation (`transform: translateY(-2px)` / `-translate-y-0.5`).
-  - Background: Subtle lighten shift (`#d8cffc`).
-  - Shadow: Deeper shadow depth (`0 5px 0 0 #3a3258, 0 6px 12px 0 rgba(17, 14, 33, 0.55)`).
-- **Active State**:
-  - Pressed: `transform: translateY(1px)`, shadow `0 1px 0 0 #3a3258`.
-- **Disabled State**:
-  - Flat appearance with minimal shadow (`0 1px 0 0 rgba(20, 16, 38, 0.6)`).
-  - Muted background (`rgba(205, 194, 248, 0.22)`), muted text (`rgba(255, 255, 255, 0.35)`).
-  - Cursor: `not-allowed`, strictly **no hover lift**.
-
-#### Secondary / Glass Buttons (`.dashboard-btn-secondary`)
-- **Base State**: Glass background (`rgba(255, 255, 255, 0.06)`), text `rgba(255, 255, 255, 0.85)`, 1px border `rgba(255, 255, 255, 0.1)`, shadow `0 2px 0 0 rgba(14, 11, 28, 0.7)`.
-- **Hover State**: Lift `translateY(-2px)`, background `rgba(255, 255, 255, 0.1)`, text `#ffffff`, deeper shadow `0 4px 0 0 rgba(14, 11, 28, 0.7), 0 5px 10px 0 rgba(10, 8, 23, 0.45)`.
-- **Disabled State**: Flat minimal shadow, muted background, no hover lift.
-
-#### Danger Buttons (`.dashboard-btn-danger`, `.dashboard-btn-danger-subtle`)
-- Non-glowing solid or subtle danger buttons retaining tactile lift and theme purple base shadows.
 
 

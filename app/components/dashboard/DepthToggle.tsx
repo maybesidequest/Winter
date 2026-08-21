@@ -38,33 +38,31 @@ export function DepthToggle({
 
   const isSmall = size === "small";
 
-  // Generous track pill dimensions (~28-32px height)
-  const trackWidth = isSmall ? 46 : 58;
-  const trackHeight = isSmall ? 25 : 32;
-  const knobSize = isSmall ? 19 : 24;
-  const padding = 4;
+  // Sleek compact dimensions matching reference
+  const trackWidth = isSmall ? 36 : 44;
+  const trackHeight = isSmall ? 20 : 24;
+  const knobSize = isSmall ? 14 : 18;
+  const padding = 3;
   const travelDistance = trackWidth - knobSize - padding * 2;
 
-  // Track styling: Recessed groove with inset shadows
+  // Track styling: Flat background with subtle recessed outline
   const trackStyle = {
     width: `${trackWidth}px`,
     height: `${trackHeight}px`,
     borderRadius: "9999px",
-    background: checked ? "#bfaefc" : "#212028",
-    border: checked
-      ? "1px solid rgba(170, 150, 240, 0.6)"
-      : "1px solid rgba(255, 255, 255, 0.07)",
+    background: checked ? "#c4b5fd" : "#2d2d34",
+    border: checked ? "1px solid #b39ef8" : "1px solid #1e1e24",
     boxShadow: checked
-      ? "inset 0 2px 5px 0 rgba(40, 20, 80, 0.35), inset 0 -1px 2px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(160, 140, 235, 0.5)"
-      : "inset 0 2px 5px 0 rgba(0, 0, 0, 0.8), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.05), inset 0 0 0 1px rgba(0, 0, 0, 0.6)",
+      ? "inset 0 1px 2px rgba(0, 0, 0, 0.1)"
+      : "inset 0 1px 2px rgba(0, 0, 0, 0.4)",
     transition:
-      "background-color 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1)",
+      "background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
     opacity: disabled ? 0.4 : 1,
     cursor: disabled ? "not-allowed" : "pointer",
   };
 
-  // Knob styling: Tactile 3D button floating on top with soft shadow beneath
-  const knobWidth = isActive ? knobSize + (isSmall ? 2 : 3) : knobSize;
+  // Knob styling: Flat tactile disc with crisp bottom shadow
+  const knobWidth = isActive ? knobSize + (isSmall ? 1 : 2) : knobSize;
   const translateX = checked ? travelDistance : 0;
 
   const knobStyle = {
@@ -74,17 +72,12 @@ export function DepthToggle({
     top: `${padding - 1}px`,
     left: `${padding - 1}px`,
     transform: `translateX(${translateX}px)`,
-    background: checked
-      ? "#ffffff"
-      : "linear-gradient(180deg, #4c4b57 0%, #353440 100%)",
-    border: checked
-      ? "1px solid rgba(255, 255, 255, 0.95)"
-      : "1px solid rgba(255, 255, 255, 0.08)",
+    background: checked ? "#ffffff" : "#50505a",
     boxShadow: checked
-      ? "0 3px 6px 0 rgba(45, 25, 90, 0.45), 0 1px 2px 0 rgba(20, 10, 50, 0.35)"
-      : "0 3px 6px 0 rgba(0, 0, 0, 0.8), 0 1px 2px 0 rgba(10, 8, 20, 0.9), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22)",
+      ? "0 2px 0 0 #9d87e8, 0 2px 3px rgba(110, 80, 190, 0.35)"
+      : "0 2px 0 0 #1c1c22, 0 2px 3px rgba(0, 0, 0, 0.4)",
     transition:
-      "transform 220ms cubic-bezier(0.34, 1.35, 0.64, 1), width 160ms ease, background-color 200ms ease, box-shadow 200ms ease",
+      "transform 200ms cubic-bezier(0.25, 1, 0.5, 1), width 140ms ease, background-color 180ms ease, box-shadow 180ms ease",
   };
 
   return (
