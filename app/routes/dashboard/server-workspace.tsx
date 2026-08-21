@@ -1,32 +1,112 @@
-import { message } from "antd";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Navigate } from "react-router";
-import type { Route } from "./+types/server-workspace";
-import { CallSettings } from "~/components/dashboard/CallSettings";
-import { PageHeader, WorkspaceTabs } from "~/components/dashboard/WorkspacePrimitives";
-import { orpc } from "~/lib/orpc";
+import { useParams, Link } from "react-router";
+import { mockServers } from "~/data/dashboard-mock";
+import { PageHeader } from "~/components/dashboard/PageHeader";
 
-const views = ["overview", "calls", "connections", "safety", "activity"] as const;
-const tabs = views.map((path) => ({ path, label: path === "calls" ? "Text Calls" : path[0].toUpperCase() + path.slice(1) }));
-
-export default function ServerWorkspace({ params }: Route.ComponentProps) {
-  const view = params.view || "overview";
+export default function ServerWorkspace() {
+  const params = useParams();
   const serverId = params.serverId;
-  const queryClient = useQueryClient();
-  const { data: servers = [], isLoading } = useQuery(orpc.server.list.queryOptions());
-  const server = servers.find((candidate) => candidate.metadata.id === serverId);
-  const { data: channels = [] } = useQuery(orpc.server.channels.queryOptions({ input: { serverId }, enabled: view === "calls" && !!server?.status.botInstalled }));
-  const update = useMutation(orpc.server.patchCallConfig.mutationOptions());
-  if (!views.includes(view as typeof views[number])) return <Navigate to={`/dashboard/servers/${serverId}/overview`} replace />;
-  if (isLoading) return <div className="dashboard-alert dashboard-alert--sage">Loading server workspace…</div>;
-  if (!server) return <div className="dashboard-alert">This server does not exist or Discord could not verify Manage Server permission.</div>;
-  return <>
-    <PageHeader eyebrow="Discord server" title={server.metadata.name} description="Owner controls for InterChat text Calls and cross-server connections." />
-    <WorkspaceTabs base={`/dashboard/servers/${serverId}`} items={tabs} />
-    {view === "overview" && <section className="dashboard-section"><div className="dashboard-grid"><div className="dashboard-panel dashboard-panel--narrow"><div className="dashboard-panel__body dashboard-stat"><div><h3>Text Calls</h3><p>Recorded for this server</p></div><strong>{server.status.callCount}</strong></div></div><div className="dashboard-panel dashboard-panel--narrow"><div className="dashboard-panel__body"><h3>Channel access</h3><p>{server.spec.lobbyChannelIds.length ? `${server.spec.lobbyChannelIds.length} selected channels` : "Any available channel"}</p></div></div><div className="dashboard-panel dashboard-panel--narrow"><div className="dashboard-panel__body"><h3>Image filtering</h3><p>{server.spec.filterNsfw ? "Enabled before delivery" : "Disabled for this server"}</p></div></div></div></section>}
-    {view === "calls" && <CallSettings server={server} channels={channels} saving={update.isPending} onSave={async (spec) => { await update.mutateAsync({ serverId, ...spec }); await queryClient.invalidateQueries({ queryKey: orpc.server.list.key() }); message.success("Text Call settings saved"); }} />}
-    {view === "connections" && <section className="dashboard-section"><div className="dashboard-alert dashboard-alert--sage">Hub connections are managed from each Hub’s Routes workspace.</div></section>}
-    {view === "safety" && <section className="dashboard-section"><div className="dashboard-panel dashboard-panel--wide"><div className="dashboard-panel__body"><h3>Call image filtering</h3><p>{server.spec.filterNsfw ? "Explicit images are evaluated before they are shown in this server’s text Calls." : "Image filtering is currently disabled for this server."}</p></div></div></section>}
-    {view === "activity" && <section className="dashboard-section"><div className="dashboard-alert dashboard-alert--sage">Only persisted server activity will appear here; no synthetic timeline is shown.</div></section>}
-  </>;
+  const view = params.view || params.tab || "overview";
+
+  const server = mockServers.find((s) => s.id === serverId) || {
+    id: serverId || "srv-1",
+    name: "Discord Server",
+    icon: "🛡️",
+    color: "#2a7198",
+    memberCount: 1200,
+    health: "healthy" as const,
+    latency: "22ms",
+    channels: 4,
+    botInstalled: true,
+    callCount: 25,
+    region: "US-East",
+    uptime: "99.9%",
+  };
+
+  const viewTitles: Record<string, { title: string; desc: string; icon: string }> = {
+    overview: {
+      title: "Server Overview",
+      desc: "Connected channels, bot connection status, and call usage statistics.",
+      icon: "📊",
+    },
+    "bot-config": {
+      title: "Bot Configuration",
+      desc: "Command prefixes, automated webhook dispatch, and channel routing policies.",
+      icon: "🤖",
+    },
+    channels: {
+      title: "Channel Management",
+      desc: "Assign specific Discord text channels to Hub bridges and Call lobbies.",
+      icon: "#",
+    },
+    logs: {
+      title: "Server Audit Logs",
+      desc: "Recent message relays, call invitations, and moderation action logs.",
+      icon: "📝",
+    },
+    settings: {
+      title: "Server Settings",
+      desc: "NSFW filter toggles, match pings, server visibility, and bot permissions.",
+      icon: "⚙️",
+    },
+  };
+
+  const currentView = viewTitles[view] || {
+    title: `${view[0].toUpperCase()}${view.slice(1)}`,
+    desc: `Manage ${view} for ${server.name}.`,
+    icon: "🛡️",
+  };
+
+  return (
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="Server Controls"
+        title={`${server.name} · ${currentView.title}`}
+        description={`Manage InterChat bridge settings and text call routes for ${server.name}.`}
+        actions={
+          <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+            >
+              Dashboard
+            </Link>
+          </div>
+        }
+      />
+
+      <div
+        className="p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
+        style={{
+          background: "rgba(21, 20, 36, 0.85)",
+          borderColor: "rgba(255, 255, 255, 0.09)",
+          boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-white/10 shadow-lg"
+          style={{ backgroundColor: server.color }}
+        >
+          {currentView.icon}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#2a7198]/20 text-sky-300 border border-[#2a7198]/40">
+            {server.name}
+          </span>
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
+            {server.channels} Active Channels · {server.latency} Latency
+          </span>
+        </div>
+
+        <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
+        <p className="text-sm text-white/60 max-w-md leading-relaxed">
+          {currentView.desc}
+        </p>
+
+        <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
+          Tab view configured according to Discord <code className="text-sky-400">/server manage</code> specifications.
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -1,44 +1,111 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Navigate, useNavigate } from "react-router";
-import { message, Modal } from "antd";
-import { orpc } from "~/lib/orpc";
-import { PageHeader, WorkspaceTabs } from "~/components/dashboard/WorkspacePrimitives";
-import { HubOverview } from "~/components/dashboard/HubOverview";
-import { HubRoutes } from "~/components/dashboard/HubRoutes";
-import { HubSettings } from "~/components/dashboard/HubSettings";
-import type { Route } from "./+types/hub-workspace";
+import { useParams, Link } from "react-router";
+import { mockHubs } from "~/data/dashboard-mock";
+import { PageHeader } from "~/components/dashboard/PageHeader";
 
-const views = ["overview", "routes", "messages", "safety", "team", "settings", "activity"] as const;
-const tabs = views.map((path) => ({ path, label: path[0].toUpperCase() + path.slice(1) }));
-
-export default function HubWorkspace({ params }: Route.ComponentProps) {
-  const view = params.view || "overview";
+export default function HubWorkspace() {
+  const params = useParams();
   const hubId = params.hubId;
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { data: hubs = [], isLoading } = useQuery(orpc.hub.getUserHubs.queryOptions());
-  const hub = hubs.find((candidate) => candidate.metadata.id === hubId);
-  const { data: connections = [] } = useQuery(orpc.hub.getConnections.queryOptions({ input: { hubId }, enabled: view === "routes" }));
-  const { data: messages } = useQuery(orpc.hub.getRecentMessages.queryOptions({ input: { hubId, limit: 30 }, enabled: view === "messages" }));
-  const { data: staff = [] } = useQuery(orpc.moderation.getStaff.queryOptions({ input: { hubId }, enabled: view === "team" && !!hub?.metadata.permissions.MANAGE_MODERATORS }));
-  const patchHub = useMutation(orpc.hub.patchConfig.mutationOptions());
-  const toggleRoute = useMutation(orpc.hub.toggleConnection.mutationOptions());
-  const disconnectRoute = useMutation(orpc.hub.disconnectConnection.mutationOptions());
+  const view = params.view || params.tab || "overview";
 
-  if (!views.includes(view as typeof views[number])) return <Navigate to={`/dashboard/hubs/${hubId}/overview`} replace />;
-  if (isLoading) return <div className="dashboard-alert dashboard-alert--sage">Loading Hub workspace…</div>;
-  if (!hub) return <div className="dashboard-alert">This Hub does not exist or Iris could not verify your access.</div>;
-  const refresh = async () => { await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.key() }); };
+  const hub = mockHubs.find((h) => h.id === hubId) || {
+    id: hubId || "hub-1",
+    name: "Hub Workspace",
+    tag: "HUB",
+    icon: "🌐",
+    color: "#5b4ccb",
+    memberCount: 2500,
+    serverCount: 12,
+    description: "Multi-server channel bridge and moderation zone.",
+    category: "Community",
+    locked: false,
+    visibility: "PUBLIC" as const,
+  };
 
-  return <>
-    <PageHeader eyebrow={`${hub.metadata.effectiveRole} access`} title={hub.metadata.name} description={hub.spec.shortDescription || hub.spec.description} actions={<button className="dashboard-button" onClick={() => navigate("/dashboard/hubs")}>All Hubs</button>} />
-    <WorkspaceTabs base={`/dashboard/hubs/${hubId}`} items={tabs} />
-    {view === "overview" && <HubOverview hub={hub} />}
-    {view === "routes" && <HubRoutes connections={connections} canManage={hub.metadata.permissions.MANAGE_CONNECTIONS} pending={toggleRoute.isPending || disconnectRoute.isPending} onToggle={async (connection) => { await toggleRoute.mutateAsync({ hubId, connectionId: connection.metadata.id, enabled: !connection.spec.connected }); message.success(connection.spec.connected ? "Route paused" : "Route resumed"); await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.key() }); }} onDisconnect={(connection) => Modal.confirm({ title: `Disconnect ${connection.status.serverName}?`, content: "This channel will stop receiving Hub messages.", okText: "Disconnect", okType: "danger", onOk: async () => { await disconnectRoute.mutateAsync({ hubId, connectionId: connection.metadata.id }); await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.key() }); } })} />}
-    {view === "messages" && <section className="dashboard-section"><div className="dashboard-section__header"><h2>Recent Hub messages</h2></div><div className="dashboard-panel dashboard-panel--wide">{messages?.items.map((item) => <div className="dashboard-row" key={item.metadata.id}><div className="dashboard-row__identity"><span className="dashboard-avatar">{(item.status.authorName || "?").slice(0, 2).toUpperCase()}</span><div><strong>{item.status.authorName || "Unknown member"}</strong><small>{item.status.guildName || "Unknown server"}</small></div></div><div className="dashboard-row__meta" style={{ gridColumn: "span 2" }}>{item.spec.content}</div><small>{new Date(item.metadata.createdAt).toLocaleString()}</small></div>)}{!messages?.items.length && <div className="dashboard-empty"><h3>No recent messages</h3><p>The owner surface is read-only; new conversations happen in Discord.</p></div>}</div></section>}
-    {view === "safety" && <section className="dashboard-section"><div className="dashboard-grid"><div className="dashboard-panel dashboard-panel--wide"><div className="dashboard-panel__body"><h3>Safety operations</h3><p>Polarizer evaluates Hub and Call content before delivery. Held messages, reports, appeals, infractions, and restrictions are managed in the safety inbox.</p><div className="dashboard-actions" style={{ marginTop: 16 }}><a className="dashboard-button dashboard-button--primary" href={`/dashboard/inbox?hubId=${hubId}`}>Open safety inbox</a></div></div></div><div className="dashboard-panel dashboard-panel--narrow"><div className="dashboard-panel__body"><h3>Image filtering</h3><p>Image safety decisions are evaluated by Polarizer before content is delivered.</p></div></div></div></section>}
-    {view === "team" && <section className="dashboard-section"><div className="dashboard-section__header"><h2>Hub team</h2></div>{!hub.metadata.permissions.MANAGE_MODERATORS ? <div className="dashboard-alert">Team membership is visible only to people who can manage moderators.</div> : <div className="dashboard-panel dashboard-panel--wide">{staff.map((member) => <div className="dashboard-row" key={member.userId}><div className="dashboard-row__identity"><span className="dashboard-avatar">{member.userId.slice(-2)}</span><div><strong>{member.userId}</strong><small>Discord user</small></div></div><div className="dashboard-row__meta">{member.role}</div><span className="dashboard-status">Active</span><span /></div>)}{staff.length === 0 && <div className="dashboard-empty"><h3>No delegated staff</h3><p>The Hub owner retains full access.</p></div>}</div>}</section>}
-    {view === "settings" && <HubSettings hub={hub} canEdit={hub.metadata.permissions.MANAGE_HUB_SETTINGS} saving={patchHub.isPending} onSave={async (changes) => { await patchHub.mutateAsync({ hubId, ...changes }); await refresh(); message.success("Hub settings saved"); }} />}
-    {view === "activity" && <section className="dashboard-section"><div className="dashboard-alert dashboard-alert--sage">Audit history will appear here as recorded events become available. No synthetic activity is shown.</div></section>}
-  </>;
+  const viewTitles: Record<string, { title: string; desc: string; icon: string }> = {
+    overview: {
+      title: "Hub Overview",
+      desc: "Live broadcast status, active member count, and linked server health.",
+      icon: "📊",
+    },
+    analytics: {
+      title: "Hub Analytics",
+      desc: "Message velocity, cross-server engagement, and peak interaction hours.",
+      icon: "📈",
+    },
+    members: {
+      title: "Hub Members & Roles",
+      desc: "Server representatives, moderators, and cross-server permissions.",
+      icon: "👥",
+    },
+    rules: {
+      title: "Hub Rules & Policies",
+      desc: "Automated content moderation rules, keyword filters, and broadcast limits.",
+      icon: "📜",
+    },
+    settings: {
+      title: "Hub Settings",
+      desc: "Hub name, icon, invite codes, public directory listing, and archive state.",
+      icon: "⚙️",
+    },
+  };
+
+  const currentView = viewTitles[view] || {
+    title: `${view[0].toUpperCase()}${view.slice(1)}`,
+    desc: `Manage ${view} for ${hub.name}.`,
+    icon: "🌐",
+  };
+
+  return (
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="Hub Control Plane"
+        title={`${hub.name} · ${currentView.title}`}
+        description={hub.description}
+        actions={
+          <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+            >
+              Dashboard
+            </Link>
+          </div>
+        }
+      />
+
+      <div
+        className="p-8 md:p-12 rounded-3xl border flex flex-col items-center justify-center text-center gap-4"
+        style={{
+          background: "rgba(21, 20, 36, 0.85)",
+          borderColor: "rgba(255, 255, 255, 0.09)",
+          boxShadow: "0 12px 34px rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-white/10 shadow-lg"
+          style={{ backgroundColor: hub.color }}
+        >
+          {currentView.icon}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#5b4ccb]/20 text-violet-300 border border-[#5b4ccb]/40">
+            {hub.name}
+          </span>
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/60">
+            {hub.serverCount} Servers
+          </span>
+        </div>
+
+        <h3 className="text-2xl font-bold text-white font-['Sora']">{currentView.title}</h3>
+        <p className="text-sm text-white/60 max-w-md leading-relaxed">
+          {currentView.desc}
+        </p>
+
+        <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40">
+          Tab view configured according to Discord <code className="text-violet-400">/hub manage</code> specifications.
+        </div>
+      </div>
+    </div>
+  );
 }

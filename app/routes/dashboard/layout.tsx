@@ -1,91 +1,113 @@
-import { ConfigProvider, theme as antTheme } from "antd";
-import { MenuOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { Route } from "./+types/layout";
-import { requireUser } from "~/services/auth.server";
-import { DashboardMobileNavigation, DashboardNavigation } from "~/components/dashboard/Navigation";
+import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
+import { IconRail } from "~/components/dashboard/IconRail";
+import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
+import { SettingsModal } from "~/components/dashboard/SettingsModal";
 import "~/styles/dashboard.css";
 
-type DashboardTheme = "night" | "paper";
-
-export async function loader({ request }: Route.LoaderArgs) {
-  return { user: await requireUser(request) };
-}
-
-export default function DashboardLayout({ loaderData }: Route.ComponentProps) {
-  const { user } = loaderData;
+export default function DashboardLayout() {
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [dashboardTheme, setDashboardTheme] = useState<DashboardTheme>("night");
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [instanceType, setInstanceType] = useState<"servers" | "hubs">("servers");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Auto-switch instance toggle based on current route
   useEffect(() => {
-    const stored = localStorage.getItem("interchat-dashboard-theme");
-    if (stored === "night" || stored === "paper") setDashboardTheme(stored);
-    else if (!matchMedia("(prefers-color-scheme: dark)").matches) setDashboardTheme("paper");
-  }, []);
+    if (location.pathname.startsWith("/dashboard/hubs")) {
+      setInstanceType("hubs");
+    } else if (location.pathname.startsWith("/dashboard/servers")) {
+      setInstanceType("servers");
+    }
+  }, [location.pathname]);
 
+  // Close mobile drawer on route change
   useEffect(() => {
-    const listener = (event: Event) => setDashboardTheme((event as CustomEvent<DashboardTheme>).detail);
-    window.addEventListener("interchat-dashboard-theme", listener);
-    return () => window.removeEventListener("interchat-dashboard-theme", listener);
-  }, []);
-
-  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const navigation = document.getElementById("dashboard-navigation");
-    navigation?.querySelector<HTMLAnchorElement>("a")?.focus();
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setMenuOpen(false);
-      menuButtonRef.current?.focus();
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
-  useEffect(() => {
-    localStorage.setItem("interchat-dashboard-theme", dashboardTheme);
-    document.documentElement.dataset.dashboardTheme = dashboardTheme;
-  }, [dashboardTheme]);
-
-  const theme = useMemo(() => ({
-    algorithm: dashboardTheme === "night" ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
-    token: {
-      colorPrimary: "#5B4CCB",
-      colorInfo: "#3C7DA2",
-      colorSuccess: "#4B8A5A",
-      colorWarning: "#C75D49",
-      colorError: "#B93838",
-      borderRadius: 7,
-      fontFamily: "Inter, system-ui, sans-serif",
-    },
-  }), [dashboardTheme]);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
-    <ConfigProvider theme={theme}>
-      <div className="dashboard-root" data-dashboard-theme={dashboardTheme} data-menu-open={menuOpen}>
-        <button className="dashboard-drawer-backdrop" aria-label="Close navigation" onClick={() => setMenuOpen(false)} />
-        <DashboardNavigation user={user} onNavigate={() => setMenuOpen(false)} />
-        <div className="dashboard-main">
-          <header className="dashboard-topbar">
-            <button ref={menuButtonRef} className="dashboard-icon-button dashboard-menu-button" aria-label="Open navigation" aria-controls="dashboard-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><MenuOutlined /></button>
-            <div className="dashboard-topbar__title">InterChat operations</div>
-            <div className="dashboard-topbar__actions">
-              <button className="dashboard-icon-button" aria-label={`Use ${dashboardTheme === "night" ? "paper" : "night"} theme`} title={`Use ${dashboardTheme === "night" ? "paper" : "night"} theme`} onClick={() => setDashboardTheme((value) => value === "night" ? "paper" : "night")}>
-                {dashboardTheme === "night" ? <SunOutlined /> : <MoonOutlined />}
-              </button>
-            </div>
-          </header>
-          <main className="dashboard-content"><Outlet /></main>
+    <div className="min-h-screen bg-[#11121b] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
+      {/* Mobile Top Navigation Bar */}
+      <header className="md:hidden sticky top-0 z-40 h-14 bg-[#151424]/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg">InterChat</span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/30 text-violet-300 font-semibold border border-violet-500/30">
+            {instanceType === "hubs" ? "Hubs" : "Servers"}
+          </span>
         </div>
-        <DashboardMobileNavigation />
+
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white cursor-pointer"
+          aria-label="Toggle Navigation Menu"
+        >
+          {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+        </button>
+      </header>
+
+      {/* Desktop Persistent Left Zones (Rail + Middle Sidebar) */}
+      <div className="hidden md:flex">
+        <IconRail
+          instanceType={instanceType}
+          onOpenCreate={() => setIsSettingsOpen(true)}
+        />
+        <MiddleSidebar
+          instanceType={instanceType}
+          onToggleInstanceType={setInstanceType}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
       </div>
-    </ConfigProvider>
+
+      {/* Mobile Slide-Over Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <div className="relative z-10 flex h-full max-w-[320px] w-full shadow-2xl animate-slideRight">
+            <IconRail
+              instanceType={instanceType}
+              onOpenCreate={() => {
+                setMobileMenuOpen(false);
+                setIsSettingsOpen(true);
+              }}
+            />
+            <div className="flex-1 bg-[#151424]">
+              <MiddleSidebar
+                instanceType={instanceType}
+                onToggleInstanceType={setInstanceType}
+                onOpenSettings={() => {
+                  setMobileMenuOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+                onNavigate={() => setMobileMenuOpen(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area (Zone C: Routed Outlet) */}
+      <main
+        className="flex-1 min-h-screen md:ml-[312px] p-4 sm:p-6 md:p-10 transition-all"
+        style={{
+          background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
+        }}
+      >
+        <Outlet />
+      </main>
+
+      {/* Global Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+    </div>
   );
 }
