@@ -21,7 +21,7 @@ export function UserBar({ user, onOpenSettings }: UserBarProps) {
       style={{
         background: "rgba(17, 18, 27, 0.75)",
         borderColor: "rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 4px 0 0 #090814, 0 4px 8px 0 rgba(0, 0, 0, 0.5)",
+        boxShadow: "0 4px 0 0 #121219, 0 4px 8px 0 rgba(0, 0, 0, 0.5)",
       }}
     >
       {/* Clickable User Avatar & Details Section */}
