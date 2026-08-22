@@ -1,338 +1,79 @@
-import { pgTable, index, uuid, varchar, text, jsonb, timestamp, boolean, foreignKey, unique, doublePrecision, integer, bigint, check, uniqueIndex, date, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, check, timestamp, text, integer, date, bigint, boolean, unique, varchar, jsonb, uniqueIndex, doublePrecision, uuid, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+import { customType } from "drizzle-orm/pg-core";
 
 export const approvalStatus = pgEnum("ApprovalStatus", ['PENDING', 'APPROVED', 'REJECTED'])
 export const badges = pgEnum("Badges", ['VOTER', 'SUPPORTER', 'TRANSLATOR', 'DEVELOPER', 'STAFF', 'BETA_TESTER', 'HUB_OWNER', 'HUB_MANAGER', 'HUB_MODERATOR', 'TOP_CHATTER'])
+export const blockWordAction = pgEnum("BlockWordAction", ['BLOCK_MESSAGE', 'CENSOR_MESSAGE', 'SEND_ALERT', 'WARN', 'MUTE', 'BAN', 'BLACKLIST', 'CENSOR_WORD'])
+export const giftType = pgEnum("GiftType", ['FREE', 'DISCOUNT'])
 export const hubActivityLevel = pgEnum("HubActivityLevel", ['LOW', 'MEDIUM', 'HIGH'])
 export const hubVisibility = pgEnum("HubVisibility", ['PUBLIC', 'PRIVATE', 'UNLISTED'])
+export const keyStatus = pgEnum("KeyStatus", ['ACTIVE', 'EXPIRED', 'REVOKED', 'PENDING'])
+export const lobbyReportActionType = pgEnum("LobbyReportActionType", ['WARNED', 'GLOBAL_BLACKLISTED', 'RESOLVED', 'DISMISSED'])
 export const lobbyStatus = pgEnum("LobbyStatus", ['OPEN', 'CLOSED'])
 export const messageStatus = pgEnum("MessageStatus", ['PENDING', 'ACTIVE', 'DELETED'])
+export const patternMatchType = pgEnum("PatternMatchType", ['EXACT', 'PREFIX', 'SUFFIX', 'WILDCARD'])
+export const premiumTier = pgEnum("PremiumTier", ['CORE', 'PLUS', 'PRO'])
 export const reportStatus = pgEnum("ReportStatus", ['PENDING', 'RESOLVED', 'IGNORED'])
+export const subscriptionStatus = pgEnum("SubscriptionStatus", ['ACTIVE', 'PAST_DUE', 'CANCELLED', 'PENDING'])
 
 
-export const botAnalyticsEvent = pgTable("BotAnalyticsEvent", {
-	id: uuid().primaryKey().notNull(),
-	eventType: varchar({ length: 64 }).notNull(),
-	userId: text(),
-	guildId: text(),
-	hubId: text(),
-	properties: jsonb(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("BotAnalyticsEvent_eventType_createdAt_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
-	index("BotAnalyticsEvent_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
-	index("BotAnalyticsEvent_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
-	index("BotAnalyticsEvent_userId_createdAt_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
-	index("ix_BotAnalyticsEvent_createdAt").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
-	index("ix_BotAnalyticsEvent_eventType").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
-	index("ix_BotAnalyticsEvent_guildId").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
-	index("ix_BotAnalyticsEvent_hubId").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
-	index("ix_BotAnalyticsEvent_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-]);
-
-export const devAlerts = pgTable("DevAlerts", {
-	id: text().primaryKey().notNull(),
-	title: text().notNull(),
-	content: text().notNull(),
-	imageUrl: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	thumbnailUrl: text(),
+export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+  toDriver(val: Buffer) {
+    return val;
+  },
+  fromDriver(val: unknown) {
+    return val as Buffer;
+  },
 });
 
-export const verification = pgTable("Verification", {
-	id: text().primaryKey().notNull(),
-	identifier: text().notNull(),
-	value: text().notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow(),
-});
-
-export const user = pgTable("User", {
-	id: text().primaryKey().notNull(),
-	name: text(),
-	image: text(),
-	lastMessageAt: timestamp({ mode: 'string' }).defaultNow(),
-	inboxLastReadDate: timestamp({ mode: 'string' }).defaultNow(),
+export const userStats = pgTable("UserStats", {
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	activityLevel: hubActivityLevel(),
-	email: text(),
-	emailVerified: boolean(),
-	showBadges: boolean().default(true).notNull(),
-	mentionOnReply: boolean().default(true).notNull(),
-	showNsfwHubs: boolean().default(false).notNull(),
-	locale: text(),
-	lastVoted: timestamp({ mode: 'string' }),
-	badges: badges().array().default([]).notNull(),
-	voteRemindersEnabled: boolean().default(true).notNull(),
-	lastVoteReminderSent: timestamp({ mode: 'string' }),
-	}, (table) => [
-	index("User_createdAt_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
-	index("User_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
-	index("User_lastVoted_idx").using("btree", table.lastVoted.asc().nullsLast().op("timestamp_ops")),
-	index("User_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),
-]);
-
-export const account = pgTable("Account", {
-	id: text().primaryKey().notNull(),
-	accountId: text().notNull(),
-	providerId: text().notNull(),
-	userId: text().notNull(),
-	accessToken: text(),
-	refreshToken: text(),
-	idToken: text(),
-	accessTokenExpiresAt: timestamp({ mode: 'string' }),
-	refreshTokenExpiresAt: timestamp({ mode: 'string' }),
-	scope: text(),
-	password: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "Account_userId_fkey"
-		}).onDelete("cascade"),
-]);
-
-export const hub = pgTable("Hub", {
-	id: text().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
-	description: varchar({ length: 1024 }).notNull(),
-	ownerId: text().notNull(),
-	iconUrl: varchar({ length: 512 }).notNull(),
-	shortDescription: varchar({ length: 100 }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	lastActive: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	lastNameChange: timestamp({ mode: 'string' }).defaultNow(),
-	bannerUrl: text(),
-	welcomeMessage: text(),
-	language: text(),
-	region: text(),
-	customBadges: jsonb(),
-	averageRating: doublePrecision().default(0),
-	settings: integer().default(0).notNull(),
-	appealCooldownHours: integer().default(168).notNull(),
-	weeklyMessageCount: integer().default(0).notNull(),
-	connectionCount: integer().default(0).notNull(),
-	upvoteCount: integer().default(0).notNull(),
-	reviewCount: integer().default(0).notNull(),
-	locked: boolean().default(false).notNull(),
-	nsfw: boolean().default(false).notNull(),
-	verified: boolean().default(false).notNull(),
-	partnered: boolean().default(false).notNull(),
-	featured: boolean().default(false).notNull(),
-	rules: text().array().notNull(),
-	activityLevel: hubActivityLevel().default('LOW').notNull(),
-	visibility: hubVisibility().default('PUBLIC').notNull(),
-}, (table) => [
-	index("Hub_connectionCount_idx").using("btree", table.connectionCount.desc().nullsFirst().op("int4_ops")),
-	index("Hub_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	index("Hub_nsfw_idx").using("btree", table.nsfw.asc().nullsLast().op("bool_ops")),
-	index("Hub_ownerId_idx").using("btree", table.ownerId.asc().nullsLast().op("text_ops")),
-	index("Hub_upvoteCount_idx").using("btree", table.upvoteCount.desc().nullsFirst().op("int4_ops")),
-	index("Hub_verified_featured_visibility_idx").using("btree", table.verified.asc().nullsLast().op("bool_ops"), table.featured.asc().nullsLast().op("bool_ops"), table.visibility.asc().nullsLast().op("bool_ops")),
-	index("Hub_weeklyMessageCount_idx").using("btree", table.weeklyMessageCount.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.ownerId],
-			foreignColumns: [user.id],
-			name: "Hub_ownerId_fkey"
-		}),
-	unique("Hub_name_key").on(table.name),
-]);
-
-export const bot = pgTable("Bot", {
-	id: text().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
-	image: varchar({ length: 512 }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	shortDescription: varchar({ length: 255 }).notNull(),
-	longDescription: text().notNull(),
-	features: text().notNull(),
-	state: approvalStatus().default('PENDING').notNull(),
-}, (table) => [
-	index("Bot_state_idx").using("btree", table.state.asc().nullsLast().op("enum_ops")),
-]);
-
-export const allowedBots = pgTable("AllowedBots", {
-	id: text().primaryKey().notNull(),
-	hubId: text().notNull(),
-	botId: text().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.botId],
-			foreignColumns: [bot.id],
-			name: "AllowedBots_botId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "AllowedBots_hubId_fkey"
-		}).onDelete("cascade"),
-]);
-
-export const auditLog = pgTable("AuditLog", {
-	id: text().primaryKey().notNull(),
-	eventType: varchar({ length: 64 }).notNull(),
-	summary: text().notNull(),
-	guildId: text(),
-	hubId: text(),
-	userId: text(),
-	actorId: text(),
-	before: jsonb(),
-	after: jsonb(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("AuditLog_actorId_idx").using("btree", table.actorId.asc().nullsLast().op("text_ops")),
-	index("AuditLog_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	index("AuditLog_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
-	index("AuditLog_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	index("AuditLog_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
-	index("AuditLog_guildName_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops"), table.guildId.asc().nullsLast().op("text_ops")).where(sql`(("eventType")::text = 'GuildNameChanged'::text)`),
-	index("AuditLog_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	index("AuditLog_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
-	index("AuditLog_userId_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.actorId],
-			foreignColumns: [user.id],
-			name: "AuditLog_actorId_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.guildId],
-			foreignColumns: [serverData.id],
-			name: "AuditLog_guildId_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "AuditLog_hubId_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "AuditLog_userId_fkey"
-		}).onDelete("set null"),
-]);
-
-export const serverData = pgTable("ServerData", {
-	id: text().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
-	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	prefix: text(),
-	inviteCode: text(),
+	userId: text().primaryKey().notNull(),
+	voteCount: integer().default(0).notNull(),
+	reputation: integer().default(0).notNull(),
 	messageCount: integer().default(0).notNull(),
 	callCount: integer().default(0).notNull(),
-	iconUrl: text(),
-	hideServerName: boolean().default(false).notNull(),
-	pingOnMatch: boolean().default(false).notNull(),
-	autoRequeueOnSkip: boolean().default(false).notNull(),
-	autoRequeueOnHangup: boolean().default(false).notNull(),
-	filterNsfw: boolean().default(true).notNull(),
-	lobbyChannelIds: text().array().default([""]).notNull(),
+	hubJoinCount: integer().default(0).notNull(),
+	currentStreak: integer().default(0).notNull(),
+	longestStreak: integer().default(0).notNull(),
+	streakFreezes: integer().default(0).notNull(),
+	lastStreakDate: date(),
 }, (table) => [
-	index("ServerData_callCount_idx").using("btree", table.callCount.asc().nullsLast().op("int4_ops")),
-	index("ServerData_lastMessageAt_idx").using("btree", table.lastMessageAt.desc().nullsFirst().op("timestamp_ops")),
-]);
-
-export const authRole = pgTable("AuthRole", {
-	id: uuid().primaryKey().notNull(),
-	hubId: text(),
-	name: text().notNull(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	permissions: bigint({ mode: "number" }).notNull(),
-	position: integer().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("ix_AuthRole_hubId").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "AuthRole_hubId_fkey"
-		}).onDelete("cascade"),
-	unique("uq_authrole_hubid_name").on(table.hubId, table.name),
-]);
-
-export const authUserAssignment = pgTable("AuthUserAssignment", {
-	id: uuid().primaryKey().notNull(),
-	roleId: uuid().notNull(),
-	userId: text().notNull(),
-	targetServerId: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("ix_AuthUserAssignment_roleId").using("btree", table.roleId.asc().nullsLast().op("uuid_ops")),
-	index("ix_AuthUserAssignment_targetServerId").using("btree", table.targetServerId.asc().nullsLast().op("text_ops")),
-	index("ix_AuthUserAssignment_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.roleId],
-			foreignColumns: [authRole.id],
-			name: "AuthUserAssignment_roleId_fkey"
-		}).onDelete("cascade"),
+	index("UserStats_callCount_idx").using("btree", table.callCount.asc().nullsLast().op("int4_ops")),
+	index("UserStats_currentStreak_idx").using("btree", table.currentStreak.asc().nullsLast().op("int4_ops")),
+	index("UserStats_messageCount_idx").using("btree", table.messageCount.asc().nullsLast().op("int4_ops")),
+	index("UserStats_reputation_idx").using("btree", table.reputation.asc().nullsLast().op("int4_ops")),
+	index("UserStats_voteCount_idx").using("btree", table.voteCount.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],
-			name: "AuthUserAssignment_userId_fkey"
+			name: "UserStats_userId_fkey"
 		}).onDelete("cascade"),
+	check("UserStats_callCount_check", sql`"callCount" >= 0`),
+	check("UserStats_currentStreak_check", sql`"currentStreak" >= 0`),
+	check("UserStats_hubJoinCount_check", sql`"hubJoinCount" >= 0`),
+	check("UserStats_longestStreak_check", sql`"longestStreak" >= 0`),
+	check("UserStats_messageCount_check", sql`"messageCount" >= 0`),
+	check("UserStats_reputation_check", sql`reputation >= 0`),
+	check("UserStats_streakFreezes_check", sql`("streakFreezes" >= 0) AND ("streakFreezes" <= 2)`),
+	check("UserStats_voteCount_check", sql`"voteCount" >= 0`),
 ]);
 
-export const betaServer = pgTable("BetaServer", {
-	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	invitedById: text().notNull(),
-	invitedAt: timestamp({ mode: 'string' }).notNull(),
-	isActive: boolean().notNull(),
-	maxLobbies: integer().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.id],
-			foreignColumns: [serverData.id],
-			name: "BetaServer_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.invitedById],
-			foreignColumns: [user.id],
-			name: "BetaServer_invitedById_fkey"
-		}),
-]);
-
-export const message = pgTable("Message", {
-	id: text().primaryKey().notNull(),
-	hubId: text().notNull(),
-	content: varchar({ length: 4000 }).notNull(),
-	imageUrl: varchar(),
-	channelId: text().notNull(),
-	guildId: text().notNull(),
-	authorId: text().notNull(),
-	referredMessageId: text(),
-	status: messageStatus().default('ACTIVE').notNull(),
-	deletionQueuedAt: timestamp({ mode: 'string' }),
-	retentionUntil: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("Message_authorId_idx").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
-	index("Message_channel_timestamp_idx").using("btree", table.channelId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
-	index("Message_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	index("Message_guildId_authorId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.authorId.asc().nullsLast().op("text_ops")),
-	index("Message_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
-	index("Message_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
-	index("Message_referredMessageId_idx").using("btree", table.referredMessageId.asc().nullsLast().op("text_ops")),
-	index("Message_status_createdAt_idx").using("btree", table.status.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "Message_hubId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.referredMessageId],
-			foreignColumns: [table.id],
-			name: "Message_referredMessageId_fkey"
-		}),
-]);
+export const sqlxMigrations = pgTable("_sqlx_migrations", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	version: bigint({ mode: "number" }).primaryKey().notNull(),
+	description: text().notNull(),
+	installedOn: timestamp("installed_on", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	success: boolean().notNull(),
+	checksum: bytea("checksum").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	executionTime: bigint("execution_time", { mode: "number" }).notNull(),
+});
 
 export const broadcast = pgTable("Broadcast", {
 	id: text().primaryKey().notNull(),
@@ -349,38 +90,6 @@ export const broadcast = pgTable("Broadcast", {
 			foreignColumns: [message.id],
 			name: "Broadcast_messageId_fkey"
 		}).onDelete("cascade"),
-]);
-
-export const connection = pgTable("Connection", {
-	id: text().primaryKey().notNull(),
-	channelId: text().notNull(),
-	invite: text(),
-	webhookUrl: text().notNull(),
-	serverId: text().notNull(),
-	hubId: text().notNull(),
-	lastActive: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	parentId: text(),
-	webhookSecondaryUrl: text(),
-	connected: boolean().default(true).notNull(),
-	pausedByBot: boolean().default(false).notNull(),
-	pauseReason: text(),
-}, (table) => [
-	index("Connection_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
-	index("Connection_lastActive_idx").using("btree", table.lastActive.asc().nullsLast().op("timestamp_ops")),
-	index("Connection_serverId_idx").using("btree", table.serverId.asc().nullsLast().op("text_ops"), table.channelId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "Connection_hubId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.serverId],
-			foreignColumns: [serverData.id],
-			name: "Connection_serverId_fkey"
-		}),
-	unique("Connection_channelId_key").on(table.channelId),
-	unique("Connection_hubId_serverId_key").on(table.hubId, table.serverId),
 ]);
 
 export const feedbackFormVersion = pgTable("FeedbackFormVersion", {
@@ -419,12 +128,12 @@ export const feedbackSubmission = pgTable("FeedbackSubmission", {
 	submittedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	uniqueIndex("FeedbackSubmission_dedupeKey_key").using("btree", table.dedupeKey.asc().nullsLast().op("text_ops")).where(sql`("dedupeKey" IS NOT NULL)`),
-	index("FeedbackSubmission_formKey_formVersion_submittedAt_idx").using("btree", table.formKey.asc().nullsLast().op("int4_ops"), table.formVersion.asc().nullsLast().op("int4_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
+	index("FeedbackSubmission_formKey_formVersion_submittedAt_idx").using("btree", table.formKey.asc().nullsLast().op("int4_ops"), table.formVersion.asc().nullsLast().op("int4_ops"), table.submittedAt.asc().nullsLast().op("int4_ops")),
 	index("FeedbackSubmission_guildId_submittedAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
 	index("FeedbackSubmission_hubId_submittedAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
-	index("FeedbackSubmission_lobbyId_submittedAt_idx").using("btree", table.lobbyId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
-	index("FeedbackSubmission_source_submittedAt_idx").using("btree", table.source.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
-	index("FeedbackSubmission_userId_submittedAt_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
+	index("FeedbackSubmission_lobbyId_submittedAt_idx").using("btree", table.lobbyId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
+	index("FeedbackSubmission_source_submittedAt_idx").using("btree", table.source.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
+	index("FeedbackSubmission_userId_submittedAt_idx").using("btree", table.userId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.formKey, table.formVersion],
 			foreignColumns: [feedbackFormVersion.formKey, feedbackFormVersion.version],
@@ -432,6 +141,108 @@ export const feedbackSubmission = pgTable("FeedbackSubmission", {
 		}),
 	unique("FeedbackSubmission_invitationId_key").on(table.invitationId),
 	check("FeedbackSubmission_formVersion_check", sql`"formVersion" > 0`),
+]);
+
+export const message = pgTable("Message", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	content: varchar({ length: 4000 }).notNull(),
+	imageUrl: varchar(),
+	channelId: text().notNull(),
+	guildId: text().notNull(),
+	authorId: text().notNull(),
+	referredMessageId: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	status: messageStatus().default('ACTIVE').notNull(),
+	deletionQueuedAt: timestamp({ mode: 'string' }),
+	retentionUntil: timestamp({ mode: 'string' }),
+}, (table) => [
+	index("Message_authorId_idx").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
+	index("Message_channel_timestamp_idx").using("btree", table.channelId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("Message_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("Message_guildId_authorId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.authorId.asc().nullsLast().op("text_ops")),
+	index("Message_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
+	index("Message_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
+	index("Message_referredMessageId_idx").using("btree", table.referredMessageId.asc().nullsLast().op("text_ops")),
+	index("Message_status_createdAt_idx").using("btree", table.status.asc().nullsLast().op("enum_ops"), table.createdAt.desc().nullsFirst().op("enum_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "Message_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.referredMessageId],
+			foreignColumns: [table.id],
+			name: "Message_referredMessageId_fkey"
+		}),
+]);
+
+export const blockWord = pgTable("BlockWord", {
+	id: text().primaryKey().notNull(),
+	hubId: text(),
+	name: text().notNull(),
+	createdBy: text().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	words: text().notNull(),
+	// TODO: failed to parse database type 'BlockWordAction"[]'
+	actions: blockWordAction().array().notNull(),
+	serverId: text(),
+}, (table) => [
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [user.id],
+			name: "BlockWord_createdBy_fkey"
+		}),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "BlockWord_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "BlockWord_serverId_fkey"
+		}).onDelete("cascade"),
+	unique("uq_blockword_hub_name").on(table.hubId, table.name),
+	unique("uq_blockword_server_name").on(table.name, table.serverId),
+	check("check_blockword_target", sql`(("hubId" IS NOT NULL) AND ("serverId" IS NULL)) OR (("hubId" IS NULL) AND ("serverId" IS NOT NULL))`),
+]);
+
+export const devAlerts = pgTable("DevAlerts", {
+	id: text().primaryKey().notNull(),
+	title: text().notNull(),
+	content: text().notNull(),
+	imageUrl: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	thumbnailUrl: text(),
+});
+
+export const user = pgTable("User", {
+	id: text().primaryKey().notNull(),
+	name: text(),
+	image: text(),
+	lastMessageAt: timestamp({ mode: 'string' }).defaultNow(),
+	inboxLastReadDate: timestamp({ mode: 'string' }).defaultNow(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	activityLevel: hubActivityLevel(),
+	email: text(),
+	emailVerified: boolean(),
+	showBadges: boolean().default(true).notNull(),
+	mentionOnReply: boolean().default(true).notNull(),
+	showNsfwHubs: boolean().default(false).notNull(),
+	locale: text(),
+	lastVoted: timestamp({ mode: 'string' }),
+	badges: badges().array().default([]).notNull(),
+	voteRemindersEnabled: boolean().default(true).notNull(),
+	lastVoteReminderSent: timestamp({ mode: 'string' }),
+	customerId: text(),
+}, (table) => [
+	index("User_createdAt_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("User_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+	index("User_lastVoted_idx").using("btree", table.lastVoted.asc().nullsLast().op("timestamp_ops")),
+	index("User_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),
 ]);
 
 export const feedbackHandlerJob = pgTable("FeedbackHandlerJob", {
@@ -454,7 +265,111 @@ export const feedbackHandlerJob = pgTable("FeedbackHandlerJob", {
 		}).onDelete("cascade"),
 	unique("FeedbackHandlerJob_submissionId_handlerKey_key").on(table.handlerKey, table.submissionId),
 	check("FeedbackHandlerJob_attempts_check", sql`attempts >= 0`),
-	check("FeedbackHandlerJob_status_check", sql`(status)::text = ANY (ARRAY[('PENDING'::character varying)::text, ('PROCESSING'::character varying)::text, ('COMPLETED'::character varying)::text, ('FAILED'::character varying)::text])`),
+	check("FeedbackHandlerJob_status_check", sql`(status)::text = ANY ((ARRAY['PENDING'::character varying, 'PROCESSING'::character varying, 'COMPLETED'::character varying, 'FAILED'::character varying])::text[])`),
+]);
+
+export const hub = pgTable("Hub", {
+	id: text().primaryKey().notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	description: varchar({ length: 1024 }).notNull(),
+	ownerId: text().notNull(),
+	iconUrl: varchar({ length: 512 }).notNull(),
+	shortDescription: varchar({ length: 100 }),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	lastActive: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	lastNameChange: timestamp({ mode: 'string' }).defaultNow(),
+	bannerUrl: text(),
+	welcomeMessage: text(),
+	language: text(),
+	region: text(),
+	customBadges: jsonb(),
+	settings: integer().default(0).notNull(),
+	appealCooldownHours: integer().default(168).notNull(),
+	weeklyMessageCount: integer().default(0).notNull(),
+	locked: boolean().default(false).notNull(),
+	nsfw: boolean().default(false).notNull(),
+	verified: boolean().default(false).notNull(),
+	partnered: boolean().default(false).notNull(),
+	featured: boolean().default(false).notNull(),
+	rules: text().array().notNull(),
+	activityLevel: hubActivityLevel().default('LOW').notNull(),
+	averageRating: doublePrecision().default(0),
+	visibility: hubVisibility().default('PUBLIC').notNull(),
+	connectionCount: integer().default(0).notNull(),
+	upvoteCount: integer().default(0).notNull(),
+	reviewCount: integer().default(0).notNull(),
+}, (table) => [
+	index("Hub_connectionCount_idx").using("btree", table.connectionCount.desc().nullsFirst().op("int4_ops")),
+	index("Hub_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("Hub_nsfw_idx").using("btree", table.nsfw.asc().nullsLast().op("bool_ops")),
+	index("Hub_ownerId_idx").using("btree", table.ownerId.asc().nullsLast().op("text_ops")),
+	index("Hub_upvoteCount_idx").using("btree", table.upvoteCount.desc().nullsFirst().op("int4_ops")),
+	index("Hub_verified_featured_visibility_idx").using("btree", table.verified.asc().nullsLast().op("enum_ops"), table.featured.asc().nullsLast().op("enum_ops"), table.visibility.asc().nullsLast().op("enum_ops")),
+	index("Hub_weeklyMessageCount_idx").using("btree", table.weeklyMessageCount.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.ownerId],
+			foreignColumns: [user.id],
+			name: "Hub_ownerId_fkey"
+		}),
+	unique("Hub_name_key").on(table.name),
+]);
+
+export const hubActivityMetrics = pgTable("HubActivityMetrics", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	lastUpdated: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	messagesLast24H: integer().default(0).notNull(),
+	activeUsersLast24H: integer().default(0).notNull(),
+	newConnectionsLast24H: integer().default(0).notNull(),
+	messagesLast7D: integer().default(0).notNull(),
+	activeUsersLast7D: integer().default(0).notNull(),
+	newConnectionsLast7D: integer().default(0).notNull(),
+	memberGrowthRate: doublePrecision().default(0).notNull(),
+	engagementRate: doublePrecision().default(0).notNull(),
+	trendingScore: doublePrecision().default(0).notNull(),
+}, (table) => [
+	index("HubActivityMetrics_lastUpdated_idx").using("btree", table.lastUpdated.asc().nullsLast().op("timestamp_ops")),
+	index("HubActivityMetrics_trendingScore_idx").using("btree", table.trendingScore.asc().nullsLast().op("float8_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "HubActivityMetrics_hubId_fkey"
+		}).onDelete("cascade"),
+	unique("HubActivityMetrics_hubId_key").on(table.hubId),
+]);
+
+export const connection = pgTable("Connection", {
+	id: text().primaryKey().notNull(),
+	channelId: text().notNull(),
+	invite: text(),
+	webhookUrl: text().notNull(),
+	serverId: text().notNull(),
+	hubId: text().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	lastActive: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	parentId: text(),
+	webhookSecondaryUrl: text(),
+	connected: boolean().default(true).notNull(),
+	pausedByBot: boolean().default(false).notNull(),
+	pauseReason: text(),
+}, (table) => [
+	index("Connection_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
+	index("Connection_lastActive_idx").using("btree", table.lastActive.asc().nullsLast().op("timestamp_ops")),
+	index("Connection_serverId_idx").using("btree", table.serverId.asc().nullsLast().op("text_ops"), table.channelId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "Connection_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "Connection_serverId_fkey"
+		}),
+	unique("Connection_channelId_key").on(table.channelId),
+	unique("Connection_hubId_serverId_key").on(table.hubId, table.serverId),
 ]);
 
 export const globalReport = pgTable("GlobalReport", {
@@ -464,7 +379,6 @@ export const globalReport = pgTable("GlobalReport", {
 	reportedServerId: text().notNull(),
 	messageId: text(),
 	reason: text().notNull(),
-	reportContextId: text(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	handledBy: text(),
@@ -473,6 +387,7 @@ export const globalReport = pgTable("GlobalReport", {
 	reportMessageId: text(),
 	reportChannelId: text(),
 	actionTaken: text(),
+	reportContextId: text(),
 }, (table) => [
 	index("GlobalReport_handledBy_idx").using("btree", table.handledBy.asc().nullsLast().op("text_ops")),
 	index("GlobalReport_messageId_idx").using("btree", table.messageId.asc().nullsLast().op("text_ops")),
@@ -501,45 +416,20 @@ export const globalReport = pgTable("GlobalReport", {
 		}),
 ]);
 
-export const reportContext = pgTable("ReportContext", {
-	id: text().primaryKey().notNull(),
-	reportId: text().notNull(),
-	reportType: text().notNull(),
-	messageId: text().notNull(),
-	content: text(),
-	authorId: text().notNull(),
-	channelId: text(),
-	guildId: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	messageData: jsonb(),
-}, (table) => [
-	index("ReportContext_messageId_idx").using("btree", table.messageId.asc().nullsLast().op("text_ops")),
-	index("ReportContext_reportId_idx").using("btree", table.reportId.asc().nullsLast().op("text_ops")),
-]);
-
-export const hubActivityMetrics = pgTable("HubActivityMetrics", {
-	id: text().primaryKey().notNull(),
+export const hubInvite = pgTable("HubInvite", {
 	hubId: text().notNull(),
-	lastUpdated: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	expires: timestamp({ mode: 'string' }),
+	code: text().primaryKey().notNull(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	messagesLast24H: integer().default(0).notNull(),
-	activeUsersLast24H: integer().default(0).notNull(),
-	newConnectionsLast24H: integer().default(0).notNull(),
-	messagesLast7D: integer().default(0).notNull(),
-	activeUsersLast7D: integer().default(0).notNull(),
-	newConnectionsLast7D: integer().default(0).notNull(),
-	memberGrowthRate: doublePrecision().default(0).notNull(),
-	engagementRate: doublePrecision().default(0).notNull(),
-	trendingScore: doublePrecision().default(0).notNull(),
+	maxUses: integer().default(0).notNull(),
+	uses: integer().default(0).notNull(),
 }, (table) => [
-	index("HubActivityMetrics_lastUpdated_idx").using("btree", table.lastUpdated.asc().nullsLast().op("timestamp_ops")),
-	index("HubActivityMetrics_trendingScore_idx").using("btree", table.trendingScore.asc().nullsLast().op("float8_ops")),
+	index("HubInvite_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.hubId],
 			foreignColumns: [hub.id],
-			name: "HubActivityMetrics_hubId_fkey"
+			name: "HubInvite_hubId_fkey"
 		}).onDelete("cascade"),
-	unique("HubActivityMetrics_hubId_key").on(table.hubId),
 ]);
 
 export const hubAnnouncement = pgTable("HubAnnouncement", {
@@ -562,20 +452,41 @@ export const hubAnnouncement = pgTable("HubAnnouncement", {
 		}).onDelete("cascade"),
 ]);
 
-export const hubInvite = pgTable("HubInvite", {
-	hubId: text().notNull(),
-	expires: timestamp({ mode: 'string' }),
-	code: text().primaryKey().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	maxUses: integer().default(0).notNull(),
-	uses: integer().default(0).notNull(),
+export const hubMessageReaction = pgTable("HubMessageReaction", {
+	id: varchar().primaryKey().notNull(),
+	messageId: text().notNull(),
+	emoji: varchar({ length: 64 }).notNull(),
+	users: text().array().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("HubInvite_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.messageId],
+			foreignColumns: [message.id],
+			name: "HubMessageReaction_messageId_fkey"
+		}).onDelete("cascade"),
+	unique("HubMessageReaction_messageId_emoji_key").on(table.emoji, table.messageId),
+]);
+
+export const hubReview = pgTable("HubReview", {
+	id: text().primaryKey().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	rating: integer().notNull(),
+	text: text().notNull(),
+	hubId: text().notNull(),
+	userId: text().notNull(),
+}, (table) => [
 	foreignKey({
 			columns: [table.hubId],
 			foreignColumns: [hub.id],
-			name: "HubInvite_hubId_fkey"
+			name: "HubReview_hubId_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "HubReview_userId_fkey"
+		}),
+	unique("HubReview_hubId_userId_key").on(table.hubId, table.userId),
 ]);
 
 export const hubLogConfig = pgTable("HubLogConfig", {
@@ -604,21 +515,6 @@ export const hubLogConfig = pgTable("HubLogConfig", {
 	unique("HubLogConfig_hubId_key").on(table.hubId),
 ]);
 
-export const hubMessageReaction = pgTable("HubMessageReaction", {
-	id: varchar().primaryKey().notNull(),
-	messageId: text().notNull(),
-	emoji: varchar({ length: 64 }).notNull(),
-	users: text().array().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.messageId],
-			foreignColumns: [message.id],
-			name: "HubMessageReaction_messageId_fkey"
-		}).onDelete("cascade"),
-	unique("HubMessageReaction_messageId_emoji_key").on(table.emoji, table.messageId),
-]);
-
 export const hubReport = pgTable("HubReport", {
 	id: text().primaryKey().notNull(),
 	hubId: text().notNull(),
@@ -627,7 +523,6 @@ export const hubReport = pgTable("HubReport", {
 	reportedServerId: text().notNull(),
 	messageId: text(),
 	reason: text().notNull(),
-	reportContextId: text(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	handledBy: text(),
@@ -636,6 +531,7 @@ export const hubReport = pgTable("HubReport", {
 	reportMessageId: text(),
 	reportChannelId: text(),
 	actionTaken: text(),
+	reportContextId: text(),
 }, (table) => [
 	index("HubReport_createdAt_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
 	index("HubReport_handledBy_idx").using("btree", table.handledBy.asc().nullsLast().op("text_ops")),
@@ -672,28 +568,6 @@ export const hubReport = pgTable("HubReport", {
 		}),
 ]);
 
-export const hubReview = pgTable("HubReview", {
-	id: text().primaryKey().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	rating: integer().notNull(),
-	text: text().notNull(),
-	hubId: text().notNull(),
-	userId: text().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "HubReview_hubId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "HubReview_userId_fkey"
-		}),
-	unique("HubReview_hubId_userId_key").on(table.hubId, table.userId),
-]);
-
 export const hubRulesAcceptance = pgTable("HubRulesAcceptance", {
 	id: text().primaryKey().notNull(),
 	userId: text().notNull(),
@@ -713,29 +587,6 @@ export const hubRulesAcceptance = pgTable("HubRulesAcceptance", {
 	unique("HubRulesAcceptance_userId_hubId_key").on(table.hubId, table.userId),
 ]);
 
-export const hubServerStats = pgTable("HubServerStats", {
-	id: text().primaryKey().notNull(),
-	hubId: text().notNull(),
-	serverId: text().notNull(),
-	year: integer().notNull(),
-	month: integer().notNull(),
-	messageCount: integer().default(0).notNull(),
-	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("HubServerStats_hubId_year_month_count_idx").using("btree", table.hubId.asc().nullsLast().op("int4_ops"), table.year.asc().nullsLast().op("text_ops"), table.month.asc().nullsLast().op("text_ops"), table.messageCount.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "HubServerStats_hubId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.serverId],
-			foreignColumns: [serverData.id],
-			name: "HubServerStats_serverId_fkey"
-		}).onDelete("cascade"),
-	unique("HubServerStats_hub_server_year_month_key").on(table.hubId, table.month, table.serverId, table.year),
-]);
-
 export const hubUpvote = pgTable("HubUpvote", {
 	id: text().primaryKey().notNull(),
 	userId: text().notNull(),
@@ -753,163 +604,6 @@ export const hubUpvote = pgTable("HubUpvote", {
 			name: "HubUpvote_userId_fkey"
 		}),
 	unique("HubUpvote_hubId_userId_key").on(table.hubId, table.userId),
-]);
-
-export const hubUserStats = pgTable("HubUserStats", {
-	id: text().primaryKey().notNull(),
-	hubId: text().notNull(),
-	userId: text().notNull(),
-	year: integer().notNull(),
-	month: integer().notNull(),
-	messageCount: integer().default(0).notNull(),
-	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("HubUserStats_hubId_year_month_count_idx").using("btree", table.hubId.asc().nullsLast().op("int4_ops"), table.year.asc().nullsLast().op("text_ops"), table.month.asc().nullsLast().op("text_ops"), table.messageCount.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.hubId],
-			foreignColumns: [hub.id],
-			name: "HubUserStats_hubId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "HubUserStats_userId_fkey"
-		}).onDelete("cascade"),
-	unique("HubUserStats_hub_user_year_month_key").on(table.hubId, table.month, table.userId, table.year),
-]);
-
-export const lobbyConnection = pgTable("LobbyConnection", {
-	id: varchar().primaryKey().notNull(),
-	lobbyId: text().notNull(),
-	webhookUrl: text().notNull(),
-	channelId: text().notNull(),
-	invokerUserId: text().notNull(),
-	invokerServerId: text().notNull(),
-	invokerServerName: text().default('Unknown Server').notNull(),
-	joinedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	leftAt: timestamp({ mode: 'string' }),
-}, (table) => [
-	index("ix_LobbyConnection_channelId").using("btree", table.channelId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyConnection_invokerServerId").using("btree", table.invokerServerId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyConnection_invokerUserId").using("btree", table.invokerUserId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyConnection_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.invokerServerId],
-			foreignColumns: [serverData.id],
-			name: "LobbyConnection_invokerServerId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.invokerUserId],
-			foreignColumns: [user.id],
-			name: "LobbyConnection_invokerUserId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.lobbyId],
-			foreignColumns: [lobby.id],
-			name: "LobbyConnection_lobbyId_fkey"
-		}).onDelete("cascade"),
-]);
-
-export const lobby = pgTable("Lobby", {
-	id: varchar().primaryKey().notNull(),
-	status: lobbyStatus().notNull(),
-	maxMemberCap: integer().notNull(),
-	messageCount: integer().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	closedAt: timestamp({ mode: 'string' }),
-	callStartedAt: timestamp({ mode: 'string' }),
-	durationSeconds: integer(),
-}, (table) => [
-	index("ix_lobby_status_open").using("btree", table.status.asc().nullsLast().op("enum_ops")).where(sql`(status = 'OPEN'::"LobbyStatus")`),
-]);
-
-export const lobbyMessage = pgTable("LobbyMessage", {
-	id: varchar().primaryKey().notNull(),
-	content: text().notNull(),
-	lobbyId: text().notNull(),
-	sourceConnectionId: text(),
-	sourceChannelId: text(),
-	authorId: text().notNull(),
-	authorDisplayName: text().default('Unknown User').notNull(),
-	replyToId: text(),
-	original: boolean().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	attachmentUrls: text().array().notNull(),
-}, (table) => [
-	index("ix_LobbyMessage_authorId").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyMessage_createdAt").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
-	index("ix_LobbyMessage_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyMessage_replyToId").using("btree", table.replyToId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.authorId],
-			foreignColumns: [user.id],
-			name: "LobbyMessage_authorId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.lobbyId],
-			foreignColumns: [lobby.id],
-			name: "LobbyMessage_lobbyId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.replyToId],
-			foreignColumns: [table.id],
-			name: "LobbyMessage_replyToId_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.sourceConnectionId],
-			foreignColumns: [lobbyConnection.id],
-			name: "LobbyMessage_sourceConnectionId_fkey"
-		}),
-]);
-
-export const lobbyMessageDelivery = pgTable("LobbyMessageDelivery", {
-	id: varchar().primaryKey().notNull(),
-	lobbyMessageId: text().notNull(),
-	targetConnectionId: text().notNull(),
-	webhookMessageId: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("ix_LobbyMessageDelivery_lobbyMessageId").using("btree", table.lobbyMessageId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyMessageDelivery_webhookMessageId").using("btree", table.webhookMessageId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.lobbyMessageId],
-			foreignColumns: [lobbyMessage.id],
-			name: "LobbyMessageDelivery_lobbyMessageId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.targetConnectionId],
-			foreignColumns: [lobbyConnection.id],
-			name: "LobbyMessageDelivery_targetConnectionId_fkey"
-		}),
-]);
-
-export const lobbyParticipant = pgTable("LobbyParticipant", {
-	id: varchar().primaryKey().notNull(),
-	lobbyId: text().notNull(),
-	userId: text().notNull(),
-	sourceConnectionId: text().notNull(),
-	displayName: text().notNull(),
-	avatarUrl: text(),
-	firstSpokeAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("ix_LobbyParticipant_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
-	index("ix_LobbyParticipant_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.lobbyId],
-			foreignColumns: [lobby.id],
-			name: "LobbyParticipant_lobbyId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.sourceConnectionId],
-			foreignColumns: [lobbyConnection.id],
-			name: "LobbyParticipant_sourceConnectionId_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "LobbyParticipant_userId_fkey"
-		}).onDelete("cascade"),
-	unique("uq_lobby_participant").on(table.lobbyId, table.userId),
 ]);
 
 export const reputationLog = pgTable("ReputationLog", {
@@ -960,24 +654,6 @@ export const serverBlocklist = pgTable("ServerBlocklist", {
 	check("check_only_one_blocked", sql`(("blockedUserId" IS NOT NULL) AND ("blockedServerId" IS NULL)) OR (("blockedUserId" IS NULL) AND ("blockedServerId" IS NOT NULL))`),
 ]);
 
-export const session = pgTable("Session", {
-	id: text().primaryKey().notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(),
-	token: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	ipAddress: text(),
-	userAgent: text(),
-	userId: text().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "Session_userId_fkey"
-		}).onDelete("cascade"),
-	unique("Session_token_key").on(table.token),
-]);
-
 export const achievement = pgTable("Achievement", {
 	id: text().primaryKey().notNull(),
 	name: text().notNull(),
@@ -1011,38 +687,139 @@ export const userAchievement = pgTable("UserAchievement", {
 	unique("UserAchievement_userId_achievementId_key").on(table.achievementId, table.userId),
 ]);
 
-export const userStats = pgTable("UserStats", {
+export const session = pgTable("Session", {
+	userId: text().notNull(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	userId: text().primaryKey().notNull(),
-	voteCount: integer().default(0).notNull(),
-	reputation: integer().default(0).notNull(),
-	messageCount: integer().default(0).notNull(),
-	callCount: integer().default(0).notNull(),
-	hubJoinCount: integer().default(0).notNull(),
-	currentStreak: integer().default(0).notNull(),
-	longestStreak: integer().default(0).notNull(),
-	streakFreezes: integer().default(0).notNull(),
-	lastStreakDate: date(),
+	id: text().primaryKey().notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	token: text().notNull(),
+	ipAddress: text(),
+	userAgent: text(),
 }, (table) => [
-	index("UserStats_callCount_idx").using("btree", table.callCount.asc().nullsLast().op("int4_ops")),
-	index("UserStats_currentStreak_idx").using("btree", table.currentStreak.asc().nullsLast().op("int4_ops")),
-	index("UserStats_messageCount_idx").using("btree", table.messageCount.asc().nullsLast().op("int4_ops")),
-	index("UserStats_reputation_idx").using("btree", table.reputation.asc().nullsLast().op("int4_ops")),
-	index("UserStats_voteCount_idx").using("btree", table.voteCount.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],
-			name: "UserStats_userId_fkey"
+			name: "Session_userId_fkey"
 		}).onDelete("cascade"),
-	check("UserStats_callCount_check", sql`"callCount" >= 0`),
-	check("UserStats_currentStreak_check", sql`"currentStreak" >= 0`),
-	check("UserStats_hubJoinCount_check", sql`"hubJoinCount" >= 0`),
-	check("UserStats_longestStreak_check", sql`"longestStreak" >= 0`),
-	check("UserStats_messageCount_check", sql`"messageCount" >= 0`),
-	check("UserStats_reputation_check", sql`reputation >= 0`),
-	check("UserStats_streakFreezes_check", sql`("streakFreezes" >= 0) AND ("streakFreezes" <= 2)`),
-	check("UserStats_voteCount_check", sql`"voteCount" >= 0`),
+	unique("Session_token_key").on(table.token),
+]);
+
+export const tag = pgTable("Tag", {
+	id: text().primaryKey().notNull(),
+	name: text().notNull(),
+	category: text(),
+	description: text(),
+	color: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	isOfficial: boolean().default(false).notNull(),
+	usageCount: integer().default(0).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("Tag_name_key").on(table.name),
+]);
+
+export const hubToTag = pgTable("_HubToTag", {
+	a: text("A").notNull(),
+	b: text("B").notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("_HubToTag_AB_unique").using("btree", table.a.asc().nullsLast().op("text_ops"), table.b.asc().nullsLast().op("text_ops")),
+	index().using("btree", table.b.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.a],
+			foreignColumns: [hub.id],
+			name: "_HubToTag_A_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.b],
+			foreignColumns: [tag.id],
+			name: "_HubToTag_B_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+]);
+
+export const serverData = pgTable("ServerData", {
+	id: text().primaryKey().notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	inviteCode: text(),
+	messageCount: integer().default(0).notNull(),
+	iconUrl: text(),
+	callCount: integer().default(0).notNull(),
+	prefix: text(),
+	hideServerName: boolean().default(false).notNull(),
+	pingOnMatch: boolean().default(false).notNull(),
+	autoRequeueOnSkip: boolean().default(false).notNull(),
+	autoRequeueOnHangup: boolean().default(false).notNull(),
+	filterNsfw: boolean().default(true).notNull(),
+	lobbyChannelIds: text().array().default([""]).notNull(),
+}, (table) => [
+	index("ServerData_callCount_idx").using("btree", table.callCount.asc().nullsLast().op("int4_ops")),
+	index("ServerData_lastMessageAt_idx").using("btree", table.lastMessageAt.desc().nullsFirst().op("timestamp_ops")),
+]);
+
+export const verification = pgTable("Verification", {
+	id: text().primaryKey().notNull(),
+	identifier: text().notNull(),
+	value: text().notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow(),
+});
+
+export const allowedBots = pgTable("AllowedBots", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	botId: text().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.botId],
+			foreignColumns: [bot.id],
+			name: "AllowedBots_botId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "AllowedBots_hubId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const account = pgTable("Account", {
+	userId: text().notNull(),
+	scope: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	id: text().primaryKey().notNull(),
+	accountId: text().notNull(),
+	providerId: text().notNull(),
+	accessToken: text(),
+	refreshToken: text(),
+	idToken: text(),
+	accessTokenExpiresAt: timestamp({ mode: 'string' }),
+	refreshTokenExpiresAt: timestamp({ mode: 'string' }),
+	password: text(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "Account_userId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const bot = pgTable("Bot", {
+	id: text().primaryKey().notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	image: varchar({ length: 512 }),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	shortDescription: varchar({ length: 255 }).notNull(),
+	longDescription: text().notNull(),
+	features: text().notNull(),
+	state: approvalStatus().default('PENDING').notNull(),
+}, (table) => [
+	index("Bot_state_idx").using("btree", table.state.asc().nullsLast().op("enum_ops")),
 ]);
 
 export const botToTag = pgTable("_BotToTag", {
@@ -1073,37 +850,637 @@ export const botTag = pgTable("BotTag", {
 	unique("BotTag_name_key").on(table.name),
 ]);
 
-export const hubToTag = pgTable("_HubToTag", {
-	a: text("A").notNull(),
-	b: text("B").notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+export const hubServerStats = pgTable("HubServerStats", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	serverId: text().notNull(),
+	year: integer().notNull(),
+	month: integer().notNull(),
+	messageCount: integer().default(0).notNull(),
+	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	uniqueIndex("_HubToTag_AB_unique").using("btree", table.a.asc().nullsLast().op("text_ops"), table.b.asc().nullsLast().op("text_ops")),
-	index().using("btree", table.b.asc().nullsLast().op("text_ops")),
+	index("HubServerStats_hubId_year_month_count_idx").using("btree", table.hubId.asc().nullsLast().op("int4_ops"), table.year.asc().nullsLast().op("text_ops"), table.month.asc().nullsLast().op("text_ops"), table.messageCount.asc().nullsLast().op("int4_ops")),
 	foreignKey({
-			columns: [table.a],
+			columns: [table.hubId],
 			foreignColumns: [hub.id],
-			name: "_HubToTag_A_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
+			name: "HubServerStats_hubId_fkey"
+		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.b],
-			foreignColumns: [tag.id],
-			name: "_HubToTag_B_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "HubServerStats_serverId_fkey"
+		}).onDelete("cascade"),
+	unique("HubServerStats_hub_server_year_month_key").on(table.hubId, table.month, table.serverId, table.year),
 ]);
 
-export const tag = pgTable("Tag", {
+export const hubUserStats = pgTable("HubUserStats", {
 	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	category: text(),
-	description: text(),
-	color: text(),
+	hubId: text().notNull(),
+	userId: text().notNull(),
+	year: integer().notNull(),
+	month: integer().notNull(),
+	messageCount: integer().default(0).notNull(),
+	lastMessageAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("HubUserStats_hubId_year_month_count_idx").using("btree", table.hubId.asc().nullsLast().op("int4_ops"), table.year.asc().nullsLast().op("text_ops"), table.month.asc().nullsLast().op("text_ops"), table.messageCount.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "HubUserStats_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "HubUserStats_userId_fkey"
+		}).onDelete("cascade"),
+	unique("HubUserStats_hub_user_year_month_key").on(table.hubId, table.month, table.userId, table.year),
+]);
+
+export const irisSchemaMigration = pgTable("iris_schema_migration", {
+	version: text().primaryKey().notNull(),
+	appliedAt: timestamp("applied_at", { withTimezone: true, mode: 'string' }).default(sql`clock_timestamp()`).notNull(),
+});
+
+export const stripeEvent = pgTable("StripeEvent", {
+	id: text().primaryKey().notNull(),
+	type: text().notNull(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	isOfficial: boolean().default(false).notNull(),
-	usageCount: integer().default(0).notNull(),
+});
+
+export const giftCode = pgTable("GiftCode", {
+	id: text().primaryKey().notNull(),
+	type: giftType().notNull(),
+	tier: premiumTier().notNull(),
+	purchasedBy: text().notNull(),
+	claimedBy: text(),
+	discountCouponId: text(),
+	isClaimed: boolean().default(false).notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	claimedAt: timestamp({ mode: 'string' }),
 }, (table) => [
-	unique("Tag_name_key").on(table.name),
+	index("GiftCode_claimedBy_idx").using("btree", table.claimedBy.asc().nullsLast().op("text_ops")),
+	index("GiftCode_purchasedBy_idx").using("btree", table.purchasedBy.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.claimedBy],
+			foreignColumns: [user.id],
+			name: "GiftCode_claimedBy_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.purchasedBy],
+			foreignColumns: [user.id],
+			name: "GiftCode_purchasedBy_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const premiumKey = pgTable("PremiumKey", {
+	id: text().primaryKey().notNull(),
+	tier: premiumTier().notNull(),
+	purchasedBy: text(),
+	subscriptionId: text().notNull(),
+	assignedUser: text(),
+	assignedGuild: text(),
+	assignedHub: text(),
+	status: keyStatus().default('PENDING').notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("PremiumKey_assignedGuild_idx").using("btree", table.assignedGuild.asc().nullsLast().op("text_ops")),
+	index("PremiumKey_assignedHub_idx").using("btree", table.assignedHub.asc().nullsLast().op("text_ops")),
+	index("PremiumKey_assignedUser_idx").using("btree", table.assignedUser.asc().nullsLast().op("text_ops")),
+	index("PremiumKey_purchasedBy_idx").using("btree", table.purchasedBy.asc().nullsLast().op("text_ops")),
+	index("PremiumKey_subscriptionId_idx").using("btree", table.subscriptionId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.assignedGuild],
+			foreignColumns: [serverData.id],
+			name: "PremiumKey_assignedGuild_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.assignedHub],
+			foreignColumns: [hub.id],
+			name: "PremiumKey_assignedHub_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.assignedUser],
+			foreignColumns: [user.id],
+			name: "PremiumKey_assignedUser_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.purchasedBy],
+			foreignColumns: [user.id],
+			name: "PremiumKey_purchasedBy_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.subscriptionId],
+			foreignColumns: [stripeSubscription.id],
+			name: "PremiumKey_subscriptionId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const stripeSubscription = pgTable("StripeSubscription", {
+	id: text().primaryKey().notNull(),
+	customerId: text().notNull(),
+	tier: premiumTier().notNull(),
+	currentPeriodEnd: timestamp({ mode: 'string' }).notNull(),
+	cancelAtPeriodEnd: boolean().notNull(),
+	status: subscriptionStatus().default('PENDING').notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	lastEventTime: bigint({ mode: "number" }),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+});
+
+export const lobby = pgTable("Lobby", {
+	id: varchar().primaryKey().notNull(),
+	status: lobbyStatus().notNull(),
+	maxMemberCap: integer().notNull(),
+	messageCount: integer().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	closedAt: timestamp({ mode: 'string' }),
+	callStartedAt: timestamp({ mode: 'string' }),
+	durationSeconds: integer(),
+}, (table) => [
+	index("ix_lobby_status_open").using("btree", table.status.asc().nullsLast().op("enum_ops")).where(sql`(status = 'OPEN'::"LobbyStatus")`),
+]);
+
+export const lobbyConnection = pgTable("LobbyConnection", {
+	id: varchar().primaryKey().notNull(),
+	lobbyId: text().notNull(),
+	webhookUrl: text().notNull(),
+	channelId: text().notNull(),
+	invokerUserId: text().notNull(),
+	invokerServerId: text().notNull(),
+	joinedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	leftAt: timestamp({ mode: 'string' }),
+	invokerServerName: text().default('Unknown Server').notNull(),
+}, (table) => [
+	index("ix_LobbyConnection_channelId").using("btree", table.channelId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyConnection_invokerServerId").using("btree", table.invokerServerId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyConnection_invokerUserId").using("btree", table.invokerUserId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyConnection_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.invokerServerId],
+			foreignColumns: [serverData.id],
+			name: "LobbyConnection_invokerServerId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.invokerUserId],
+			foreignColumns: [user.id],
+			name: "LobbyConnection_invokerUserId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.lobbyId],
+			foreignColumns: [lobby.id],
+			name: "LobbyConnection_lobbyId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const lobbyMessage = pgTable("LobbyMessage", {
+	id: varchar().primaryKey().notNull(),
+	content: text().notNull(),
+	lobbyId: text().notNull(),
+	sourceConnectionId: text(),
+	sourceChannelId: text(),
+	authorId: text().notNull(),
+	replyToId: text(),
+	original: boolean().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	attachmentUrls: text().array().notNull(),
+	authorDisplayName: text().default('Unknown User').notNull(),
+}, (table) => [
+	index("ix_LobbyMessage_authorId").using("btree", table.authorId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyMessage_createdAt").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("ix_LobbyMessage_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyMessage_replyToId").using("btree", table.replyToId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.authorId],
+			foreignColumns: [user.id],
+			name: "LobbyMessage_authorId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.lobbyId],
+			foreignColumns: [lobby.id],
+			name: "LobbyMessage_lobbyId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.replyToId],
+			foreignColumns: [table.id],
+			name: "LobbyMessage_replyToId_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.sourceConnectionId],
+			foreignColumns: [lobbyConnection.id],
+			name: "LobbyMessage_sourceConnectionId_fkey"
+		}),
+]);
+
+export const betaServer = pgTable("BetaServer", {
+	id: text().primaryKey().notNull(),
+	name: text().notNull(),
+	invitedById: text().notNull(),
+	invitedAt: timestamp({ mode: 'string' }).notNull(),
+	isActive: boolean().notNull(),
+	maxLobbies: integer().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.id],
+			foreignColumns: [serverData.id],
+			name: "BetaServer_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.invitedById],
+			foreignColumns: [user.id],
+			name: "BetaServer_invitedById_fkey"
+		}),
+]);
+
+export const lobbyMessageDelivery = pgTable("LobbyMessageDelivery", {
+	id: varchar().primaryKey().notNull(),
+	lobbyMessageId: text().notNull(),
+	targetConnectionId: text().notNull(),
+	webhookMessageId: text().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ix_LobbyMessageDelivery_lobbyMessageId").using("btree", table.lobbyMessageId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyMessageDelivery_webhookMessageId").using("btree", table.webhookMessageId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.lobbyMessageId],
+			foreignColumns: [lobbyMessage.id],
+			name: "LobbyMessageDelivery_lobbyMessageId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.targetConnectionId],
+			foreignColumns: [lobbyConnection.id],
+			name: "LobbyMessageDelivery_targetConnectionId_fkey"
+		}),
+]);
+
+export const lobbyReportActionLog = pgTable("LobbyReportActionLog", {
+	id: varchar().primaryKey().notNull(),
+	reportId: text().notNull(),
+	actionType: lobbyReportActionType().notNull(),
+	moderatorId: text().notNull(),
+	targetUserId: text(),
+	reason: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ix_LobbyReportActionLog_reportId").using("btree", table.reportId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.moderatorId],
+			foreignColumns: [user.id],
+			name: "LobbyReportActionLog_moderatorId_fkey"
+		}),
+	foreignKey({
+			columns: [table.reportId],
+			foreignColumns: [lobbyReport.id],
+			name: "LobbyReportActionLog_reportId_fkey"
+		}),
+	foreignKey({
+			columns: [table.targetUserId],
+			foreignColumns: [user.id],
+			name: "LobbyReportActionLog_targetUserId_fkey"
+		}),
+]);
+
+export const lobbyReport = pgTable("LobbyReport", {
+	id: varchar().primaryKey().notNull(),
+	reason: text().notNull(),
+	lobbyId: text().notNull(),
+	reporterId: text().notNull(),
+	reportedMessageId: text(),
+	handledBy: text(),
+	status: reportStatus().default('PENDING').notNull(),
+	handledAt: timestamp({ mode: 'string' }),
+	actionTaken: text(),
+	reportChannelId: text(),
+	reportMessageId: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	reportContextId: text(),
+}, (table) => [
+	index("ix_LobbyReport_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyReport_reportedMessageId").using("btree", table.reportedMessageId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.handledBy],
+			foreignColumns: [user.id],
+			name: "LobbyReport_handledBy_fkey"
+		}),
+	foreignKey({
+			columns: [table.lobbyId],
+			foreignColumns: [lobby.id],
+			name: "LobbyReport_lobbyId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.reportContextId],
+			foreignColumns: [reportContext.id],
+			name: "LobbyReport_reportContextId_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.reporterId],
+			foreignColumns: [user.id],
+			name: "LobbyReport_reporterId_fkey"
+		}),
+]);
+
+export const autoModEscalationRule = pgTable("AutoModEscalationRule", {
+	id: text().primaryKey().notNull(),
+	hubId: text(),
+	serverId: text(),
+	triggerThreshold: integer().notNull(),
+	triggerWindowMinutes: integer().notNull(),
+	action: blockWordAction().notNull(),
+	createdBy: text().notNull(),
+	actionDurationMinutes: integer(),
+	enabled: boolean().default(false).notNull(),
+	includeManual: boolean().default(false).notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [user.id],
+			name: "AutoModEscalationRule_createdBy_fkey"
+		}),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "AutoModEscalationRule_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "AutoModEscalationRule_serverId_fkey"
+		}).onDelete("cascade"),
+	check("check_escalationrule_target", sql`(("hubId" IS NOT NULL) AND ("serverId" IS NULL)) OR (("hubId" IS NULL) AND ("serverId" IS NOT NULL))`),
+]);
+
+export const lobbyParticipant = pgTable("LobbyParticipant", {
+	id: varchar().primaryKey().notNull(),
+	lobbyId: text().notNull(),
+	userId: text().notNull(),
+	sourceConnectionId: text().notNull(),
+	displayName: text().notNull(),
+	firstSpokeAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	avatarUrl: text(),
+}, (table) => [
+	index("ix_LobbyParticipant_lobbyId").using("btree", table.lobbyId.asc().nullsLast().op("text_ops")),
+	index("ix_LobbyParticipant_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.lobbyId],
+			foreignColumns: [lobby.id],
+			name: "LobbyParticipant_lobbyId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sourceConnectionId],
+			foreignColumns: [lobbyConnection.id],
+			name: "LobbyParticipant_sourceConnectionId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "LobbyParticipant_userId_fkey"
+		}).onDelete("cascade"),
+	unique("uq_lobby_participant").on(table.lobbyId, table.userId),
+]);
+
+export const automodRule = pgTable("AutomodRule", {
+	id: text().primaryKey().notNull(),
+	hubId: text(),
+	serverId: text(),
+	name: text().notNull(),
+	createdBy: text().notNull(),
+	enabled: boolean().default(true).notNull(),
+	muteDurationMinutes: integer(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	// TODO: failed to parse database type 'BlockWordAction"[]'
+	actions: blockWordAction().array().default([]).notNull(),
+	isGlobal: boolean().default(false).notNull(),
+	description: text(),
+	shortDescription: text(),
+	emoji: text(),
+	isMandatory: boolean().default(false).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [user.id],
+			name: "AutomodRule_createdBy_fkey"
+		}),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "AutomodRule_hubId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "AutomodRule_serverId_fkey"
+		}).onDelete("cascade"),
+	unique("uq_automodrule_hub_name").on(table.hubId, table.name),
+	unique("uq_automodrule_server_name").on(table.name, table.serverId),
+	check("check_automodrule_target", sql`("isGlobal" IS TRUE) OR (("hubId" IS NOT NULL) AND ("serverId" IS NULL)) OR (("hubId" IS NULL) AND ("serverId" IS NOT NULL))`),
+]);
+
+export const automodPattern = pgTable("AutomodPattern", {
+	id: text().primaryKey().notNull(),
+	ruleId: text().notNull(),
+	pattern: text().notNull(),
+	matchType: patternMatchType().default('EXACT').notNull(),
+	isUiExample: boolean().default(false).notNull(),
+}, (table) => [
+	index("AutomodPattern_ruleId_idx").using("btree", table.ruleId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.ruleId],
+			foreignColumns: [automodRule.id],
+			name: "AutomodPattern_ruleId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const automodWhitelist = pgTable("AutomodWhitelist", {
+	id: text().primaryKey().notNull(),
+	ruleId: text().notNull(),
+	word: text().notNull(),
+	createdBy: text().notNull(),
+	reason: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [user.id],
+			name: "AutomodWhitelist_createdBy_fkey"
+		}),
+	foreignKey({
+			columns: [table.ruleId],
+			foreignColumns: [automodRule.id],
+			name: "AutomodWhitelist_ruleId_fkey"
+		}).onDelete("cascade"),
+	unique("AutomodWhitelist_ruleId_word_key").on(table.ruleId, table.word),
+]);
+
+export const authRole = pgTable("AuthRole", {
+	id: uuid().primaryKey().notNull(),
+	hubId: text(),
+	name: text().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	permissions: bigint({ mode: "number" }).notNull(),
+	position: integer().notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ix_AuthRole_hubId").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "AuthRole_hubId_fkey"
+		}).onDelete("cascade"),
+	unique("uq_authrole_hubid_name").on(table.hubId, table.name),
+]);
+
+export const hubActivityBucket = pgTable("HubActivityBucket", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	bucketStart: timestamp({ mode: 'string' }).notNull(),
+	messageCount: integer().default(0).notNull(),
+}, (table) => [
+	index("HubActivityBucket_bucketStart_hubId_idx").using("btree", table.bucketStart.asc().nullsLast().op("timestamp_ops"), table.hubId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "HubActivityBucket_hubId_fkey"
+		}).onDelete("cascade"),
+	unique("HubActivityBucket_hub_bucket_key").on(table.bucketStart, table.hubId),
+]);
+
+export const authUserAssignment = pgTable("AuthUserAssignment", {
+	id: uuid().primaryKey().notNull(),
+	roleId: uuid().notNull(),
+	userId: text().notNull(),
+	targetServerId: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ix_AuthUserAssignment_roleId").using("btree", table.roleId.asc().nullsLast().op("uuid_ops")),
+	index("ix_AuthUserAssignment_targetServerId").using("btree", table.targetServerId.asc().nullsLast().op("text_ops")),
+	index("ix_AuthUserAssignment_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.roleId],
+			foreignColumns: [authRole.id],
+			name: "AuthUserAssignment_roleId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "AuthUserAssignment_userId_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const auditLog = pgTable("AuditLog", {
+	id: text().primaryKey().notNull(),
+	eventType: varchar({ length: 64 }).notNull(),
+	summary: text().notNull(),
+	guildId: text(),
+	hubId: text(),
+	userId: text(),
+	actorId: text(),
+	before: jsonb(),
+	after: jsonb(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("AuditLog_actorId_idx").using("btree", table.actorId.asc().nullsLast().op("text_ops")),
+	index("AuditLog_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("AuditLog_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
+	index("AuditLog_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("AuditLog_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
+	index("AuditLog_guildName_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops"), table.guildId.asc().nullsLast().op("text_ops")).where(sql`(("eventType")::text = 'GuildNameChanged'::text)`),
+	index("AuditLog_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("AuditLog_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
+	index("AuditLog_userId_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.actorId],
+			foreignColumns: [user.id],
+			name: "AuditLog_actorId_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.guildId],
+			foreignColumns: [serverData.id],
+			name: "AuditLog_guildId_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "AuditLog_hubId_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "AuditLog_userId_fkey"
+		}).onDelete("set null"),
+]);
+
+export const hubActivityUserBucket = pgTable("HubActivityUserBucket", {
+	id: text().primaryKey().notNull(),
+	hubId: text().notNull(),
+	userId: text().notNull(),
+	bucketStart: timestamp({ mode: 'string' }).notNull(),
+}, (table) => [
+	index("HubActivityUserBucket_bucketStart_hubId_idx").using("btree", table.bucketStart.asc().nullsLast().op("timestamp_ops"), table.hubId.asc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+			columns: [table.hubId],
+			foreignColumns: [hub.id],
+			name: "HubActivityUserBucket_hubId_fkey"
+		}).onDelete("cascade"),
+	unique("HubActivityUserBucket_hub_user_bucket_key").on(table.bucketStart, table.hubId, table.userId),
+]);
+
+export const botAnalyticsEvent = pgTable("BotAnalyticsEvent", {
+	id: uuid().primaryKey().notNull(),
+	eventType: varchar({ length: 64 }).notNull(),
+	userId: text(),
+	guildId: text(),
+	hubId: text(),
+	properties: jsonb(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("BotAnalyticsEvent_eventType_createdAt_idx").using("btree", table.eventType.asc().nullsLast().op("timestamp_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
+	index("BotAnalyticsEvent_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("BotAnalyticsEvent_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("timestamp_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
+	index("BotAnalyticsEvent_userId_createdAt_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("ix_BotAnalyticsEvent_createdAt").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("ix_BotAnalyticsEvent_eventType").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
+	index("ix_BotAnalyticsEvent_guildId").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
+	index("ix_BotAnalyticsEvent_hubId").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
+	index("ix_BotAnalyticsEvent_userId").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+]);
+
+export const reportContext = pgTable("ReportContext", {
+	id: text().primaryKey().notNull(),
+	reportId: text().notNull(),
+	reportType: text().notNull(),
+	messageId: text().notNull(),
+	content: text(),
+	authorId: text().notNull(),
+	channelId: text(),
+	guildId: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	messageData: jsonb(),
+}, (table) => [
+	index("ReportContext_messageId_idx").using("btree", table.messageId.asc().nullsLast().op("text_ops")),
+	index("ReportContext_reportId_idx").using("btree", table.reportId.asc().nullsLast().op("text_ops")),
+]);
+
+export const serverAutomodRuleState = pgTable("ServerAutomodRuleState", {
+	serverId: text().notNull(),
+	ruleId: text().notNull(),
+	enabled: boolean().default(true).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.ruleId],
+			foreignColumns: [automodRule.id],
+			name: "ServerAutomodRuleState_ruleId_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.serverId],
+			foreignColumns: [serverData.id],
+			name: "ServerAutomodRuleState_serverId_fkey"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.ruleId, table.serverId], name: "uq_server_automod_rule_state"}),
 ]);
 
 export const userAchievementProgress = pgTable("UserAchievementProgress", {
