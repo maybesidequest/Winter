@@ -54,10 +54,10 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold uppercase tracking-wider text-[#60a5fa] hover:text-[#93c5fd] transition-colors cursor-pointer"
         >
           <span>Server Controls</span>
-          <span className="text-[10px]">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
+          <span className="text-[10px] opacity-70">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
 
         {!collapsed && (

@@ -60,10 +60,10 @@ export function GeneralSidebarTabs({
         <button
           type="button"
           onClick={() => toggle("community")}
-          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold uppercase tracking-wider text-[#b794f4] hover:text-[#c4b5fd] transition-colors cursor-pointer"
         >
           <span>Community & Hubs</span>
-          <span className="text-[10px]">{collapsed.community ? <DownOutlined /> : <UpOutlined />}</span>
+          <span className="text-[10px] opacity-70">{collapsed.community ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
 
         {!collapsed.community && (
@@ -128,10 +128,10 @@ export function GeneralSidebarTabs({
         <button
           type="button"
           onClick={() => toggle("servers")}
-          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold uppercase tracking-wider text-[#60a5fa] hover:text-[#93c5fd] transition-colors cursor-pointer"
         >
           <span>Discord Servers</span>
-          <span className="text-[10px]">{collapsed.servers ? <DownOutlined /> : <UpOutlined />}</span>
+          <span className="text-[10px] opacity-70">{collapsed.servers ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
 
         {!collapsed.servers && (
@@ -197,10 +197,10 @@ export function GeneralSidebarTabs({
         <button
           type="button"
           onClick={() => toggle("calls")}
-          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold uppercase tracking-wider text-[#fb923c] hover:text-[#fed7aa] transition-colors cursor-pointer"
         >
           <span>Realtime Calls</span>
-          <span className="text-[10px]">{collapsed.calls ? <DownOutlined /> : <UpOutlined />}</span>
+          <span className="text-[10px] opacity-70">{collapsed.calls ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
 
         {!collapsed.calls && (

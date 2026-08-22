@@ -46,7 +46,7 @@ export function SettingsMiniSidebar({
       style={{ background: "#13141f" }}
     >
       <div className="px-2 pb-3 mb-1 border-b border-white/[0.08]">
-        <span className="text-xs font-semibold uppercase tracking-wider text-purple-300/40">
+        <span className="text-[12px] font-bold uppercase tracking-wider text-[#b794f4]">
           User Settings
         </span>
         <h3 className="text-base font-bold text-white tracking-tight font-['Sora']">Preferences</h3>

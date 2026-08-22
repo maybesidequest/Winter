@@ -1,7 +1,7 @@
 import { Tooltip } from "antd";
 import { SafetyCertificateOutlined, TrophyOutlined, FireOutlined } from "@ant-design/icons";
 import type { UserResource } from "~/resources/user";
-import { getBadgeInfo, resolveUserBadges } from "~/resources/badge";
+import { getBadgeInfo } from "~/resources/badge";
 
 interface AccountSectionProps {
   userResource?: UserResource;
@@ -30,7 +30,9 @@ export function AccountSection({ userResource, isLoading }: AccountSectionProps)
     day: "numeric",
   });
 
-  const userBadges = resolveUserBadges(status);
+  const userBadges = (status.badges || [])
+    .map((b) => getBadgeInfo(b))
+    .filter((b): b is NonNullable<typeof b> => b !== null);
 
   return (
     <div className="relative z-10 flex flex-col gap-5">
