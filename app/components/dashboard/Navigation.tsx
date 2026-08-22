@@ -1,6 +1,7 @@
 import {
   AppstoreOutlined,
   BellOutlined,
+  CompassOutlined,
   LogoutOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
@@ -11,6 +12,7 @@ import type { User } from "~/services/auth.server";
 
 const navigation = [
   { to: "/dashboard", label: "Today", icon: <AppstoreOutlined />, end: true },
+  { to: "/dashboard/browse", label: "Explore", icon: <CompassOutlined /> },
   { to: "/dashboard/inbox", label: "Inbox", icon: <BellOutlined /> },
   { to: "/dashboard/hubs", label: "Hubs", icon: <TeamOutlined /> },
   { to: "/dashboard/servers", label: "Servers", icon: <SafetyCertificateOutlined /> },
