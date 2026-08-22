@@ -24,11 +24,11 @@ const REQUIRED_PERMISSIONS = [
 
 export function ServerSettingsCard({
   server,
-  botClientId = "904791550993072230",
+  botClientId = "798748015435055134",
 }: ServerSettingsCardProps) {
   const [copied, setCopied] = useState(false);
   const isInstalled = server.status.botInstalled;
-  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&permissions=534723950656&scope=bot%20applications.commands&guild_id=${server.metadata.id}&disable_guild_select=true`;
+  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&guild_id=${server.metadata.id}&disable_guild_select=true`;
 
   const copyServerId = () => {
     navigator.clipboard.writeText(server.metadata.id);

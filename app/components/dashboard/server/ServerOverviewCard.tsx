@@ -15,9 +15,9 @@ interface ServerOverviewCardProps {
   botClientId?: string;
 }
 
-export function ServerOverviewCard({ server, botClientId = "904791550993072230" }: ServerOverviewCardProps) {
+export function ServerOverviewCard({ server, botClientId = "798748015435055134" }: ServerOverviewCardProps) {
   const isInstalled = server.status.botInstalled;
-  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&permissions=534723950656&scope=bot%20applications.commands&guild_id=${server.metadata.id}&disable_guild_select=true`;
+  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&guild_id=${server.metadata.id}&disable_guild_select=true`;
 
   return (
     <div className="flex flex-col gap-6 w-full">
