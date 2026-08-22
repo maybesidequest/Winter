@@ -128,12 +128,12 @@ export const feedbackSubmission = pgTable("FeedbackSubmission", {
 	submittedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	uniqueIndex("FeedbackSubmission_dedupeKey_key").using("btree", table.dedupeKey.asc().nullsLast().op("text_ops")).where(sql`("dedupeKey" IS NOT NULL)`),
-	index("FeedbackSubmission_formKey_formVersion_submittedAt_idx").using("btree", table.formKey.asc().nullsLast().op("int4_ops"), table.formVersion.asc().nullsLast().op("int4_ops"), table.submittedAt.asc().nullsLast().op("int4_ops")),
-	index("FeedbackSubmission_guildId_submittedAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
-	index("FeedbackSubmission_hubId_submittedAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
-	index("FeedbackSubmission_lobbyId_submittedAt_idx").using("btree", table.lobbyId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
+	index("FeedbackSubmission_formKey_formVersion_submittedAt_idx").using("btree", table.formKey.asc().nullsLast().op("int4_ops"), table.formVersion.asc().nullsLast().op("int4_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
+	index("FeedbackSubmission_guildId_submittedAt_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
+	index("FeedbackSubmission_hubId_submittedAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
+	index("FeedbackSubmission_lobbyId_submittedAt_idx").using("btree", table.lobbyId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
 	index("FeedbackSubmission_source_submittedAt_idx").using("btree", table.source.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
-	index("FeedbackSubmission_userId_submittedAt_idx").using("btree", table.userId.asc().nullsLast().op("timestamp_ops"), table.submittedAt.asc().nullsLast().op("text_ops")),
+	index("FeedbackSubmission_userId_submittedAt_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.submittedAt.asc().nullsLast().op("timestamp_ops")),
 	foreignKey({
 			columns: [table.formKey, table.formVersion],
 			foreignColumns: [feedbackFormVersion.formKey, feedbackFormVersion.version],
@@ -162,9 +162,9 @@ export const message = pgTable("Message", {
 	index("Message_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
 	index("Message_guildId_authorId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.authorId.asc().nullsLast().op("text_ops")),
 	index("Message_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
-	index("Message_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
+	index("Message_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
 	index("Message_referredMessageId_idx").using("btree", table.referredMessageId.asc().nullsLast().op("text_ops")),
-	index("Message_status_createdAt_idx").using("btree", table.status.asc().nullsLast().op("enum_ops"), table.createdAt.desc().nullsFirst().op("enum_ops")),
+	index("Message_status_createdAt_idx").using("btree", table.status.asc().nullsLast().op("enum_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
 	foreignKey({
 			columns: [table.hubId],
 			foreignColumns: [hub.id],
@@ -256,7 +256,7 @@ export const feedbackHandlerJob = pgTable("FeedbackHandlerJob", {
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	processedAt: timestamp({ mode: 'string' }),
 }, (table) => [
-	index("FeedbackHandlerJob_status_availableAt_idx").using("btree", table.status.asc().nullsLast().op("timestamp_ops"), table.availableAt.asc().nullsLast().op("text_ops")),
+	index("FeedbackHandlerJob_status_availableAt_idx").using("btree", table.status.asc().nullsLast().op("text_ops"), table.availableAt.asc().nullsLast().op("timestamp_ops")),
 	index("FeedbackHandlerJob_submissionId_idx").using("btree", table.submissionId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.submissionId],
@@ -305,7 +305,7 @@ export const hub = pgTable("Hub", {
 	index("Hub_nsfw_idx").using("btree", table.nsfw.asc().nullsLast().op("bool_ops")),
 	index("Hub_ownerId_idx").using("btree", table.ownerId.asc().nullsLast().op("text_ops")),
 	index("Hub_upvoteCount_idx").using("btree", table.upvoteCount.desc().nullsFirst().op("int4_ops")),
-	index("Hub_verified_featured_visibility_idx").using("btree", table.verified.asc().nullsLast().op("enum_ops"), table.featured.asc().nullsLast().op("enum_ops"), table.visibility.asc().nullsLast().op("enum_ops")),
+	index("Hub_verified_featured_visibility_idx").using("btree", table.verified.asc().nullsLast().op("bool_ops"), table.featured.asc().nullsLast().op("bool_ops"), table.visibility.asc().nullsLast().op("enum_ops")),
 	index("Hub_weeklyMessageCount_idx").using("btree", table.weeklyMessageCount.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.ownerId],
@@ -1386,7 +1386,7 @@ export const auditLog = pgTable("AuditLog", {
 	index("AuditLog_actorId_idx").using("btree", table.actorId.asc().nullsLast().op("text_ops")),
 	index("AuditLog_createdAt_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamp_ops")),
 	index("AuditLog_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
-	index("AuditLog_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
+	index("AuditLog_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
 	index("AuditLog_guildId_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops")),
 	index("AuditLog_guildName_eventType_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops"), table.guildId.asc().nullsLast().op("text_ops")).where(sql`(("eventType")::text = 'GuildNameChanged'::text)`),
 	index("AuditLog_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("timestamp_ops")),
@@ -1420,7 +1420,7 @@ export const hubActivityUserBucket = pgTable("HubActivityUserBucket", {
 	userId: text().notNull(),
 	bucketStart: timestamp({ mode: 'string' }).notNull(),
 }, (table) => [
-	index("HubActivityUserBucket_bucketStart_hubId_idx").using("btree", table.bucketStart.asc().nullsLast().op("timestamp_ops"), table.hubId.asc().nullsLast().op("timestamp_ops")),
+	index("HubActivityUserBucket_bucketStart_hubId_idx").using("btree", table.bucketStart.asc().nullsLast().op("timestamp_ops"), table.hubId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.hubId],
 			foreignColumns: [hub.id],
@@ -1438,9 +1438,9 @@ export const botAnalyticsEvent = pgTable("BotAnalyticsEvent", {
 	properties: jsonb(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("BotAnalyticsEvent_eventType_createdAt_idx").using("btree", table.eventType.asc().nullsLast().op("timestamp_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
+	index("BotAnalyticsEvent_eventType_createdAt_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
 	index("BotAnalyticsEvent_guildId_createdAt_idx").using("btree", table.guildId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
-	index("BotAnalyticsEvent_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("timestamp_ops"), table.createdAt.asc().nullsLast().op("text_ops")),
+	index("BotAnalyticsEvent_hubId_createdAt_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
 	index("BotAnalyticsEvent_userId_createdAt_idx").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.createdAt.asc().nullsLast().op("timestamp_ops")),
 	index("ix_BotAnalyticsEvent_createdAt").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
 	index("ix_BotAnalyticsEvent_eventType").using("btree", table.eventType.asc().nullsLast().op("text_ops")),

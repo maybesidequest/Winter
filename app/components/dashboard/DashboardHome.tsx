@@ -79,15 +79,6 @@ export function DashboardHome() {
       />
 
       {/* Row 1: Four Metric Cards inside Creem-style Group Container with Atlas Contours */}
-      <div
-        className="relative overflow-hidden p-3 md:p-4 rounded-3xl border"
-        style={{
-          background: "rgba(17, 18, 27, 0.6)",
-          borderColor: "rgba(10, 8, 23, 0.75)",
-          boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
-        }}
-      >
-        <div className="dashboard-card-contours pointer-events-none" aria-hidden="true" />
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Active Hubs"
@@ -122,7 +113,6 @@ export function DashboardHome() {
             contourClass="dashboard-card-contours--sage"
           />
         </div>
-      </div>
 
       {/* Row 2: Two Wider Cards with Atlas Contours */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -130,8 +120,8 @@ export function DashboardHome() {
         <div
           className="relative overflow-hidden lg:col-span-7 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
-            background: "rgba(21, 20, 36, 0.85)",
-            borderColor: "rgba(10, 8, 23, 0.75)",
+            background: "#13141f",
+            borderColor: "rgba(255, 255, 255, 0.08)",
             boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >
@@ -151,7 +141,7 @@ export function DashboardHome() {
                   key={act.id}
                   className="p-3.5 rounded-xl border flex items-start gap-3.5 transition-colors duration-150 hover:bg-white/[0.02]"
                   style={{
-                    background: "rgba(17, 18, 27, 0.5)",
+                    background: "rgba(11, 12, 20, 0.5)",
                     borderColor: "rgba(255, 255, 255, 0.06)",
                     boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
                   }}
@@ -196,8 +186,8 @@ export function DashboardHome() {
         <div
           className="relative overflow-hidden lg:col-span-5 p-6 rounded-3xl border flex flex-col justify-between"
           style={{
-            background: "rgba(21, 20, 36, 0.85)",
-            borderColor: "rgba(10, 8, 23, 0.75)",
+            background: "#13141f",
+            borderColor: "rgba(255, 255, 255, 0.08)",
             boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
           }}
         >
@@ -220,7 +210,7 @@ export function DashboardHome() {
                   to={`/dashboard/servers/${srv.metadata.id}/overview`}
                   className="p-3 rounded-xl border flex items-center justify-between gap-3 transition-all duration-150 hover:bg-white/[0.05] group"
                   style={{
-                    background: "rgba(17, 18, 27, 0.5)",
+                    background: "rgba(11, 12, 20, 0.5)",
                     borderColor: "rgba(255, 255, 255, 0.06)",
                     boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.6)",
                   }}

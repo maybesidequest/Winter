@@ -40,12 +40,11 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#9f95f4] hover:text-[#b8b0f8] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
         >
           <span>Hub Controls</span>
           <span className="text-[10px]">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
-
 
         {!collapsed && (
           <nav className="flex flex-col gap-1 mt-0.5">
@@ -57,8 +56,8 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
                 className={({ isActive }) =>
                   `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                     isActive
-                      ? "active bg-white/[0.08] text-white font-bold"
-                      : "text-white/85 hover:text-white hover:bg-white/[0.06]"
+                      ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                      : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
                   }`
                 }
               >

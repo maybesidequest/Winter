@@ -31,14 +31,12 @@ export function HubTagPills({
     : DEFAULT_FEATURED_CATEGORIES.map((name) => ({ id: name, name }));
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+    <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none text-xs">
       <button
         type="button"
         onClick={onClearTags}
-        className={`px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
-          selectedTags.length === 0
-            ? "bg-violet-500 text-white font-semibold shadow-[0_0_12px_rgba(139,92,246,0.35)]"
-            : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]"
+        className={`dashboard-pill-btn flex items-center gap-1.5 ${
+          selectedTags.length === 0 ? "dashboard-pill-btn--active" : ""
         }`}
       >
         <TagOutlined className="text-[10px]" />
@@ -52,10 +50,8 @@ export function HubTagPills({
             key={t.id || t.name}
             type="button"
             onClick={() => onToggleTag(t.name)}
-            className={`px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap ${
-              isSelected
-                ? "bg-violet-500/20 text-violet-200 border border-violet-400/50 shadow-[0_0_10px_rgba(139,92,246,0.2)] font-semibold"
-                : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]"
+            className={`dashboard-pill-btn ${
+              isSelected ? "dashboard-pill-btn--selected" : ""
             }`}
           >
             #{t.name}

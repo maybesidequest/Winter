@@ -21,8 +21,8 @@ export function MetricCard({
     <div
       className="relative overflow-hidden p-5 md:p-6 rounded-2xl flex flex-col justify-between select-none"
       style={{
-        background: "rgba(21, 20, 36, 0.85)",
-        border: "1px solid rgba(10, 8, 23, 0.75)",
+        background: "#13141f",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
         boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
       }}
     >

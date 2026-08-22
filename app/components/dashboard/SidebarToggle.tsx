@@ -10,7 +10,7 @@ export function SidebarToggle({ value, onChange }: SidebarToggleProps) {
     <div
       className="p-1 rounded-xl flex items-center gap-1 w-full select-none"
       style={{
-        background: "rgba(17, 18, 27, 0.6)",
+        background: "rgba(11, 12, 20, 0.6)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
       }}
     >

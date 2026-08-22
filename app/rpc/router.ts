@@ -5,6 +5,7 @@ import { moderationRouter } from "./routers/moderation";
 import { preferencesRouter } from "./routers/preferences";
 import { serverRouter } from "./routers/server";
 import { safetyRouter } from "./routers/safety";
+import { userRouter } from "./routers/user";
 
 export const appRouter = base.router({
   hub: hubRouter,
@@ -13,6 +14,7 @@ export const appRouter = base.router({
   preferences: preferencesRouter,
   server: serverRouter,
   safety: safetyRouter,
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;

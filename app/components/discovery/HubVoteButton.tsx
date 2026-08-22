@@ -58,8 +58,8 @@ export function HubVoteButton({
         title={voted ? "You upvoted this hub (12h cooldown)" : "Upvote this hub"}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
           voted
-            ? "bg-violet-500/20 border border-violet-400/40 text-violet-200 cursor-default shadow-[0_0_12px_rgba(139,92,246,0.2)]"
-            : "bg-white/[0.05] hover:bg-violet-500/15 border border-white/10 hover:border-violet-500/30 text-white/80 hover:text-white cursor-pointer active:scale-95"
+            ? "bg-violet-500/20 border border-violet-400/50 text-violet-200 cursor-default shadow-[0_1.5px_0_0_rgba(129,117,238,0.4),0_0_12px_rgba(139,92,246,0.2)]"
+            : "bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.12] hover:border-violet-400/40 text-white/80 hover:text-white cursor-pointer shadow-[0_1.5px_0_0_rgba(255,255,255,0.12)] hover:shadow-[0_2.5px_0_0_rgba(129,117,238,0.4)] active:shadow-[0_0.5px_0_0_rgba(255,255,255,0.12)] hover:-translate-y-[1px] active:translate-y-[1px]"
         }`}
       >
         {voted ? (

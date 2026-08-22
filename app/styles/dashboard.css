@@ -1,8 +1,8 @@
 :root {
-  --dash-ink: #11121b;
-  --dash-night: #19172b;
-  --dash-paper: #11121b;
-  --dash-surface: rgba(20, 20, 25, 0.4);
+  --dash-ink: #0b0c14;
+  --dash-night: #13141f;
+  --dash-paper: #0b0c14;
+  --dash-surface: #13141f;
   --dash-surface-subtle: rgba(255, 255, 255, 0.03);
   --dash-text: #f7f5ef;
   --dash-muted: #9697a3;
@@ -18,12 +18,12 @@
 }
 
 [data-dashboard-theme="night"] {
-  --dash-paper: #11121b;
-  --dash-surface: #1f2030;
-  --dash-surface-subtle: #252638;
+  --dash-paper: #0b0c14;
+  --dash-surface: #13141f;
+  --dash-surface-subtle: #1c1a2e;
   --dash-text: #f7f5ef;
   --dash-muted: #aaa9b4;
-  --dash-border: rgba(255, 255, 255, 0.12);
+  --dash-border: rgba(255, 255, 255, 0.08);
   --dash-violet-soft: #302b5e;
   --dash-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.75);
 }
@@ -49,8 +49,8 @@
   flex-direction: column;
   padding: 20px 16px;
   color: #f7f5ef;
-  background: rgba(17, 18, 27, 0.96);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: #13141f;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dashboard-brand {
@@ -399,7 +399,7 @@
   font-weight: 700;
   border: 1px solid var(--edge);
   border-radius: 10px;
-  box-shadow: 0 1.5px 0 0 var(--edge);
+  box-shadow: 0 2px 0 0 var(--edge);
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease;
   cursor: pointer;
   text-decoration: none;
@@ -409,13 +409,13 @@
   --edge: #b5a5f0;
   transform: translateY(-1px);
   background: #d8cffc;
-  box-shadow: 0 2.5px 0 0 var(--edge);
+  box-shadow: 0 3.5px 0 0 var(--edge);
   color: #100e18;
 }
 
 .dashboard-btn-primary:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 0.5px 0 0 var(--edge);
+  box-shadow: 0 1.5px 0 0 var(--edge);
 }
 
 .dashboard-btn-primary:disabled {
@@ -438,7 +438,7 @@
   font-weight: 600;
   border: 1px solid var(--edge);
   border-radius: 10px;
-  box-shadow: 0 1.5px 0 0 var(--edge);
+  box-shadow: 0 2px 0 0 var(--edge);
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease;
   cursor: pointer;
   text-decoration: none;
@@ -448,13 +448,13 @@
   --edge: rgba(255, 255, 255, 0.18);
   transform: translateY(-1px);
   background: #252636;
-  box-shadow: 0 2.5px 0 0 var(--edge);
+  box-shadow: 0 3.5px 0 0 var(--edge);
   color: #ffffff;
 }
 
 .dashboard-btn-secondary:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 0.5px 0 0 var(--edge);
+  box-shadow: 0 1.5px 0 0 var(--edge);
 }
 
 .dashboard-btn-secondary:disabled {
@@ -560,6 +560,94 @@
   box-shadow: 0 0.5px 0 0 var(--edge);
 }
 
+/* Tactile Pill Buttons for Tag Filtering and Categories */
+.dashboard-pill-btn {
+  --edge: rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--edge);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 1.5px 0 0 var(--edge);
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dashboard-pill-btn:hover:not(:disabled) {
+  --edge: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2.5px 0 0 var(--edge);
+  color: #ffffff;
+}
+
+.dashboard-pill-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0.5px 0 0 var(--edge);
+}
+
+.dashboard-pill-btn--active {
+  --edge: #6d5ecc;
+  background: #8175ee;
+  color: #ffffff;
+  font-weight: 700;
+  border-color: #8175ee;
+  box-shadow: 0 1.5px 0 0 #5b4ccb, 0 0 12px rgba(129, 117, 238, 0.35);
+}
+
+.dashboard-pill-btn--active:hover:not(:disabled) {
+  --edge: #7c6df0;
+  background: #9084f8;
+  border-color: #9084f8;
+  box-shadow: 0 2.5px 0 0 #5b4ccb, 0 0 16px rgba(129, 117, 238, 0.45);
+  color: #ffffff;
+}
+
+.dashboard-pill-btn--active:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0.5px 0 0 #5b4ccb;
+}
+
+.dashboard-pill-btn--selected {
+  --edge: rgba(168, 151, 234, 0.5);
+  background: rgba(129, 117, 238, 0.2);
+  color: #cdc2f8;
+  font-weight: 600;
+  border-color: rgba(168, 151, 234, 0.6);
+  box-shadow: 0 1.5px 0 0 rgba(129, 117, 238, 0.5), 0 0 10px rgba(129, 117, 238, 0.2);
+}
+
+.dashboard-pill-btn--selected:hover:not(:disabled) {
+  --edge: rgba(168, 151, 234, 0.7);
+  transform: translateY(-1px);
+  background: rgba(129, 117, 238, 0.3);
+  border-color: rgba(168, 151, 234, 0.8);
+  box-shadow: 0 2.5px 0 0 rgba(129, 117, 238, 0.6), 0 0 14px rgba(129, 117, 238, 0.3);
+  color: #ffffff;
+}
+
+.dashboard-pill-btn--selected:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0.5px 0 0 rgba(129, 117, 238, 0.4);
+}
+
+/* Tactile Glassmorphic Dropdown Container */
+.dashboard-dropdown-panel {
+  background: rgba(18, 17, 28, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.85), 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+
 /* Ant Design Switch Flat-Depth Theme Customization */
 .ant-switch {
   min-width: 44px !important;
@@ -647,10 +735,10 @@
 .dashboard-panel {
   grid-column: span 6;
   min-width: 0;
-  background: rgba(20, 20, 25, 0.4);
+  background: #13141f;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(10, 8, 23, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   box-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.75);
   overflow: hidden;
@@ -882,13 +970,13 @@
 
 .dashboard-input,
 .dashboard-select {
-  --edge: rgba(255, 255, 255, 0.1);
+  --edge: rgba(255, 255, 255, 0.08);
   width: 100%;
   min-height: 42px;
   padding: 9px 12px;
   border: 1px solid var(--edge);
   border-radius: 10px;
-  background: rgba(20, 20, 25, 0.5);
+  background: rgba(19, 20, 31, 0.75);
   color: #ffffff;
   box-shadow: 0 1.5px 0 0 var(--edge);
   transition: color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, background-color 150ms ease;
@@ -911,7 +999,7 @@
 
 /* Creem.io-Inspired Glassmorphic Textarea with Flat-Depth Shadow and Active Translate */
 .dashboard-textarea {
-  --edge: rgba(255, 255, 255, 0.1);
+  --edge: rgba(255, 255, 255, 0.08);
   display: flex;
   width: 100%;
   min-width: 0;
@@ -920,7 +1008,7 @@
   padding: 10px 14px;
   border: 1px solid var(--edge);
   border-radius: 10px;
-  background: rgba(20, 20, 25, 0.5);
+  background: rgba(19, 20, 31, 0.75);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   color: #ffffff;
@@ -936,7 +1024,7 @@
 
 .dashboard-textarea:hover:not(:disabled) {
   --edge: rgba(255, 255, 255, 0.16);
-  background: rgba(20, 20, 25, 0.65);
+  background: rgba(19, 20, 31, 0.9);
 }
 
 .dashboard-textarea:active:not(:disabled) {
@@ -949,7 +1037,7 @@
   --edge: #8175ee;
   border-color: var(--edge);
   outline: none;
-  background: rgba(20, 20, 25, 0.75);
+  background: rgba(19, 20, 31, 0.95);
   box-shadow: 0 2px 0 0 var(--edge), 0 0 0 2px rgba(129, 117, 238, 0.2);
 }
 
@@ -1016,8 +1104,8 @@
 .ant-select .ant-select-selector,
 .ant-select.custom-glass-select .ant-select-selector,
 .ant-select-multiple .ant-select-selector {
-  background: rgba(20, 20, 25, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(19, 20, 31, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 12px !important;
   min-height: 44px !important;
   padding: 4px 10px !important;
@@ -1028,8 +1116,8 @@
 
 .ant-select:hover .ant-select-selector,
 .ant-select.custom-glass-select:hover .ant-select-selector {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  background: rgba(20, 20, 25, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(19, 20, 31, 0.9) !important;
 }
 
 .ant-select-focused .ant-select-selector,

@@ -4,9 +4,10 @@ import {
   DownOutlined,
   UpOutlined,
   CloudServerOutlined,
-  ThunderboltOutlined,
   ApartmentOutlined,
+  ThunderboltOutlined,
   SafetyCertificateOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import type { ServerResource } from "~/resources/server";
 
@@ -20,10 +21,31 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
   const [collapsed, setCollapsed] = useState(false);
 
   const serverItems = [
-    { path: "overview", label: "Overview", icon: <CloudServerOutlined /> },
-    { path: "calls", label: "Calls & Userphone", icon: <ThunderboltOutlined /> },
-    { path: "bridges", label: "Hub Bridges", icon: <ApartmentOutlined /> },
-    { path: "blocklist", label: "Blocklist", icon: <SafetyCertificateOutlined /> },
+    {
+      path: "overview",
+      label: "Overview",
+      icon: <CloudServerOutlined />,
+    },
+    {
+      path: "bridges",
+      label: "Hub Bridges",
+      icon: <ApartmentOutlined />,
+    },
+    {
+      path: "calls",
+      label: "Calls & Userphone",
+      icon: <ThunderboltOutlined />,
+    },
+    {
+      path: "safety",
+      label: "Safety & Blocklist",
+      icon: <SafetyCertificateOutlined />,
+    },
+    {
+      path: "settings",
+      label: "Server Settings",
+      icon: <SettingOutlined />,
+    },
   ];
 
   return (
@@ -32,12 +54,11 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold tracking-wider uppercase text-[#93c5fd] hover:text-[#bfdbfe] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
         >
           <span>Server Controls</span>
           <span className="text-[10px]">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
-
 
         {!collapsed && (
           <nav className="flex flex-col gap-1 mt-0.5">
@@ -49,8 +70,8 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
                 className={({ isActive }) =>
                   `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
                     isActive
-                      ? "active bg-white/[0.08] text-white font-bold"
-                      : "text-white/85 hover:text-white hover:bg-white/[0.06]"
+                      ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                      : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
                   }`
                 }
               >
@@ -66,4 +87,3 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
     </div>
   );
 }
-

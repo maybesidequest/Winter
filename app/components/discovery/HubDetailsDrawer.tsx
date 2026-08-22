@@ -60,7 +60,7 @@ export function HubDetailsDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-[0_1.5px_0_0_rgba(255,255,255,0.12)] hover:shadow-[0_2.5px_0_0_rgba(255,255,255,0.2)] hover:-translate-y-[1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_0_rgba(255,255,255,0.12)] cursor-pointer"
           >
             <CloseOutlined className="text-xs" />
           </button>

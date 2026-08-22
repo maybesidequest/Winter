@@ -65,7 +65,7 @@ export function MiddleSidebar({
     <aside
       className="w-[288px] h-screen fixed top-0 left-[72px] z-30 flex flex-col justify-between p-3.5 select-none"
       style={{
-        background: "#151424",
+        background: "#13141f",
         borderRight: "1px solid rgba(255, 255, 255, 0.08)",
       }}
       aria-label="Middle Navigation Sidebar"
@@ -97,8 +97,8 @@ export function MiddleSidebar({
               background: bannerUrl
                 ? `url(${bannerUrl}) center/cover no-repeat`
                 : isHub
-                ? "linear-gradient(135deg, #201e35 0%, #151424 100%)"
-                : "linear-gradient(135deg, #182333 0%, #151424 100%)",
+                ? "linear-gradient(135deg, #1f1d33 0%, #13141f 100%)"
+                : "linear-gradient(135deg, #161e2b 0%, #13141f 100%)",
               border: "1px solid rgba(255, 255, 255, 0.08)",
               boxShadow: "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
             }}

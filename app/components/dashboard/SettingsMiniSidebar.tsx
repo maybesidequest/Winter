@@ -10,11 +10,11 @@ import {
 
 export type SettingsCategory =
   | "account"
-  | "notifications"
+  | "preferences"
   | "appearance"
   | "calls"
-  | "billing"
-  | "bot_config";
+  | "bot_config"
+  | "billing";
 
 interface SettingsMiniSidebarProps {
   activeCategory: SettingsCategory;
@@ -33,20 +33,20 @@ export function SettingsMiniSidebar({
     badge?: string;
   }> = [
     { id: "account", label: "My Account", icon: <UserOutlined /> },
-    { id: "notifications", label: "Notifications", icon: <BellOutlined /> },
+    { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
     { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
     { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
-    { id: "billing", label: "Billing", icon: <CreditCardOutlined />, disabled: true, badge: "Soon" },
-    { id: "bot_config", label: "Global Bot Config", icon: <RobotOutlined /> },
+    { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
+    { id: "billing", label: "Billing", icon: <CreditCardOutlined /> },
   ];
 
   return (
     <div
-      className="w-56 p-4 flex flex-col gap-1 select-none border-r border-white/10"
-      style={{ background: "rgba(17, 18, 27, 0.95)" }}
+      className="w-56 p-4 flex flex-col gap-1 select-none border-r border-white/[0.08]"
+      style={{ background: "#13141f" }}
     >
-      <div className="px-2 pb-3 mb-1 border-b border-white/10">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-violet-400">
+      <div className="px-2 pb-3 mb-1 border-b border-white/[0.08]">
+        <span className="text-xs font-semibold uppercase tracking-wider text-purple-300/40">
           User Settings
         </span>
         <h3 className="text-base font-bold text-white tracking-tight font-['Sora']">Preferences</h3>
@@ -79,10 +79,10 @@ export function SettingsMiniSidebar({
               key={item.id}
               type="button"
               onClick={() => onSelectCategory(item.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 text-left cursor-pointer ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 text-left cursor-pointer ${
                 isActive
-                  ? "bg-[#5b4ccb] text-white"
-                  : "text-white/70 hover:text-white hover:bg-white/5"
+                  ? "bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                  : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
               }`}
             >
               <span className="text-sm">{item.icon}</span>

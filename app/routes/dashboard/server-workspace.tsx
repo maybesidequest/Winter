@@ -3,9 +3,10 @@ import { useLoaderData, useParams, Link } from "react-router";
 import type { Route } from "./+types/server-workspace";
 import {
   CloudServerOutlined,
-  PhoneOutlined,
+  ThunderboltOutlined,
   ApartmentOutlined,
   SafetyCertificateOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { requireUser } from "~/services/auth.server";
@@ -14,6 +15,7 @@ import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverview
 import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCallSettingsCard";
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
+import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
 import type {
   DiscordChannelResource,
   ServerBlockResource,
@@ -54,20 +56,30 @@ export default function ServerWorkspace() {
       desc: `Status, bridge summary, and call statistics for ${server.metadata.name}.`,
       icon: <CloudServerOutlined />,
     },
-    calls: {
-      title: "Userphone",
-      desc: `Allowed matchmaking channels and call privacy/behavior toggles for ${server.metadata.name}.`,
-      icon: <PhoneOutlined />,
-    },
     bridges: {
       title: "Hub Bridges",
       desc: `Active Discord channel bridges connected to cross-server Hubs in ${server.metadata.name}.`,
       icon: <ApartmentOutlined />,
     },
-    blocklist: {
-      title: "Server Blocklist",
+    calls: {
+      title: "Calls & Userphone",
+      desc: `Allowed matchmaking channels and call privacy/behavior toggles for ${server.metadata.name}.`,
+      icon: <ThunderboltOutlined />,
+    },
+    safety: {
+      title: "Safety & Blocklist",
       desc: `Users and servers blocked from interacting with ${server.metadata.name} in Calls and Hubs.`,
       icon: <SafetyCertificateOutlined />,
+    },
+    blocklist: {
+      title: "Safety & Blocklist",
+      desc: `Users and servers blocked from interacting with ${server.metadata.name} in Calls and Hubs.`,
+      icon: <SafetyCertificateOutlined />,
+    },
+    settings: {
+      title: "Server Settings",
+      desc: `Bot integration status, command prefix, and Discord permissions for ${server.metadata.name}.`,
+      icon: <SettingOutlined />,
     },
   };
 
@@ -92,9 +104,12 @@ export default function ServerWorkspace() {
       />
 
       {view === "overview" && <ServerOverviewCard server={server} />}
-      {view === "calls" && <ServerCallSettingsCard server={server} channels={channels} />}
       {view === "bridges" && <ServerBridgesCard server={server} bridges={bridges} />}
-      {view === "blocklist" && <ServerBlocklistCard server={server} blocks={blocks} />}
+      {view === "calls" && <ServerCallSettingsCard server={server} channels={channels} />}
+      {(view === "safety" || view === "blocklist") && (
+        <ServerBlocklistCard server={server} blocks={blocks} />
+      )}
+      {view === "settings" && <ServerSettingsCard server={server} />}
     </div>
   );
 }

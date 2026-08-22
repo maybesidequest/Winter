@@ -77,6 +77,7 @@ export const serverService = {
           iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
         },
         spec: {
+          prefix: row?.prefix ?? null,
           hideServerName: row?.hideServerName ?? false,
           pingOnMatch: row?.pingOnMatch ?? false,
           autoRequeueOnSkip: row?.autoRequeueOnSkip ?? false,
@@ -104,6 +105,7 @@ export const serverService = {
         iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
       },
       spec: {
+        prefix: row?.prefix ?? null,
         hideServerName: row?.hideServerName ?? false,
         pingOnMatch: row?.pingOnMatch ?? false,
         autoRequeueOnSkip: row?.autoRequeueOnSkip ?? false,

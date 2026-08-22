@@ -96,7 +96,7 @@ export function DepthToggle({
       onTouchStart={() => !disabled && setIsActive(true)}
       onTouchEnd={() => setIsActive(false)}
       style={trackStyle}
-      className={`relative inline-flex items-center select-none outline-none focus-visible:ring-2 focus-visible:ring-[#8fd3ff] focus-visible:ring-offset-2 focus-visible:ring-offset-[#11121b] p-0 flex-shrink-0 ${className}`}
+      className={`relative inline-flex items-center select-none outline-none focus-visible:ring-2 focus-visible:ring-[#8fd3ff] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0c14] p-0 flex-shrink-0 ${className}`}
       {...props}
     >
       <span

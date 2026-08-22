@@ -1,87 +1,84 @@
-import { CheckCircleOutlined } from "@ant-design/icons";
-import { Tag, Typography } from "antd";
-import { STEP_ITEMS } from "./types";
+import { CheckOutlined } from "@ant-design/icons";
+import { STEP_ITEMS } from "~/components/CreateHubWizard/types";
 
-const { Paragraph, Text, Title } = Typography;
-
-type WizardSidebarProps = {
+interface WizardSidebarProps {
   isFirstHub: boolean;
   currentStep: number;
-};
+}
 
 export function WizardSidebar({ isFirstHub, currentStep }: WizardSidebarProps) {
   return (
     <div
-      className="hub-wizard-sidebar"
-      style={{
-        width: 320,
-        background: "#0f0f11",
-        borderRight: "1px solid #27272a",
-        padding: "40px 32px",
-        display: "flex",
-        flexDirection: "column",
-      }}
+      className="hub-wizard-sidebar relative w-80 p-8 md:p-10 flex flex-col justify-between select-none border-r border-white/[0.08] overflow-hidden flex-shrink-0"
+      style={{ background: "#13141f" }}
     >
-      <div className="hub-wizard-sidebar__intro" style={{ marginBottom: 48 }}>
-        <Tag
-          style={{
-            margin: 0,
-            padding: "4px 8px",
-            borderRadius: 6,
-            background: "rgba(124, 58, 237, 0.15)",
-            color: "#c4b5fd",
-            fontWeight: 600,
-            border: "1px solid rgba(124, 58, 237, 0.3)",
-            marginBottom: 16,
-            display: "inline-block",
-          }}
-        >
-          {isFirstHub ? "First Hub Setup" : "New Hub"}
-        </Tag>
-        <Title level={3} style={{ margin: 0, color: "white", fontWeight: 600, letterSpacing: "-0.01em" }}>
-          {isFirstHub ? "Launch your first bridge." : "Open another community lane."}
-        </Title>
-        <Paragraph style={{ color: "#a1a1aa", fontSize: "0.95rem", lineHeight: 1.5, marginTop: 12, marginBottom: 0 }}>
-          {isFirstHub
-            ? "Define the identity, set up defaults, and drop straight into the dashboard."
-            : "Use the same flow to spin up another hub without leaving the dashboard."}
-        </Paragraph>
+      <div className="dashboard-card-contours dashboard-card-contours--subtle" aria-hidden="true" />
+
+      <div className="relative z-10 flex flex-col gap-8">
+        {/* Intro */}
+        <div className="hub-wizard-sidebar__intro flex flex-col gap-3">
+          <span className="inline-flex self-start items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-500/15 text-violet-300 border border-violet-500/30">
+            {isFirstHub ? "First Hub Setup" : "New Hub"}
+          </span>
+          <h2 className="text-xl md:text-2xl font-bold text-white font-['Sora'] tracking-tight leading-snug">
+            {isFirstHub ? "Launch your first bridge." : "Open another community lane."}
+          </h2>
+          <p className="text-xs text-white/50 leading-relaxed">
+            {isFirstHub
+              ? "Define the identity, configure defaults, and drop straight into your hub control plane."
+              : "Spin up an additional hub to bridge separated communities with independent policies."}
+          </p>
+        </div>
+
+        {/* Steps List */}
+        <div className="hub-wizard-steps flex flex-col gap-6">
+          {STEP_ITEMS.map((item, index) => {
+            const active = index === currentStep;
+            const past = index < currentStep;
+
+            return (
+              <div
+                key={item.title}
+                className={`hub-wizard-step flex items-start gap-3.5 transition-all duration-200 ${
+                  active ? "opacity-100" : past ? "opacity-90" : "opacity-40"
+                }`}
+              >
+                {/* Step Number or Check Badge */}
+                <div
+                  className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold font-['Sora'] flex-shrink-0 transition-all ${
+                    active
+                      ? "bg-[#5b4ccb] text-white border border-[#8175ee]/60 shadow-[0_0_14px_rgba(129,117,238,0.45)]"
+                      : past
+                      ? "bg-[#7ed493]/20 text-[#7ed493] border border-[#7ed493]/35"
+                      : "bg-white/[0.04] text-white/40 border border-white/10"
+                  }`}
+                >
+                  {past ? <CheckOutlined className="text-[11px]" /> : index + 1}
+                </div>
+
+                {/* Step Text Info */}
+                <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
+                  <span
+                    className={`text-xs font-bold font-['Sora'] ${
+                      active ? "text-white" : past ? "text-white/90" : "text-white/50"
+                    }`}
+                  >
+                    {item.title}
+                  </span>
+                  <span className="text-[11px] text-white/40 leading-normal">
+                    {item.description}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="hub-wizard-steps" style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-        {STEP_ITEMS.map((item, index) => {
-          const active = index === currentStep;
-          const past = index < currentStep;
-          return (
-            <div className="hub-wizard-step" key={item.title} style={{ display: "flex", gap: 16, opacity: active || past ? 1 : 0.4, transition: "opacity 0.2s" }}>
-              <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: active ? "#7c3aed" : past ? "#10b981" : "#27272a",
-                  color: "white",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  flexShrink: 0,
-                }}
-              >
-                {past ? <CheckCircleOutlined style={{ fontSize: 14 }} /> : index + 1}
-              </div>
-              <div style={{ paddingTop: 2 }}>
-                <Text strong style={{ display: "block", color: "white", marginBottom: 2 }}>
-                  {item.title}
-                </Text>
-                <Text style={{ color: "#a1a1aa", fontSize: "0.85rem", lineHeight: 1.4 }}>
-                  {item.description}
-                </Text>
-              </div>
-            </div>
-          );
-        })}
+      {/* Footer Branding Note */}
+      <div className="relative z-10 pt-6 border-t border-white/[0.06] text-[11px] text-white/30 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-violet-400/80" />
+        <span>InterChat Control Plane</span>
       </div>
     </div>
   );

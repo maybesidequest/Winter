@@ -1,114 +1,114 @@
-import { Input, Select, Typography } from "antd";
-import { LANGUAGE_OPTIONS, REGION_OPTIONS, VISIBILITY_OPTIONS } from "./types";
-import type { HubFormValues } from "./types";
+import { LANGUAGE_OPTIONS, REGION_OPTIONS, VISIBILITY_OPTIONS } from "~/components/CreateHubWizard/types";
+import type { HubFormValues } from "~/components/CreateHubWizard/types";
 
-const { Text } = Typography;
-
-type DefaultsStepProps = {
+interface DefaultsStepProps {
   formData: HubFormValues;
   updateField: <K extends keyof HubFormValues>(field: K, value: HubFormValues[K]) => void;
-};
+}
 
 export function DefaultsStep({ formData, updateField }: DefaultsStepProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 600 }}>
-      <div>
-        <Text strong style={{ display: "block", color: "#e4e4e7", marginBottom: 12 }}>
-          Visibility
-        </Text>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-          {VISIBILITY_OPTIONS.map(option => {
+    <div className="flex flex-col gap-6 max-w-xl w-full">
+      {/* Visibility Cards */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-bold text-white/90">Directory Visibility</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {VISIBILITY_OPTIONS.map((option) => {
             const selected = formData.visibility === option.value;
             return (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => updateField("visibility", option.value as HubFormValues["visibility"])}
-                style={{
-                  textAlign: "left",
-                  padding: 16,
-                  borderRadius: 8,
-                  border: selected ? "2px solid #7c3aed" : "1px solid #3f3f46",
-                  background: selected ? "rgba(124, 58, 237, 0.05)" : "#27272a",
-                  cursor: "pointer",
-                  color: "white",
-                  transition: "all 0.15s ease",
-                }}
+                className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                  selected
+                    ? "bg-violet-500/15 border-violet-400 text-white shadow-sm"
+                    : "bg-white/[0.02] border-white/[0.08] text-white/70 hover:bg-white/[0.05]"
+                }`}
               >
-                <Text strong style={{ display: "block", color: "white", marginBottom: 4 }}>
-                  {option.title}
-                </Text>
-                <Text style={{ color: "#a1a1aa", fontSize: "0.8rem", lineHeight: 1.4 }}>
-                  {option.description}
-                </Text>
+                <div className="flex items-center justify-between">
+                  <strong className="text-xs font-bold font-['Sora']">{option.title}</strong>
+                  {selected && (
+                    <span className="w-2 h-2 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
+                  )}
+                </div>
+                <span className="text-[11px] text-white/50 leading-relaxed">{option.description}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-        <div>
-          <Text strong style={{ display: "block", color: "#e4e4e7", marginBottom: 8 }}>
-            Primary language
-          </Text>
-          <Select
-            size="large"
+      {/* Language & Region Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-bold text-white/90">Primary Language</label>
+          <select
             value={formData.language}
-            onChange={value => updateField("language", value)}
-            options={LANGUAGE_OPTIONS.slice()}
-            style={{ width: "100%" }}
-          />
+            onChange={(e) => updateField("language", e.target.value)}
+            className="dashboard-select text-xs cursor-pointer"
+          >
+            {LANGUAGE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-[#181726] text-white">
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
-        <div>
-          <Text strong style={{ display: "block", color: "#e4e4e7", marginBottom: 8 }}>
-            Region
-          </Text>
-          <Select
-            size="large"
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-bold text-white/90">Primary Region</label>
+          <select
             value={formData.region}
-            onChange={value => updateField("region", value)}
-            options={REGION_OPTIONS.slice()}
-            style={{ width: "100%" }}
-          />
+            onChange={(e) => updateField("region", e.target.value)}
+            className="dashboard-select text-xs cursor-pointer"
+          >
+            {REGION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-[#181726] text-white">
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div>
-        <Text strong style={{ display: "block", color: "#e4e4e7", marginBottom: 8 }}>
-          Welcome message
-        </Text>
-        <Input.TextArea
+      {/* Welcome Message */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-bold text-white/90">
+          Welcome Broadcast Message <span className="text-[11px] font-normal text-white/40">(optional)</span>
+        </label>
+        <textarea
           rows={3}
           value={formData.welcomeMessage}
-          onChange={event => updateField("welcomeMessage", event.target.value)}
-          placeholder="Welcome to the bridge. Keep it clean..."
-          style={{ background: "#27272a", borderColor: "#3f3f46", color: "white", resize: "none", borderRadius: 8 }}
+          onChange={(e) => updateField("welcomeMessage", e.target.value)}
+          placeholder="Welcome to the bridge! Messages sent here will broadcast across all connected servers..."
+          className="dashboard-textarea text-xs"
         />
       </div>
 
-      <div>
-        <Text strong style={{ display: "block", color: "#e4e4e7", marginBottom: 8 }}>
-          Banner image{" "}
-          <Text style={{ color: "#71717a", fontWeight: 400, fontSize: "0.85rem" }}>(optional)</Text>
-        </Text>
+      {/* Banner Image */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-bold text-white/90">
+          Banner Image URL <span className="text-[11px] font-normal text-white/40">(optional)</span>
+        </label>
         {formData.bannerUrl && (
-          <div
-            style={{
-              width: "100%",
-              height: 88,
-              borderRadius: 8,
-              background: `url(${formData.bannerUrl}) center/cover no-repeat`,
-              border: "1px solid #3f3f46",
-              marginBottom: 8,
-            }}
-          />
+          <div className="w-full h-24 rounded-xl overflow-hidden border border-white/10 bg-white/[0.02] relative mb-1 shadow-md">
+            <img
+              src={formData.bannerUrl}
+              alt="Banner Preview"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
         )}
-        <Input
+        <input
+          type="url"
           value={formData.bannerUrl}
-          onChange={event => updateField("bannerUrl", event.target.value)}
+          onChange={(e) => updateField("bannerUrl", e.target.value)}
           placeholder="https://example.com/banner.png"
-          style={{ background: "#27272a", borderColor: "#3f3f46", color: "white", borderRadius: 8 }}
+          className="dashboard-input text-xs"
         />
       </div>
     </div>

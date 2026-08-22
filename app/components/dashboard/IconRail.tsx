@@ -70,7 +70,7 @@ export function IconRail({
     <aside
       className="w-[72px] h-screen fixed top-0 left-0 z-40 flex flex-col items-center py-3 select-none"
       style={{
-        background: "#0e0d18",
+        background: "#0b0c14",
         borderRight: "1px solid rgba(255, 255, 255, 0.08)",
       }}
       aria-label="Instance Rail"
@@ -98,11 +98,11 @@ export function IconRail({
             className={`relative flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
               isHomeActive
                 ? "rounded-2xl bg-[#5b4ccb] text-white"
-                : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
+                : "rounded-3xl bg-[#13141f] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
             }`}
             style={{
-              border: isHomeActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.12)",
-              boxShadow: isHomeActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.12)",
+              border: isHomeActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: isHomeActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
             }}
             aria-label="Dashboard Home"
           >
@@ -170,10 +170,10 @@ export function IconRail({
             <button
               type="button"
               onClick={onOpenCreate}
-              className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#19172b] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#11121b] hover:rounded-2xl transition-all duration-150 cursor-pointer"
+              className="flex items-center justify-center w-12 h-12 rounded-3xl bg-[#13141f] text-[#7ed493] hover:bg-[#7ed493] hover:text-[#100e18] hover:rounded-2xl transition-all duration-150 cursor-pointer"
               style={{
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: "0 1.5px 0 0 rgba(255, 255, 255, 0.12)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                boxShadow: "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
               }}
               aria-label="Create new Hub"
             >
@@ -203,11 +203,11 @@ export function IconRail({
               className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
                 isBrowseActive
                   ? "rounded-2xl bg-[#2a7198] text-white"
-                  : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#2a7198] hover:text-white hover:rounded-2xl"
+                  : "rounded-3xl bg-[#13141f] text-white/80 hover:bg-[#2a7198] hover:text-white hover:rounded-2xl"
               }`}
               style={{
-                border: isBrowseActive ? "1px solid #489cc9" : "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: isBrowseActive ? "0 1.5px 0 0 #489cc9" : "0 1.5px 0 0 rgba(255, 255, 255, 0.12)",
+                border: isBrowseActive ? "1px solid #489cc9" : "1px solid rgba(255, 255, 255, 0.08)",
+                boxShadow: isBrowseActive ? "0 1.5px 0 0 #489cc9" : "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
               }}
               aria-label="Browse Hubs"
             >
@@ -237,11 +237,11 @@ export function IconRail({
               className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
                 isCallsActive
                   ? "rounded-2xl bg-[#5b4ccb] text-white"
-                  : "rounded-3xl bg-[#19172b] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
+                  : "rounded-3xl bg-[#13141f] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
               }`}
               style={{
-                border: isCallsActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: isCallsActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.12)",
+                border: isCallsActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.08)",
+                boxShadow: isCallsActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
               }}
               aria-label="Global Calls"
             >

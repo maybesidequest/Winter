@@ -569,4 +569,18 @@ All toggle switches must follow the **Flat-Depth standard** (`DepthToggle` expor
   - *On state*: Pure flat white circle (`#ffffff`) with lavender bottom shadow (`0 2px 0 0 #9d87e8`).
 - **Reuse**: Always import and use `<DepthToggle checked={...} onChange={...} />` for settings, feature flags, and configuration toggles.
 
+## Buttons, Pills & Dropdown Box Shadow Standard
+All interactive elements (buttons, category pills, inputs, and dropdown panels) must consistently use the tactile flat-depth box shadow styling:
+- **Buttons**:
+  - *Primary*: `.dashboard-btn-primary` (`box-shadow: 0 1.5px 0 0 #a897ea`, hover: `-1px` / `0 2.5px 0 0 #b5a5f0`, active: `+1px` / `0 0.5px 0 0`).
+  - *Secondary*: `.dashboard-btn-secondary` (`box-shadow: 0 1.5px 0 0 rgba(255,255,255,0.12)`, hover: `-1px` / `0 2.5px 0 0`, active: `+1px` / `0 0.5px 0 0`).
+- **Pills / Tags**:
+  - *Default*: `.dashboard-pill-btn` (`border: 1px solid rgba(255,255,255,0.12)`, `box-shadow: 0 1.5px 0 0 rgba(255,255,255,0.12)`).
+  - *Active*: `.dashboard-pill-btn--active` (`background: #8175ee`, `box-shadow: 0 1.5px 0 0 #5b4ccb, 0 0 12px rgba(129,117,238,0.35)`).
+  - *Selected*: `.dashboard-pill-btn--selected` (`background: rgba(129,117,238,0.2)`, `box-shadow: 0 1.5px 0 0 rgba(129,117,238,0.5), 0 0 10px rgba(129,117,238,0.2)`).
+- **Dropdown Panels & Popups**:
+  - Must use `.dashboard-dropdown-panel` or `box-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.85), 0 16px 36px rgba(0, 0, 0, 0.6)` with glassmorphism backdrop blur and border edge.
+  - Never use unstyled native browser `<select>` elements for prominent UI controls.
+
+
 

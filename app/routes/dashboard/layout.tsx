@@ -57,19 +57,19 @@ export default function DashboardLayout() {
         algorithm: theme.darkAlgorithm,
         token: {
           colorPrimary: "#8175ee",
-          colorBgBase: "#11121b",
-          colorBgContainer: "rgba(20, 20, 25, 0.5)",
+          colorBgBase: "#0b0c14",
+          colorBgContainer: "#13141f",
           colorBgElevated: "#181726",
-          colorBorder: "rgba(255, 255, 255, 0.1)",
+          colorBorder: "rgba(255, 255, 255, 0.08)",
           colorText: "#ffffff",
           colorTextSecondary: "rgba(255, 255, 255, 0.65)",
           borderRadius: 10,
         },
       }}
     >
-      <div className="min-h-screen bg-[#11121b] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
+      <div className="min-h-screen bg-[#0b0c14] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
         {/* Mobile Top Navigation Bar */}
-        <header className="md:hidden sticky top-0 z-40 h-14 bg-[#151424]/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between">
+        <header className="md:hidden sticky top-0 z-40 h-14 bg-[#13141f]/95 backdrop-blur-md border-b border-white/[0.08] px-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/images/interchat.png" alt="InterChat Logo" className="w-6 h-6 rounded-md object-contain" />
             <span className="text-[15.5px] font-['Sora'] font-extrabold tracking-wide text-white">InterChat</span>
@@ -129,7 +129,7 @@ export default function DashboardLayout() {
                   setIsCreateHubOpen(true);
                 }}
               />
-              <div className="flex-1 bg-[#151424]">
+              <div className="flex-1 bg-[#13141f]">
                 <MiddleSidebar
                   instanceType={instanceType}
                   servers={servers}
@@ -152,7 +152,7 @@ export default function DashboardLayout() {
         <main
           className="flex-1 min-h-screen md:ml-[360px] p-4 sm:p-6 md:p-10 transition-all"
           style={{
-            background: "radial-gradient(ellipse at top center, #19172b 0%, #11121b 70%)",
+            background: "radial-gradient(ellipse at top center, #151329 0%, #0b0c14 70%)",
           }}
         >
           <Outlet context={{ user, servers, hubs, isLoading }} />

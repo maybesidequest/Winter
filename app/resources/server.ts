@@ -2,6 +2,7 @@ export type ServerResource = {
   metadata: { id: string; name: string; iconUrl: string | null; bannerUrl?: string | null };
   spec: {
     bannerUrl?: string | null;
+    prefix?: string | null;
     hideServerName: boolean;
     pingOnMatch: boolean;
     autoRequeueOnSkip: boolean;
