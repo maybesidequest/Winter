@@ -13,7 +13,7 @@ interface UserBarProps {
 export function UserBar({ user, onOpenSettings }: UserBarProps) {
   const username = user?.username || "Alex";
   const avatarUrl = user?.avatarUrl;
-  const isStaff = user?.isStaff ?? false;
+  const discordId = user?.id;
 
   return (
     <div
@@ -47,8 +47,8 @@ export function UserBar({ user, onOpenSettings }: UserBarProps) {
           <span className="text-[13px] font-bold text-white truncate leading-tight font-['Sora'] group-hover:text-violet-300 transition-colors">
             {username}
           </span>
-          <span className="text-[11px] text-white/50 truncate leading-tight mt-0.5">
-            {isStaff ? "InterChat Staff" : "Hub Owner"}
+          <span className="text-[11px] text-white/50 truncate leading-tight mt-0.5 font-mono">
+            {discordId || ""}
           </span>
         </div>
       </button>

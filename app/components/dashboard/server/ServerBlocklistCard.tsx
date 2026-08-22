@@ -185,7 +185,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
         onCancel={() => setIsAddModalOpen(false)}
         okText="Block Entity"
         okButtonProps={{ danger: true }}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" initialValues={{ targetType: "user" }} className="mt-4">
           <Form.Item

@@ -1,5 +1,7 @@
+import { Tooltip } from "antd";
 import { SafetyCertificateOutlined, TrophyOutlined, FireOutlined } from "@ant-design/icons";
 import type { UserResource } from "~/resources/user";
+import { getBadgeInfo, resolveUserBadges } from "~/resources/badge";
 
 interface AccountSectionProps {
   userResource?: UserResource;
@@ -27,6 +29,8 @@ export function AccountSection({ userResource, isLoading }: AccountSectionProps)
     month: "short",
     day: "numeric",
   });
+
+  const userBadges = resolveUserBadges(status);
 
   return (
     <div className="relative z-10 flex flex-col gap-5">
@@ -62,11 +66,25 @@ export function AccountSection({ userResource, isLoading }: AccountSectionProps)
               <span className="text-base sm:text-lg font-bold text-white font-['Sora'] truncate">
                 {metadata.name || "InterChat User"}
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                status.isStaff ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-[#5b4ccb] text-white"
-              }`}>
-                {status.isStaff ? "Staff Member" : "Hub Owner"}
-              </span>
+              {userBadges.map((badge) => (
+                <Tooltip
+                  key={badge.id}
+                  title={
+                    <div className="text-center py-0.5">
+                      <div className="font-bold text-xs">{badge.name}</div>
+                      <div className="text-[11px] text-white/75">{badge.description}</div>
+                    </div>
+                  }
+                >
+                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white/[0.06] border border-white/10 hover:border-violet-400/40 hover:bg-white/[0.12] transition-all cursor-pointer p-0.5 shadow-sm">
+                    <img
+                      src={badge.icon}
+                      alt={badge.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </Tooltip>
+              ))}
             </div>
             {metadata.email && <span className="text-xs text-white/60 truncate">{metadata.email}</span>}
             <span className="text-[11px] text-white/40">Member since {joinedDate}</span>
