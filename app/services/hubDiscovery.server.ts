@@ -153,11 +153,11 @@ export const hubDiscoveryService = {
           desc(sql`
             CASE
               WHEN ${isMetricsFresh} THEN
-                (${hubActivityMetrics.messagesLast24H}::float * 0.7) + (${hubActivityMetrics.activeUsersLast24H}::float * 3.0)
+                (${hubActivityMetrics.messagesLast24h}::float * 0.7) + (${hubActivityMetrics.activeUsersLast24h}::float * 3.0)
               ELSE (${hub.weeklyMessageCount}::float / 7.0)
             END
           `),
-          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.messagesLast24H} ELSE 0 END`),
+          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.messagesLast24h} ELSE 0 END`),
           desc(hub.lastActive),
           asc(hub.id),
         ];
@@ -169,11 +169,11 @@ export const hubDiscoveryService = {
           desc(sql`
             CASE
               WHEN ${isMetricsFresh} THEN
-                (COALESCE(${hubActivityMetrics.memberGrowthRate}, 0.0) * 0.4) + (${hubActivityMetrics.newConnectionsLast7D}::float * 10.0)
+                (COALESCE(${hubActivityMetrics.memberGrowthRate}, 0.0) * 0.4) + (${hubActivityMetrics.newConnectionsLast7d}::float * 10.0)
               ELSE 0.0
             END
           `),
-          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.newConnectionsLast7D} ELSE 0 END`),
+          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.newConnectionsLast7d} ELSE 0 END`),
           desc(hub.connectionCount),
           desc(hub.lastActive),
           asc(hub.id),
@@ -207,7 +207,7 @@ export const hubDiscoveryService = {
               ELSE (${hub.weeklyMessageCount}::float / 7.0) * LN(1.0 + GREATEST(${hub.connectionCount}, 1)::float)
             END
           `),
-          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.messagesLast7D} ELSE ${hub.weeklyMessageCount} END`),
+          desc(sql`CASE WHEN ${isMetricsFresh} THEN ${hubActivityMetrics.messagesLast7d} ELSE ${hub.weeklyMessageCount} END`),
           desc(hub.connectionCount),
           desc(hub.lastActive),
           asc(hub.id),
@@ -320,9 +320,9 @@ export const hubDiscoveryService = {
         monthlyUpvotes: Number(monthlyVotes ?? 0),
         activityLevel: h.activityLevel,
         trendingScore: metrics?.trendingScore ?? 0,
-        messagesLast24h: metrics?.messagesLast24H ?? 0,
-        activeUsersLast24h: metrics?.activeUsersLast24H ?? 0,
-        newConnectionsLast7d: metrics?.newConnectionsLast7D ?? 0,
+        messagesLast24h: metrics?.messagesLast24h ?? 0,
+        activeUsersLast24h: metrics?.activeUsersLast24h ?? 0,
+        newConnectionsLast7d: metrics?.newConnectionsLast7d ?? 0,
         memberGrowthRate: metrics?.memberGrowthRate ?? 0,
         hasVotedToday: userVotedHubIds.has(h.id),
       },
@@ -421,9 +421,9 @@ export const hubDiscoveryService = {
         monthlyUpvotes: 0,
         activityLevel: h.activityLevel,
         trendingScore: metrics?.trendingScore ?? 0,
-        messagesLast24h: metrics?.messagesLast24H ?? 0,
-        activeUsersLast24h: metrics?.activeUsersLast24H ?? 0,
-        newConnectionsLast7d: metrics?.newConnectionsLast7D ?? 0,
+        messagesLast24h: metrics?.messagesLast24h ?? 0,
+        activeUsersLast24h: metrics?.activeUsersLast24h ?? 0,
+        newConnectionsLast7d: metrics?.newConnectionsLast7d ?? 0,
         memberGrowthRate: metrics?.memberGrowthRate ?? 0,
       },
       tags: tagsByHubId.get(h.id) ?? [],
