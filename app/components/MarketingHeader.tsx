@@ -3,10 +3,10 @@ import { Link } from "react-router";
 import { ADD_INTERCHAT_URL } from "./marketing/constants";
 
 const NAV_ITEMS = [
-  ["Hubs", "#hubs"],
-  ["Calls", "#calls"],
-  ["Control", "#control"],
-  ["Safety", "#safety"],
+  ["Hubs", "/#hubs"],
+  ["Calls", "/#calls"],
+  ["Control", "/#control"],
+  ["Safety", "/#safety"],
 ] as const;
 
 export function MarketingHeader() {
@@ -16,10 +16,10 @@ export function MarketingHeader() {
   return (
     <header className="atlas-header">
       <div className="atlas-header__shell">
-        <a className="atlas-brand" href="#top" aria-label="InterChat home" onClick={closeMenu}>
+        <Link className="atlas-brand" to="/" aria-label="InterChat home" onClick={closeMenu}>
           <img src="/images/interchat.png" alt="" width="34" height="34" />
           <span>InterChat</span>
-        </a>
+        </Link>
 
         <button
           className="atlas-menu-button"

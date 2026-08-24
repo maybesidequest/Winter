@@ -37,7 +37,7 @@ export function SettingsMiniSidebar({
       { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
       { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
       { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
-      { id: "billing", label: "Billing", icon: <CreditCardOutlined /> },
+      { id: "billing", label: "Billing", icon: <CreditCardOutlined />, disabled: true, badge: "Coming Soon" },
     ];
 
   return (

@@ -23,6 +23,8 @@ interface HubSidebarTabsProps {
   onNavigate?: () => void;
 }
 
+const showUnfinishedFeatures = import.meta.env.DEV;
+
 export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const permissions = hub?.metadata.permissions;
@@ -40,11 +42,36 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
       icon: <SafetyCertificateOutlined />,
       visible: can("MANAGE_RULES", "MODERATE_MESSAGES", "MANAGE_BANS", "LOCKDOWN_HUB"),
     },
-    { path: "logging", label: "Logging", icon: <FileTextOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
-    { path: "badges", label: "Badges", icon: <IdcardOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
-    { path: "invites", label: "Invites", icon: <LinkOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
-    { path: "team", label: "Team", icon: <ApartmentOutlined />, visible: can("MANAGE_MODERATORS") },
-    { path: "announcements", label: "Announcements", icon: <BellOutlined />, visible: can("ANNOUNCE") },
+    {
+      path: "logging",
+      label: "Logging",
+      icon: <FileTextOutlined />,
+      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+    },
+    {
+      path: "badges",
+      label: "Badges",
+      icon: <IdcardOutlined />,
+      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+    },
+    {
+      path: "invites",
+      label: "Invites",
+      icon: <LinkOutlined />,
+      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+    },
+    {
+      path: "team",
+      label: "Team",
+      icon: <ApartmentOutlined />,
+      visible: showUnfinishedFeatures && can("MANAGE_MODERATORS"),
+    },
+    {
+      path: "announcements",
+      label: "Announcements",
+      icon: <BellOutlined />,
+      visible: showUnfinishedFeatures && can("ANNOUNCE"),
+    },
     { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
   ].filter((item) => item.visible !== false);
 

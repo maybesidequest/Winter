@@ -1,5 +1,7 @@
 # InterChat Web Control Plane — Full Build-Out Plan
 
+> **Superseded:** This plan predates the shared control-service decision and contains direct-write work that must not be implemented. Use the current three-phase plan instead: [Phase 1](../../docs/dashboard/phase-1-foundation.md), [Phase 2](../../docs/dashboard/phase-2-bot-parity.md), and [Phase 3](../../docs/dashboard/phase-3-release.md). This file remains only as historical context.
+
 ## Architecture Principles (from AGENTS.md)
 
 - **Resource-oriented**: Every configurable entity is `{ metadata, spec, status }`

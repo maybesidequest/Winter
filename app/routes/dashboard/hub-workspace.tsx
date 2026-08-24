@@ -24,6 +24,8 @@ import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
 import type { HubConnectionResource } from "~/resources/connection";
 
+const showUnfinishedFeatures = import.meta.env.DEV;
+
 export default function HubWorkspace() {
   const params = useParams();
   const hubId = params.hubId || "";
@@ -258,11 +260,13 @@ export default function HubWorkspace() {
             saving={patchMutation.isPending}
             onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
           />
-          <HubFeaturePlaceholder
-            icon={<SafetyCertificateOutlined />}
-            title="AutoMod"
-            description="Pattern rules and safe-list controls are still managed through Discord."
-          />
+          {showUnfinishedFeatures && (
+            <HubFeaturePlaceholder
+              icon={<SafetyCertificateOutlined />}
+              title="AutoMod"
+              description="Pattern rules and safe-list controls are still managed through Discord."
+            />
+          )}
         </div>
       )}
 
