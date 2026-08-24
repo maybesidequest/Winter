@@ -1,17 +1,20 @@
+import {
+  ApartmentOutlined,
+  ApiOutlined,
+  AppstoreOutlined,
+  BellOutlined,
+  ClusterOutlined,
+  DownOutlined,
+  EditOutlined,
+  FileTextOutlined,
+  IdcardOutlined,
+  LinkOutlined,
+  SafetyCertificateOutlined,
+  SettingOutlined,
+  UpOutlined,
+} from "@ant-design/icons";
 import { useState } from "react";
 import { NavLink } from "react-router";
-import {
-  DownOutlined,
-  UpOutlined,
-  ClusterOutlined,
-  ApiOutlined,
-  SafetyCertificateOutlined,
-  AppstoreOutlined,
-  ApartmentOutlined,
-  FileProtectOutlined,
-  LineChartOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
 import type { HubResource } from "~/resources/hub";
 
 interface HubSidebarTabsProps {
@@ -22,17 +25,28 @@ interface HubSidebarTabsProps {
 
 export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const permissions = hub?.metadata.permissions;
+  const can = (...actions: (keyof NonNullable<typeof permissions>)[]) =>
+    !permissions || actions.some((action) => permissions[action]);
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "connections", label: "Connected Bridges", icon: <ApiOutlined /> },
-    { path: "safety", label: "Safety & Moderation", icon: <SafetyCertificateOutlined /> },
-    { path: "modules", label: "Broadcast Modules", icon: <AppstoreOutlined /> },
-    { path: "rules", label: "Rules & Policies", icon: <FileProtectOutlined /> },
-    { path: "members", label: "Members & Staff", icon: <ApartmentOutlined /> },
-    { path: "analytics", label: "Analytics", icon: <LineChartOutlined /> },
-    { path: "settings", label: "Hub Settings", icon: <SettingOutlined /> },
-  ];
+    { path: "general", label: "General", icon: <EditOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: can("MANAGE_CONNECTIONS") },
+    { path: "modules", label: "Modules", icon: <AppstoreOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    {
+      path: "moderation",
+      label: "Moderation",
+      icon: <SafetyCertificateOutlined />,
+      visible: can("MANAGE_RULES", "MODERATE_MESSAGES", "MANAGE_BANS", "LOCKDOWN_HUB"),
+    },
+    { path: "logging", label: "Logging", icon: <FileTextOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "badges", label: "Badges", icon: <IdcardOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "invites", label: "Invites", icon: <LinkOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "team", label: "Team", icon: <ApartmentOutlined />, visible: can("MANAGE_MODERATORS") },
+    { path: "announcements", label: "Announcements", icon: <BellOutlined />, visible: can("ANNOUNCE") },
+    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+  ].filter((item) => item.visible !== false);
 
   return (
     <div className="flex flex-col gap-1 py-1">
@@ -40,10 +54,10 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-between px-2.5 py-2 text-[12px] font-bold uppercase tracking-wider text-[#b794f4] hover:text-[#c4b5fd] transition-colors cursor-pointer"
+          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
         >
           <span>Hub Controls</span>
-          <span className="text-[10px] opacity-70">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
+          <span className="text-[10px]">{collapsed ? <DownOutlined /> : <UpOutlined />}</span>
         </button>
 
         {!collapsed && (
@@ -54,10 +68,9 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
                 to={`/dashboard/hubs/${hubId}/${item.path}`}
                 onClick={onNavigate}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${
-                    isActive
-                      ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
-                      : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
+                  `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
+                    ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                    : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
                   }`
                 }
               >
@@ -73,4 +86,3 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
+import { FireOutlined, SafetyCertificateOutlined, TrophyOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
-import { SafetyCertificateOutlined, TrophyOutlined, FireOutlined } from "@ant-design/icons";
-import type { UserResource } from "~/resources/user";
 import { getBadgeInfo } from "~/resources/badge";
+import type { UserResource } from "~/resources/user";
 
 interface AccountSectionProps {
   userResource?: UserResource;

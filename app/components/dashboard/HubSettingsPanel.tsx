@@ -26,7 +26,7 @@ type HubSettingsPanelProps = {
 export function HubSettingsPanel({ settings, canEdit, onToggleFlag }: HubSettingsPanelProps) {
 
   return (
-    <DashboardSectionCard title={<DashboardSectionTitle>Hub Settings</DashboardSectionTitle>}>
+    <DashboardSectionCard title={<DashboardSectionTitle>Modules</DashboardSectionTitle>}>
       {SETTINGS_TOGGLES.map(({ flag, label, desc }) => (
         <div
           key={flag}

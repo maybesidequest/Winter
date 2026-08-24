@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  ClusterOutlined,
-  MessageOutlined,
-  GlobalOutlined,
-  PictureOutlined,
-  CheckOutlined,
-} from "@ant-design/icons";
+import { CheckOutlined, PictureOutlined } from "@ant-design/icons";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
-import { MetricCard } from "~/components/dashboard/MetricCard";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 
@@ -45,61 +38,6 @@ export function HubOverview({ hub, canEdit = false, saving = false, onSave }: Hu
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl w-full">
-      {/* Network Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MetricCard
-          title="Connected Bridges"
-          value={hub.status.connectionCount}
-          icon={<ClusterOutlined className="text-violet-300 text-lg" />}
-          iconBg="rgba(129, 117, 238, 0.18)"
-        />
-        <MetricCard
-          title="Weekly Messages"
-          value={hub.status.weeklyMessageCount}
-          icon={<MessageOutlined className="text-sky-300 text-lg" />}
-          iconBg="rgba(143, 211, 255, 0.18)"
-          contourClass="dashboard-card-contours--sky"
-        />
-        <MetricCard
-          title="Directory Visibility"
-          value={hub.spec.visibility.charAt(0) + hub.spec.visibility.slice(1).toLowerCase()}
-          icon={<GlobalOutlined className="text-emerald-300 text-lg" />}
-          iconBg="rgba(126, 212, 147, 0.18)"
-          contourClass="dashboard-card-contours--sage"
-        />
-      </div>
-
-      {/* Hero Visual Presentation Card */}
-      <div className="rounded-2xl border overflow-hidden relative flex flex-col justify-end" style={dashboardGlassCardStyle}>
-        <div
-          className="w-full h-36 relative overflow-hidden bg-violet-950/40"
-          style={{
-            backgroundImage: bannerUrl ? `url(${bannerUrl})` : undefined,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          {!bannerUrl && <div className="dashboard-card-contours pointer-events-none opacity-20" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#12111f] via-transparent to-transparent" />
-        </div>
-
-        <div className="p-6 pt-0 relative flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-10">
-          <div className="flex items-end gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-violet-950/90 border-2 border-white/20 overflow-hidden flex items-center justify-center text-xl font-bold text-violet-200 shadow-xl flex-shrink-0">
-              {iconUrl ? (
-                <img src={iconUrl} alt={hub.metadata.name} className="w-full h-full object-cover" />
-              ) : (
-                <span>{hub.metadata.name.slice(0, 2).toUpperCase()}</span>
-              )}
-            </div>
-            <div className="flex flex-col gap-1 pb-1">
-              <h2 className="text-xl font-bold text-white font-['Sora'] m-0">{hub.metadata.name}</h2>
-              <span className="text-xs text-white/60">{shortDescription || "No short tagline set."}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Profile & Branding Editor */}
       <form onSubmit={handleSubmit} className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
         <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">

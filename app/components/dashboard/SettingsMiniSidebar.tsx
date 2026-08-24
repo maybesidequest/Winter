@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
 import {
-  UserOutlined,
   BellOutlined,
   BgColorsOutlined,
-  ThunderboltOutlined,
   CreditCardOutlined,
   RobotOutlined,
+  ThunderboltOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import type { ReactNode } from "react";
 
 export type SettingsCategory =
   | "account"
@@ -32,13 +32,13 @@ export function SettingsMiniSidebar({
     disabled?: boolean;
     badge?: string;
   }> = [
-    { id: "account", label: "My Account", icon: <UserOutlined /> },
-    { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
-    { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
-    { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
-    { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
-    { id: "billing", label: "Billing", icon: <CreditCardOutlined /> },
-  ];
+      { id: "account", label: "My Account", icon: <UserOutlined /> },
+      { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
+      { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
+      { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
+      { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
+      { id: "billing", label: "Billing", icon: <CreditCardOutlined /> },
+    ];
 
   return (
     <div
@@ -46,7 +46,7 @@ export function SettingsMiniSidebar({
       style={{ background: "#13141f" }}
     >
       <div className="px-2 pb-3 mb-1 border-b border-white/[0.08]">
-        <span className="text-[12px] font-bold uppercase tracking-wider text-[#b794f4]">
+        <span className="text-xs font-semibold uppercase tracking-wider text-purple-300/40">
           User Settings
         </span>
         <h3 className="text-base font-bold text-white tracking-tight font-['Sora']">Preferences</h3>
@@ -79,11 +79,10 @@ export function SettingsMiniSidebar({
               key={item.id}
               type="button"
               onClick={() => onSelectCategory(item.id)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 text-left cursor-pointer ${
-                isActive
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 text-left cursor-pointer ${isActive
                   ? "bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
                   : "text-white/70 hover:text-white hover:bg-white/[0.04] border border-transparent"
-              }`}
+                }`}
             >
               <span className="text-sm">{item.icon}</span>
               <span>{item.label}</span>

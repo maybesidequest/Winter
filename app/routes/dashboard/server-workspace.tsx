@@ -57,27 +57,27 @@ export default function ServerWorkspace() {
       icon: <CloudServerOutlined />,
     },
     bridges: {
-      title: "Hub Bridges",
-      desc: `Active Discord channel bridges connected to cross-server Hubs in ${server.metadata.name}.`,
+      title: "Hubs",
+      desc: `Hub connections for ${server.metadata.name}.`,
       icon: <ApartmentOutlined />,
     },
     calls: {
-      title: "Calls & Userphone",
-      desc: `Allowed matchmaking channels and call privacy/behavior toggles for ${server.metadata.name}.`,
+      title: "Calls",
+      desc: `Call channels and privacy settings for ${server.metadata.name}.`,
       icon: <ThunderboltOutlined />,
     },
     safety: {
-      title: "Safety & Blocklist",
-      desc: `Users and servers blocked from interacting with ${server.metadata.name} in Calls and Hubs.`,
+      title: "Blocklist",
+      desc: `Users and servers blocked from interacting with ${server.metadata.name}.`,
       icon: <SafetyCertificateOutlined />,
     },
     blocklist: {
-      title: "Safety & Blocklist",
-      desc: `Users and servers blocked from interacting with ${server.metadata.name} in Calls and Hubs.`,
+      title: "Blocklist",
+      desc: `Users and servers blocked from interacting with ${server.metadata.name}.`,
       icon: <SafetyCertificateOutlined />,
     },
     settings: {
-      title: "Server Settings",
+      title: "Settings",
       desc: `Bot integration status, command prefix, and Discord permissions for ${server.metadata.name}.`,
       icon: <SettingOutlined />,
     },
@@ -113,4 +113,3 @@ export default function ServerWorkspace() {
     </div>
   );
 }
-

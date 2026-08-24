@@ -2,18 +2,21 @@ import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ClusterOutlined,
-  SettingOutlined,
-  ApiOutlined,
-  SafetyCertificateOutlined,
-  ExclamationCircleOutlined,
+  ApartmentOutlined,
   ArrowLeftOutlined,
-  AppstoreOutlined,
+  BellOutlined,
+  ExclamationCircleOutlined,
+  FileTextOutlined,
+  IdcardOutlined,
+  LinkOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { message } from "antd";
 import { orpc } from "~/lib/orpc";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { HubOverview } from "~/components/dashboard/HubOverview";
+import { HubSummary } from "~/components/dashboard/HubSummary";
+import { HubFeaturePlaceholder } from "~/components/dashboard/HubFeaturePlaceholder";
 import { HubRoutes } from "~/components/dashboard/HubRoutes";
 import { HubSafetyView } from "~/components/dashboard/HubSafetyView";
 import { HubSettings } from "~/components/dashboard/HubSettings";
@@ -24,7 +27,14 @@ import type { HubConnectionResource } from "~/resources/connection";
 export default function HubWorkspace() {
   const params = useParams();
   const hubId = params.hubId || "";
-  const activeTab = params.view === "routes" ? "connections" : params.view || "overview";
+  const legacyViews: Record<string, string> = {
+    routes: "connections",
+    safety: "moderation",
+    rules: "moderation",
+    members: "team",
+  };
+  const requestedView = params.view || "overview";
+  const activeTab = legacyViews[requestedView] || requestedView;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -143,35 +153,47 @@ export default function HubWorkspace() {
   const viewTitles: Record<string, { title: string; desc: string }> = {
     overview: {
       title: "Overview",
-      desc: hub.spec.shortDescription || hub.spec.description || "Live presence, identity, and network stats.",
+      desc: hub.spec.shortDescription || hub.spec.description || "Hub status and activity at a glance.",
+    },
+    general: {
+      title: "General",
+      desc: "Manage the hub's identity, branding, and description.",
     },
     connections: {
-      title: "Connected Bridges",
-      desc: "Active Discord server bridges, linked channels, and message forwarding.",
+      title: "Connections",
+      desc: "Manage connected Discord servers and channels.",
     },
-    safety: {
-      title: "Safety & Moderation",
-      desc: "Sanction appeal throttles, network activity lock, and audit streams.",
+    moderation: {
+      title: "Moderation",
+      desc: "Manage safety settings, message rules, and network access.",
     },
     modules: {
-      title: "Broadcast Modules",
-      desc: "Configure packet relay features, media filters, and spam protection.",
+      title: "Modules",
+      desc: "Choose how messages and attachments move through the hub.",
     },
-    rules: {
-      title: "Rules & Policies",
-      desc: "Automated content moderation rules, keyword filters, and broadcast limits.",
+    logging: {
+      title: "Logging",
+      desc: "Configure log channels and notification roles.",
     },
-    members: {
-      title: "Members & Staff",
-      desc: "Server representatives, moderators, and cross-server permissions.",
+    badges: {
+      title: "Badges",
+      desc: "Choose which staff badges appear on relayed messages.",
     },
-    analytics: {
-      title: "Analytics",
-      desc: "Message velocity, cross-server engagement, and peak interaction hours.",
+    invites: {
+      title: "Invites",
+      desc: "Create and revoke hub invite codes.",
+    },
+    team: {
+      title: "Team",
+      desc: "Manage staff roles and permissions.",
+    },
+    announcements: {
+      title: "Announcements",
+      desc: "Schedule announcements across connected servers.",
     },
     settings: {
-      title: "Hub Settings",
-      desc: "Directory visibility, localization, ownership transfer, and danger zone.",
+      title: "Settings",
+      desc: "Manage visibility, localization, ownership, and deletion.",
     },
   };
 
@@ -196,8 +218,9 @@ export default function HubWorkspace() {
         }
       />
 
-      {/* Tab Content Rendering */}
-      {activeTab === "overview" && (
+      {activeTab === "overview" && <HubSummary hub={hub} />}
+
+      {activeTab === "general" && (
         <HubOverview
           hub={hub}
           canEdit={canEdit}
@@ -227,13 +250,20 @@ export default function HubWorkspace() {
         />
       )}
 
-      {activeTab === "safety" && (
-        <HubSafetyView
-          hub={hub}
-          canEdit={canEdit}
-          saving={patchMutation.isPending}
-          onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
-        />
+      {activeTab === "moderation" && (
+        <div className="flex flex-col gap-6">
+          <HubSafetyView
+            hub={hub}
+            canEdit={canEdit}
+            saving={patchMutation.isPending}
+            onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
+          />
+          <HubFeaturePlaceholder
+            icon={<SafetyCertificateOutlined />}
+            title="AutoMod"
+            description="Pattern rules and safe-list controls are still managed through Discord."
+          />
+        </div>
       )}
 
       {activeTab === "modules" && (
@@ -256,6 +286,46 @@ export default function HubWorkspace() {
           onDeleteHub={() => deleteHubMutation.mutate({ hubId })}
           onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId })}
           onNukeMessages={() => nukeMessagesMutation.mutate({ hubId })}
+        />
+      )}
+
+      {activeTab === "logging" && (
+        <HubFeaturePlaceholder
+          icon={<FileTextOutlined />}
+          title="Logging"
+          description="Log channels and notification roles are still managed through Discord."
+        />
+      )}
+
+      {activeTab === "badges" && (
+        <HubFeaturePlaceholder
+          icon={<IdcardOutlined />}
+          title="Badges"
+          description="Staff badge visibility is still managed through Discord."
+        />
+      )}
+
+      {activeTab === "invites" && (
+        <HubFeaturePlaceholder
+          icon={<LinkOutlined />}
+          title="Invites"
+          description="Creating and revoking invite codes is still handled through Discord."
+        />
+      )}
+
+      {activeTab === "team" && (
+        <HubFeaturePlaceholder
+          icon={<ApartmentOutlined />}
+          title="Team"
+          description="Staff membership, roles, and permissions are still managed through Discord."
+        />
+      )}
+
+      {activeTab === "announcements" && (
+        <HubFeaturePlaceholder
+          icon={<BellOutlined />}
+          title="Announcements"
+          description="Scheduled announcements are still managed through Discord."
         />
       )}
     </div>
