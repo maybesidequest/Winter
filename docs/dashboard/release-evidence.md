@@ -14,13 +14,13 @@ This file records evidence only. Code presence, a passing unit test, or a previo
 | Committed outbox work survives restart | Control Plane outbox tests | Automated pass; staging restart pending |
 | Production UI contains no mock data or unfinished controls | Winter commit `2ce6649`; Docker build and image smoke passed | Code/build pass; browser smoke pending |
 | Billing is absent | Billing component, route, and sidebar removed in `2ce6649` | Code pass; browser scan pending |
-| CI and browser smoke pass | Lint/tests pass; bot Pyright has two pre-existing moderation errors | CI/browser gate pending |
+| CI and browser smoke pass | InterChat lint, control/bot tests, and control/bot Pyright pass; browser smoke still requires staging | CI code gate pass; browser gate pending |
 | mTLS, probes, resources, NetworkPolicy, OTEL, and alerts are verified | GitOps commits `c8cc17d`, `3cd6f58`, `d7c04af`; staging Kustomize renders pass | Render pass; rollout/alerts pending |
 
 ## Required automated evidence
 
 - `uv run ic lint`
-- `uv run ic typecheck control` (pass); `bot` is blocked by two pre-existing moderation errors in `blocklist_dashboard.py`
+- `uv run ic typecheck control bot` (pass)
 - `uv run ic test control bot`
 - `buf lint`
 - `buf breaking --against '.git#branch=main'`
