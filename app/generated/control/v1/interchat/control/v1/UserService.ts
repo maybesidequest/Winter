@@ -7,7 +7,10 @@ import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyRespons
 import type { GetUserInboxRequest as _interchat_control_v1_GetUserInboxRequest, GetUserInboxRequest__Output as _interchat_control_v1_GetUserInboxRequest__Output } from '../../../interchat/control/v1/GetUserInboxRequest';
 import type { GetUserProfileRequest as _interchat_control_v1_GetUserProfileRequest, GetUserProfileRequest__Output as _interchat_control_v1_GetUserProfileRequest__Output } from '../../../interchat/control/v1/GetUserProfileRequest';
 import type { PatchUserPreferencesRequest as _interchat_control_v1_PatchUserPreferencesRequest, PatchUserPreferencesRequest__Output as _interchat_control_v1_PatchUserPreferencesRequest__Output } from '../../../interchat/control/v1/PatchUserPreferencesRequest';
+import type { RecordVoteRequest as _interchat_control_v1_RecordVoteRequest, RecordVoteRequest__Output as _interchat_control_v1_RecordVoteRequest__Output } from '../../../interchat/control/v1/RecordVoteRequest';
+import type { RecordVoteResponse as _interchat_control_v1_RecordVoteResponse, RecordVoteResponse__Output as _interchat_control_v1_RecordVoteResponse__Output } from '../../../interchat/control/v1/RecordVoteResponse';
 import type { RequestContext as _interchat_control_v1_RequestContext, RequestContext__Output as _interchat_control_v1_RequestContext__Output } from '../../../interchat/control/v1/RequestContext';
+import type { SyncDiscordIdentityRequest as _interchat_control_v1_SyncDiscordIdentityRequest, SyncDiscordIdentityRequest__Output as _interchat_control_v1_SyncDiscordIdentityRequest__Output } from '../../../interchat/control/v1/SyncDiscordIdentityRequest';
 import type { UserInboxResponse as _interchat_control_v1_UserInboxResponse, UserInboxResponse__Output as _interchat_control_v1_UserInboxResponse__Output } from '../../../interchat/control/v1/UserInboxResponse';
 import type { UserPreferences as _interchat_control_v1_UserPreferences, UserPreferences__Output as _interchat_control_v1_UserPreferences__Output } from '../../../interchat/control/v1/UserPreferences';
 import type { UserProfile as _interchat_control_v1_UserProfile, UserProfile__Output as _interchat_control_v1_UserProfile__Output } from '../../../interchat/control/v1/UserProfile';
@@ -58,6 +61,24 @@ export interface UserServiceClient extends grpc.Client {
   patchUserPreferences(argument: _interchat_control_v1_PatchUserPreferencesRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UserPreferences__Output>): grpc.ClientUnaryCall;
   patchUserPreferences(argument: _interchat_control_v1_PatchUserPreferencesRequest, callback: grpc.requestCallback<_interchat_control_v1_UserPreferences__Output>): grpc.ClientUnaryCall;
   
+  RecordVote(argument: _interchat_control_v1_RecordVoteRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  RecordVote(argument: _interchat_control_v1_RecordVoteRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  RecordVote(argument: _interchat_control_v1_RecordVoteRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  RecordVote(argument: _interchat_control_v1_RecordVoteRequest, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  recordVote(argument: _interchat_control_v1_RecordVoteRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  recordVote(argument: _interchat_control_v1_RecordVoteRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  recordVote(argument: _interchat_control_v1_RecordVoteRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  recordVote(argument: _interchat_control_v1_RecordVoteRequest, callback: grpc.requestCallback<_interchat_control_v1_RecordVoteResponse__Output>): grpc.ClientUnaryCall;
+  
+  SyncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  SyncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  SyncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  SyncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  syncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  syncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  syncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  syncDiscordIdentity(argument: _interchat_control_v1_SyncDiscordIdentityRequest, callback: grpc.requestCallback<_interchat_control_v1_UserProfile__Output>): grpc.ClientUnaryCall;
+  
 }
 
 export interface UserServiceHandlers extends grpc.UntypedServiceImplementation {
@@ -71,6 +92,10 @@ export interface UserServiceHandlers extends grpc.UntypedServiceImplementation {
   
   PatchUserPreferences: grpc.handleUnaryCall<_interchat_control_v1_PatchUserPreferencesRequest__Output, _interchat_control_v1_UserPreferences>;
   
+  RecordVote: grpc.handleUnaryCall<_interchat_control_v1_RecordVoteRequest__Output, _interchat_control_v1_RecordVoteResponse>;
+  
+  SyncDiscordIdentity: grpc.handleUnaryCall<_interchat_control_v1_SyncDiscordIdentityRequest__Output, _interchat_control_v1_UserProfile>;
+  
 }
 
 export interface UserServiceDefinition extends grpc.ServiceDefinition {
@@ -79,4 +104,6 @@ export interface UserServiceDefinition extends grpc.ServiceDefinition {
   GetUserPreferences: MethodDefinition<_interchat_control_v1_RequestContext, _interchat_control_v1_UserPreferences, _interchat_control_v1_RequestContext__Output, _interchat_control_v1_UserPreferences__Output>
   GetUserProfile: MethodDefinition<_interchat_control_v1_GetUserProfileRequest, _interchat_control_v1_UserProfile, _interchat_control_v1_GetUserProfileRequest__Output, _interchat_control_v1_UserProfile__Output>
   PatchUserPreferences: MethodDefinition<_interchat_control_v1_PatchUserPreferencesRequest, _interchat_control_v1_UserPreferences, _interchat_control_v1_PatchUserPreferencesRequest__Output, _interchat_control_v1_UserPreferences__Output>
+  RecordVote: MethodDefinition<_interchat_control_v1_RecordVoteRequest, _interchat_control_v1_RecordVoteResponse, _interchat_control_v1_RecordVoteRequest__Output, _interchat_control_v1_RecordVoteResponse__Output>
+  SyncDiscordIdentity: MethodDefinition<_interchat_control_v1_SyncDiscordIdentityRequest, _interchat_control_v1_UserProfile, _interchat_control_v1_SyncDiscordIdentityRequest__Output, _interchat_control_v1_UserProfile__Output>
 }

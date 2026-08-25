@@ -12,6 +12,8 @@ import type { DeleteHubRequest as _interchat_control_v1_DeleteHubRequest, Delete
 import type { DeleteHubRuleRequest as _interchat_control_v1_DeleteHubRuleRequest, DeleteHubRuleRequest__Output as _interchat_control_v1_DeleteHubRuleRequest__Output } from '../../../interchat/control/v1/DeleteHubRuleRequest';
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from '../../../interchat/control/v1/EmptyResponse';
 import type { GetHubRequest as _interchat_control_v1_GetHubRequest, GetHubRequest__Output as _interchat_control_v1_GetHubRequest__Output } from '../../../interchat/control/v1/GetHubRequest';
+import type { GetPopularTagsRequest as _interchat_control_v1_GetPopularTagsRequest, GetPopularTagsRequest__Output as _interchat_control_v1_GetPopularTagsRequest__Output } from '../../../interchat/control/v1/GetPopularTagsRequest';
+import type { GetPopularTagsResponse as _interchat_control_v1_GetPopularTagsResponse, GetPopularTagsResponse__Output as _interchat_control_v1_GetPopularTagsResponse__Output } from '../../../interchat/control/v1/GetPopularTagsResponse';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from '../../../interchat/control/v1/Hub';
 import type { HubAnnouncement as _interchat_control_v1_HubAnnouncement, HubAnnouncement__Output as _interchat_control_v1_HubAnnouncement__Output } from '../../../interchat/control/v1/HubAnnouncement';
 import type { HubAnnouncementsResponse as _interchat_control_v1_HubAnnouncementsResponse, HubAnnouncementsResponse__Output as _interchat_control_v1_HubAnnouncementsResponse__Output } from '../../../interchat/control/v1/HubAnnouncementsResponse';
@@ -26,6 +28,8 @@ import type { HubStaffResponse as _interchat_control_v1_HubStaffResponse, HubSta
 import type { ListHubAnnouncementsRequest as _interchat_control_v1_ListHubAnnouncementsRequest, ListHubAnnouncementsRequest__Output as _interchat_control_v1_ListHubAnnouncementsRequest__Output } from '../../../interchat/control/v1/ListHubAnnouncementsRequest';
 import type { ListHubInvitesRequest as _interchat_control_v1_ListHubInvitesRequest, ListHubInvitesRequest__Output as _interchat_control_v1_ListHubInvitesRequest__Output } from '../../../interchat/control/v1/ListHubInvitesRequest';
 import type { ListHubStaffRequest as _interchat_control_v1_ListHubStaffRequest, ListHubStaffRequest__Output as _interchat_control_v1_ListHubStaffRequest__Output } from '../../../interchat/control/v1/ListHubStaffRequest';
+import type { ListMyHubsRequest as _interchat_control_v1_ListMyHubsRequest, ListMyHubsRequest__Output as _interchat_control_v1_ListMyHubsRequest__Output } from '../../../interchat/control/v1/ListMyHubsRequest';
+import type { ListMyHubsResponse as _interchat_control_v1_ListMyHubsResponse, ListMyHubsResponse__Output as _interchat_control_v1_ListMyHubsResponse__Output } from '../../../interchat/control/v1/ListMyHubsResponse';
 import type { ListUserHubsRequest as _interchat_control_v1_ListUserHubsRequest, ListUserHubsRequest__Output as _interchat_control_v1_ListUserHubsRequest__Output } from '../../../interchat/control/v1/ListUserHubsRequest';
 import type { ListUserHubsResponse as _interchat_control_v1_ListUserHubsResponse, ListUserHubsResponse__Output as _interchat_control_v1_ListUserHubsResponse__Output } from '../../../interchat/control/v1/ListUserHubsResponse';
 import type { LockdownHubRequest as _interchat_control_v1_LockdownHubRequest, LockdownHubRequest__Output as _interchat_control_v1_LockdownHubRequest__Output } from '../../../interchat/control/v1/LockdownHubRequest';
@@ -35,9 +39,13 @@ import type { PatchHubRequest as _interchat_control_v1_PatchHubRequest, PatchHub
 import type { RemoveHubStaffRoleRequest as _interchat_control_v1_RemoveHubStaffRoleRequest, RemoveHubStaffRoleRequest__Output as _interchat_control_v1_RemoveHubStaffRoleRequest__Output } from '../../../interchat/control/v1/RemoveHubStaffRoleRequest';
 import type { ReorderHubRulesRequest as _interchat_control_v1_ReorderHubRulesRequest, ReorderHubRulesRequest__Output as _interchat_control_v1_ReorderHubRulesRequest__Output } from '../../../interchat/control/v1/ReorderHubRulesRequest';
 import type { RevokeHubInviteRequest as _interchat_control_v1_RevokeHubInviteRequest, RevokeHubInviteRequest__Output as _interchat_control_v1_RevokeHubInviteRequest__Output } from '../../../interchat/control/v1/RevokeHubInviteRequest';
+import type { SearchHubsRequest as _interchat_control_v1_SearchHubsRequest, SearchHubsRequest__Output as _interchat_control_v1_SearchHubsRequest__Output } from '../../../interchat/control/v1/SearchHubsRequest';
+import type { SearchHubsResponse as _interchat_control_v1_SearchHubsResponse, SearchHubsResponse__Output as _interchat_control_v1_SearchHubsResponse__Output } from '../../../interchat/control/v1/SearchHubsResponse';
 import type { TransferHubOwnershipRequest as _interchat_control_v1_TransferHubOwnershipRequest, TransferHubOwnershipRequest__Output as _interchat_control_v1_TransferHubOwnershipRequest__Output } from '../../../interchat/control/v1/TransferHubOwnershipRequest';
 import type { UpdateHubAnnouncementRequest as _interchat_control_v1_UpdateHubAnnouncementRequest, UpdateHubAnnouncementRequest__Output as _interchat_control_v1_UpdateHubAnnouncementRequest__Output } from '../../../interchat/control/v1/UpdateHubAnnouncementRequest';
 import type { UpdateHubRuleRequest as _interchat_control_v1_UpdateHubRuleRequest, UpdateHubRuleRequest__Output as _interchat_control_v1_UpdateHubRuleRequest__Output } from '../../../interchat/control/v1/UpdateHubRuleRequest';
+import type { UpvoteHubRequest as _interchat_control_v1_UpvoteHubRequest, UpvoteHubRequest__Output as _interchat_control_v1_UpvoteHubRequest__Output } from '../../../interchat/control/v1/UpvoteHubRequest';
+import type { UpvoteHubResponse as _interchat_control_v1_UpvoteHubResponse, UpvoteHubResponse__Output as _interchat_control_v1_UpvoteHubResponse__Output } from '../../../interchat/control/v1/UpvoteHubResponse';
 
 export interface HubServiceClient extends grpc.Client {
   AssignStaffRole(argument: _interchat_control_v1_AssignHubStaffRoleRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubStaffMember__Output>): grpc.ClientUnaryCall;
@@ -121,6 +129,15 @@ export interface HubServiceClient extends grpc.Client {
   getHub(argument: _interchat_control_v1_GetHubRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   getHub(argument: _interchat_control_v1_GetHubRequest, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   
+  GetPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  GetPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  GetPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  GetPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  getPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  getPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  getPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  getPopularTags(argument: _interchat_control_v1_GetPopularTagsRequest, callback: grpc.requestCallback<_interchat_control_v1_GetPopularTagsResponse__Output>): grpc.ClientUnaryCall;
+  
   ListAnnouncements(argument: _interchat_control_v1_ListHubAnnouncementsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubAnnouncementsResponse__Output>): grpc.ClientUnaryCall;
   ListAnnouncements(argument: _interchat_control_v1_ListHubAnnouncementsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_HubAnnouncementsResponse__Output>): grpc.ClientUnaryCall;
   ListAnnouncements(argument: _interchat_control_v1_ListHubAnnouncementsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubAnnouncementsResponse__Output>): grpc.ClientUnaryCall;
@@ -138,6 +155,15 @@ export interface HubServiceClient extends grpc.Client {
   listInvites(argument: _interchat_control_v1_ListHubInvitesRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_HubInvitesResponse__Output>): grpc.ClientUnaryCall;
   listInvites(argument: _interchat_control_v1_ListHubInvitesRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubInvitesResponse__Output>): grpc.ClientUnaryCall;
   listInvites(argument: _interchat_control_v1_ListHubInvitesRequest, callback: grpc.requestCallback<_interchat_control_v1_HubInvitesResponse__Output>): grpc.ClientUnaryCall;
+  
+  ListMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  listMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  listMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  listMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
+  listMyHubs(argument: _interchat_control_v1_ListMyHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListMyHubsResponse__Output>): grpc.ClientUnaryCall;
   
   ListRules(argument: _interchat_control_v1_GetHubRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubRulesResponse__Output>): grpc.ClientUnaryCall;
   ListRules(argument: _interchat_control_v1_GetHubRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_HubRulesResponse__Output>): grpc.ClientUnaryCall;
@@ -229,6 +255,15 @@ export interface HubServiceClient extends grpc.Client {
   revokeInvite(argument: _interchat_control_v1_RevokeHubInviteRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_EmptyResponse__Output>): grpc.ClientUnaryCall;
   revokeInvite(argument: _interchat_control_v1_RevokeHubInviteRequest, callback: grpc.requestCallback<_interchat_control_v1_EmptyResponse__Output>): grpc.ClientUnaryCall;
   
+  SearchHubs(argument: _interchat_control_v1_SearchHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  SearchHubs(argument: _interchat_control_v1_SearchHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  SearchHubs(argument: _interchat_control_v1_SearchHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  SearchHubs(argument: _interchat_control_v1_SearchHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  searchHubs(argument: _interchat_control_v1_SearchHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  searchHubs(argument: _interchat_control_v1_SearchHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  searchHubs(argument: _interchat_control_v1_SearchHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  searchHubs(argument: _interchat_control_v1_SearchHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_SearchHubsResponse__Output>): grpc.ClientUnaryCall;
+  
   TransferOwnership(argument: _interchat_control_v1_TransferHubOwnershipRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   TransferOwnership(argument: _interchat_control_v1_TransferHubOwnershipRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   TransferOwnership(argument: _interchat_control_v1_TransferHubOwnershipRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
@@ -256,6 +291,15 @@ export interface HubServiceClient extends grpc.Client {
   updateRule(argument: _interchat_control_v1_UpdateHubRuleRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubRule__Output>): grpc.ClientUnaryCall;
   updateRule(argument: _interchat_control_v1_UpdateHubRuleRequest, callback: grpc.requestCallback<_interchat_control_v1_HubRule__Output>): grpc.ClientUnaryCall;
   
+  UpvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  UpvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  UpvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  UpvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  upvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  upvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  upvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  upvoteHub(argument: _interchat_control_v1_UpvoteHubRequest, callback: grpc.requestCallback<_interchat_control_v1_UpvoteHubResponse__Output>): grpc.ClientUnaryCall;
+  
 }
 
 export interface HubServiceHandlers extends grpc.UntypedServiceImplementation {
@@ -277,9 +321,13 @@ export interface HubServiceHandlers extends grpc.UntypedServiceImplementation {
   
   GetHub: grpc.handleUnaryCall<_interchat_control_v1_GetHubRequest__Output, _interchat_control_v1_Hub>;
   
+  GetPopularTags: grpc.handleUnaryCall<_interchat_control_v1_GetPopularTagsRequest__Output, _interchat_control_v1_GetPopularTagsResponse>;
+  
   ListAnnouncements: grpc.handleUnaryCall<_interchat_control_v1_ListHubAnnouncementsRequest__Output, _interchat_control_v1_HubAnnouncementsResponse>;
   
   ListInvites: grpc.handleUnaryCall<_interchat_control_v1_ListHubInvitesRequest__Output, _interchat_control_v1_HubInvitesResponse>;
+  
+  ListMyHubs: grpc.handleUnaryCall<_interchat_control_v1_ListMyHubsRequest__Output, _interchat_control_v1_ListMyHubsResponse>;
   
   ListRules: grpc.handleUnaryCall<_interchat_control_v1_GetHubRequest__Output, _interchat_control_v1_HubRulesResponse>;
   
@@ -301,11 +349,15 @@ export interface HubServiceHandlers extends grpc.UntypedServiceImplementation {
   
   RevokeInvite: grpc.handleUnaryCall<_interchat_control_v1_RevokeHubInviteRequest__Output, _interchat_control_v1_EmptyResponse>;
   
+  SearchHubs: grpc.handleUnaryCall<_interchat_control_v1_SearchHubsRequest__Output, _interchat_control_v1_SearchHubsResponse>;
+  
   TransferOwnership: grpc.handleUnaryCall<_interchat_control_v1_TransferHubOwnershipRequest__Output, _interchat_control_v1_Hub>;
   
   UpdateAnnouncement: grpc.handleUnaryCall<_interchat_control_v1_UpdateHubAnnouncementRequest__Output, _interchat_control_v1_HubAnnouncement>;
   
   UpdateRule: grpc.handleUnaryCall<_interchat_control_v1_UpdateHubRuleRequest__Output, _interchat_control_v1_HubRule>;
+  
+  UpvoteHub: grpc.handleUnaryCall<_interchat_control_v1_UpvoteHubRequest__Output, _interchat_control_v1_UpvoteHubResponse>;
   
 }
 
@@ -319,8 +371,10 @@ export interface HubServiceDefinition extends grpc.ServiceDefinition {
   DeleteHub: MethodDefinition<_interchat_control_v1_DeleteHubRequest, _interchat_control_v1_EmptyResponse, _interchat_control_v1_DeleteHubRequest__Output, _interchat_control_v1_EmptyResponse__Output>
   DeleteRule: MethodDefinition<_interchat_control_v1_DeleteHubRuleRequest, _interchat_control_v1_EmptyResponse, _interchat_control_v1_DeleteHubRuleRequest__Output, _interchat_control_v1_EmptyResponse__Output>
   GetHub: MethodDefinition<_interchat_control_v1_GetHubRequest, _interchat_control_v1_Hub, _interchat_control_v1_GetHubRequest__Output, _interchat_control_v1_Hub__Output>
+  GetPopularTags: MethodDefinition<_interchat_control_v1_GetPopularTagsRequest, _interchat_control_v1_GetPopularTagsResponse, _interchat_control_v1_GetPopularTagsRequest__Output, _interchat_control_v1_GetPopularTagsResponse__Output>
   ListAnnouncements: MethodDefinition<_interchat_control_v1_ListHubAnnouncementsRequest, _interchat_control_v1_HubAnnouncementsResponse, _interchat_control_v1_ListHubAnnouncementsRequest__Output, _interchat_control_v1_HubAnnouncementsResponse__Output>
   ListInvites: MethodDefinition<_interchat_control_v1_ListHubInvitesRequest, _interchat_control_v1_HubInvitesResponse, _interchat_control_v1_ListHubInvitesRequest__Output, _interchat_control_v1_HubInvitesResponse__Output>
+  ListMyHubs: MethodDefinition<_interchat_control_v1_ListMyHubsRequest, _interchat_control_v1_ListMyHubsResponse, _interchat_control_v1_ListMyHubsRequest__Output, _interchat_control_v1_ListMyHubsResponse__Output>
   ListRules: MethodDefinition<_interchat_control_v1_GetHubRequest, _interchat_control_v1_HubRulesResponse, _interchat_control_v1_GetHubRequest__Output, _interchat_control_v1_HubRulesResponse__Output>
   ListStaff: MethodDefinition<_interchat_control_v1_ListHubStaffRequest, _interchat_control_v1_HubStaffResponse, _interchat_control_v1_ListHubStaffRequest__Output, _interchat_control_v1_HubStaffResponse__Output>
   ListUserHubs: MethodDefinition<_interchat_control_v1_ListUserHubsRequest, _interchat_control_v1_ListUserHubsResponse, _interchat_control_v1_ListUserHubsRequest__Output, _interchat_control_v1_ListUserHubsResponse__Output>
@@ -331,7 +385,9 @@ export interface HubServiceDefinition extends grpc.ServiceDefinition {
   RemoveStaffRole: MethodDefinition<_interchat_control_v1_RemoveHubStaffRoleRequest, _interchat_control_v1_EmptyResponse, _interchat_control_v1_RemoveHubStaffRoleRequest__Output, _interchat_control_v1_EmptyResponse__Output>
   ReorderRules: MethodDefinition<_interchat_control_v1_ReorderHubRulesRequest, _interchat_control_v1_HubRulesResponse, _interchat_control_v1_ReorderHubRulesRequest__Output, _interchat_control_v1_HubRulesResponse__Output>
   RevokeInvite: MethodDefinition<_interchat_control_v1_RevokeHubInviteRequest, _interchat_control_v1_EmptyResponse, _interchat_control_v1_RevokeHubInviteRequest__Output, _interchat_control_v1_EmptyResponse__Output>
+  SearchHubs: MethodDefinition<_interchat_control_v1_SearchHubsRequest, _interchat_control_v1_SearchHubsResponse, _interchat_control_v1_SearchHubsRequest__Output, _interchat_control_v1_SearchHubsResponse__Output>
   TransferOwnership: MethodDefinition<_interchat_control_v1_TransferHubOwnershipRequest, _interchat_control_v1_Hub, _interchat_control_v1_TransferHubOwnershipRequest__Output, _interchat_control_v1_Hub__Output>
   UpdateAnnouncement: MethodDefinition<_interchat_control_v1_UpdateHubAnnouncementRequest, _interchat_control_v1_HubAnnouncement, _interchat_control_v1_UpdateHubAnnouncementRequest__Output, _interchat_control_v1_HubAnnouncement__Output>
   UpdateRule: MethodDefinition<_interchat_control_v1_UpdateHubRuleRequest, _interchat_control_v1_HubRule, _interchat_control_v1_UpdateHubRuleRequest__Output, _interchat_control_v1_HubRule__Output>
+  UpvoteHub: MethodDefinition<_interchat_control_v1_UpvoteHubRequest, _interchat_control_v1_UpvoteHubResponse, _interchat_control_v1_UpvoteHubRequest__Output, _interchat_control_v1_UpvoteHubResponse__Output>
 }

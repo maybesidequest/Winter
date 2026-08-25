@@ -19,6 +19,17 @@ export const hubRouter = base.router({
     return hubService.getUserHubs(context.user.id);
   }),
 
+  getHub: protectedBase
+    .input(z.object({ hubId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const hub = await hubService.getHub(input.hubId, context.user.id);
+      if (!hub) {
+        throw new ORPCError("NOT_FOUND", { message: "Hub not found or access denied." });
+      }
+      return hub;
+    }),
+
+
   createHub: protectedBase
     .input(createHubSchema)
     .handler(async ({ input, context }) => {

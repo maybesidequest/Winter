@@ -46,22 +46,62 @@ export const hubService = {
   ...hubFeaturesService,
 
   async getUserHubs(userId: string): Promise<HubResource[]> {
-    const authorizedHubIds = await irisClient.getAuthorizedHubs(userId);
-    if (authorizedHubIds.length === 0) {
-      return [];
-    }
-
-    try {
-      return await controlHubService.listUserHubs(authorizedHubIds, userId);
-    } catch (err) {
-      console.warn("Failed to batch list user hubs from control plane", err);
-      return [];
-    }
+    const res = await controlHubService.listMyHubs(userId);
+    return res.hubs.map((h: any) => ({
+      metadata: {
+        id: h.id,
+        name: h.name,
+        ownerId: h.ownerId,
+        createdAt: h.createdAt || new Date().toISOString(),
+        updatedAt: h.updatedAt || new Date().toISOString(),
+        effectiveRole: h.effectiveRole,
+        permissions: h.permissions || {},
+      },
+      spec: {
+        name: h.name,
+        shortDescription: h.shortDescription || null,
+        description: h.shortDescription || h.name,
+        iconUrl: h.iconUrl || null,
+        bannerUrl: null,
+        welcomeMessage: null,
+        language: "en",
+        region: "us",
+        visibility: h.visibility || "PUBLIC",
+        locked: h.locked ?? false,
+        nsfw: h.nsfw ?? false,
+        rules: [],
+        appealCooldownHours: 168,
+        settings: 0,
+      },
+      status: {
+        activityLevel: "LOW",
+        verified: false,
+        partnered: false,
+        featured: false,
+        weeklyMessageCount: h.weeklyMessageCount || 0,
+        averageRating: 0,
+        connectionCount: h.connectionCount || 0,
+        upvoteCount: 0,
+        reviewCount: 0,
+      },
+      version: 1,
+    }));
   },
 
 
 
+
+  async getHub(hubId: string, userId: string): Promise<HubResource | null> {
+    try {
+      return await controlHubService.getHub(hubId, userId);
+    } catch (error: unknown) {
+      console.error("Failed to fetch hub details via control plane", error);
+      return null;
+    }
+  },
+
   async createHub(userId: string, input: CreateHubInput, idempotencyKey?: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
+
     try {
       const res = await controlHubService.createHub({
         actorId: userId,

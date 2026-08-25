@@ -27,7 +27,6 @@
     "antd": "^6.6.1",
     "cytoscape": "^3.34.1",
     "dayjs": "^1.11.23",
-    "drizzle-orm": "^0.45.2",
     "highcharts": "^13.0.1",
     "highcharts-react-official": "^3.2.3",
     "ioredis": "^6.0.0",
@@ -55,7 +54,6 @@
     "@types/react": "^19.2.18",
     "@types/react-cytoscapejs": "^1.2.6",
     "@types/react-dom": "^19.2.4",
-    "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"

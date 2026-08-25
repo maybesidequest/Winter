@@ -18,8 +18,7 @@ export default [
   ]),
   layout("routes/staff/layout.tsx", [
     route("staff", "routes/staff/index.tsx"),
-    route("staff/relationships", "routes/staff/relationships.tsx"),
-    route("staff/analytics", "routes/staff/analytics.tsx")
+    route("staff/relationships", "routes/staff/relationships.tsx")
   ]),
   route("auth/discord", "routes/auth/discord.tsx"),
   route("auth/discord/callback", "routes/auth/callback.tsx"),

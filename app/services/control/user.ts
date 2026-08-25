@@ -84,5 +84,46 @@ export const userService = {
       itemId: input.itemId,
     });
   },
+
+  async syncDiscordIdentity(input: {
+    discordUserId: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+  }): Promise<UserProfile> {
+    const clients = getServiceClients();
+    return invokeRpc(clients.userClient, "SyncDiscordIdentity", {
+      context: makeRequestContext(input.discordUserId),
+      discordUserId: input.discordUserId,
+      username: input.username,
+      displayName: input.displayName,
+      avatarUrl: input.avatarUrl || "",
+    });
+  },
+
+  async recordVote(input: {
+    provider: string;
+    rawPayload: Uint8Array;
+    signature: string;
+    signatureTimestamp?: string;
+  }): Promise<{
+    userId: string;
+    totalVotes: number;
+    currentStreak: number;
+    longestStreak: number;
+    streakExtended: boolean;
+    isDuplicate: boolean;
+    recordedAt?: string;
+  }> {
+    const clients = getServiceClients();
+    return invokeRpc(clients.userClient, "RecordVote", {
+      context: makeRequestContext("interchat-winter-webhook"),
+      provider: input.provider,
+      rawPayload: input.rawPayload,
+      signature: input.signature,
+      signatureTimestamp: input.signatureTimestamp || "",
+    });
+  },
 };
+
 

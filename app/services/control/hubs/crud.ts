@@ -49,6 +49,67 @@ export const hubCrudService = {
     return res.hubs || [];
   },
 
+  async listMyHubs(actorId: string, limit: number = 50, cursor?: string): Promise<{ hubs: any[]; nextCursor?: string; totalCount: number }> {
+    const clients = getServiceClients();
+    const res = await invokeRpc<{ hubs?: any[]; nextCursor?: string; totalCount?: number }>(clients.hubClient, "ListMyHubs", {
+      context: makeRequestContext(actorId),
+      limit,
+      cursor,
+    });
+    return {
+      hubs: res.hubs || [],
+      nextCursor: res.nextCursor,
+      totalCount: res.totalCount || 0,
+    };
+  },
+
+  async searchHubs(input: {
+    query?: string;
+    sort?: string;
+    tags?: string[];
+    language?: string;
+    region?: string;
+    nsfwFilter?: string;
+    limit?: number;
+    cursor?: string;
+    actorId?: string;
+  }): Promise<{ hubs: any[]; nextCursor?: string; totalCount: number }> {
+    const clients = getServiceClients();
+    const res = await invokeRpc<{ hubs?: any[]; nextCursor?: string; totalCount?: number }>(clients.hubClient, "SearchHubs", {
+      context: makeRequestContext(input.actorId || "anonymous"),
+      query: input.query || "",
+      sort: input.sort || "HUB_SEARCH_SORT_TRENDING",
+      tags: input.tags || [],
+      language: input.language,
+      region: input.region,
+      nsfwFilter: input.nsfwFilter || "NSFW_FILTER_SFW_ONLY",
+      limit: input.limit || 24,
+      cursor: input.cursor,
+    });
+    return {
+      hubs: res.hubs || [],
+      nextCursor: res.nextCursor,
+      totalCount: res.totalCount || 0,
+    };
+  },
+
+  async getPopularTags(limit: number = 50): Promise<{ tags: any[] }> {
+    const clients = getServiceClients();
+    const res = await invokeRpc<{ tags?: any[] }>(clients.hubClient, "GetPopularTags", {
+      limit,
+    });
+    return { tags: res.tags || [] };
+  },
+
+  async upvoteHub(hubId: string, actorId: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {
+    const clients = getServiceClients();
+    return invokeRpc(clients.hubClient, "UpvoteHub", {
+      context: makeRequestContext(actorId),
+      hubId,
+    });
+  },
+
+
 
   async patchHub(input: {
     hubId: string;

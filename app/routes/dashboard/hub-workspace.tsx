@@ -36,19 +36,25 @@ export default function HubWorkspace() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: hubs = [], isLoading, isError } = useQuery(orpc.hub.getUserHubs.queryOptions());
-  const hub = hubs.find((h) => h.metadata.id === hubId);
+  const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
+    orpc.hub.getHub.queryOptions({ input: { hubId } })
+  );
+  const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions());
+  const hub = hubDetail || hubs.find((h) => h.metadata.id === hubId);
+  const isLoading = isHubLoading && !hub;
   const { data: connections = [] } = useQuery(orpc.hub.getConnections.queryOptions({ input: { hubId } }));
 
   const patchMutation = useMutation(
     orpc.hub.patchConfig.mutationOptions({
       onSuccess: async () => {
         message.success("Hub configuration saved successfully.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to save hub configuration."),
     })
   );
+
 
   const toggleRouteMutation = useMutation(
     orpc.hub.toggleConnection.mutationOptions({

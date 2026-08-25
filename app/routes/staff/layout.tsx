@@ -26,11 +26,6 @@ export default function StaffLayout({ loaderData }: Route.ComponentProps) {
       icon: <NodeIndexOutlined />,
       label: <Link to="/staff/relationships">Relationships Graph</Link>,
     },
-    {
-      key: "/staff/analytics",
-      icon: <LineChartOutlined />,
-      label: <Link to="/staff/analytics">Analytics</Link>,
-    },
   ];
 
   return (

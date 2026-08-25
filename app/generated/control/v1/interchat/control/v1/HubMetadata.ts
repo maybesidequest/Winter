@@ -1,6 +1,7 @@
 // Original file: ../interchat-protobuf/control/v1/models.proto
 
 import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _google_protobuf_Timestamp__Output } from '../../../google/protobuf/Timestamp';
+import type { Long } from '@grpc/proto-loader';
 
 export interface HubMetadata {
   'id'?: (string);
@@ -10,6 +11,7 @@ export interface HubMetadata {
   'updatedAt'?: (_google_protobuf_Timestamp | null);
   'effectiveRole'?: (string);
   'permissions'?: ({[key: string]: boolean});
+  'authzVersion'?: (number | string | Long);
 }
 
 export interface HubMetadata__Output {
@@ -20,4 +22,5 @@ export interface HubMetadata__Output {
   'updatedAt': (_google_protobuf_Timestamp__Output | null);
   'effectiveRole': (string);
   'permissions': ({[key: string]: boolean});
+  'authzVersion': (number);
 }
