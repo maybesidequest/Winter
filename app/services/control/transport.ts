@@ -31,7 +31,6 @@ export type UnaryMethod<TReq, TRes> = (
   callback: (error: grpc.ServiceError | null, response?: TRes) => void
 ) => void;
 
-export type ServiceClient = grpc.Client;
 export type RequestContext = GeneratedRequestContext;
 
 export interface ServiceRegistry {
@@ -182,34 +181,6 @@ export function deepToCamelCase<T = unknown>(obj: unknown): T {
   }
   return result as T;
 }
-export function invokeRpc<TRes, TReq = unknown>(
-  client: ServiceClient,
-  method: string,
-  request: TReq
-): Promise<TRes> {
-  return new Promise((resolve, reject) => {
-    if (!client) {
-      return reject(new Error("Control Plane client is unavailable."));
-    }
-    const timeoutMs = Number(process.env.CONTROL_PLANE_TIMEOUT_MS || 5000);
-    const deadline = new Date(Date.now() + timeoutMs);
-    const rec = client as unknown as Record<string, (...args: unknown[]) => void>;
-    const rpc = rec[method] || rec[method.charAt(0).toLowerCase() + method.slice(1)];
-    if (typeof rpc !== "function") {
-      return reject(new Error(`Control Plane method ${method} is unavailable.`));
-    }
-    const snakedRequest = deepToSnakeCase(request);
-    rpc.call(
-      client,
-      snakedRequest,
-      new grpc.Metadata(),
-      { deadline },
-      (error: grpc.ServiceError | null, response?: unknown) =>
-        error ? reject(error) : resolve(deepToCamelCase<TRes>(response))
-    );
-  });
-}
-
 export function makeRequestContext(
   actorId: string,
   mutation = false,

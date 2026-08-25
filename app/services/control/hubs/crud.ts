@@ -4,6 +4,16 @@ import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/inte
 import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
 import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyHubsRequest";
 import type { ListMyHubsResponse } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
+import type { ListMyHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
+import type { ListUserHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListUserHubsRequest";
+import type { ListUserHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListUserHubsResponse";
+import type { CreateHubRequest } from "~/generated/control/v1/interchat/control/v1/CreateHubRequest";
+import type { UpvoteHubRequest } from "~/generated/control/v1/interchat/control/v1/UpvoteHubRequest";
+import type { UpvoteHubResponse__Output } from "~/generated/control/v1/interchat/control/v1/UpvoteHubResponse";
+import type { LockdownHubRequest } from "~/generated/control/v1/interchat/control/v1/LockdownHubRequest";
+import type { TransferHubOwnershipRequest } from "~/generated/control/v1/interchat/control/v1/TransferHubOwnershipRequest";
+import type { DeleteHubRequest } from "~/generated/control/v1/interchat/control/v1/DeleteHubRequest";
+import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
 import type { ManagedHubSummary } from "~/generated/control/v1/interchat/control/v1/ManagedHubSummary";
 import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
 import type { SearchHubsRequest } from "~/generated/control/v1/interchat/control/v1/SearchHubsRequest";
@@ -12,7 +22,7 @@ import type { GetPopularTagsRequest } from "~/generated/control/v1/interchat/con
 import type { GetPopularTagsResponse } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsResponse";
 import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
 import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
-import { getServiceClients, invokeRpc, invokeUnary, makeRequestContext } from "../transport";
+import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string {
   if (!value) return new Date(0).toISOString();
@@ -104,20 +114,21 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "CreateHub", {
+    const response = await invokeUnary<CreateHubRequest, ProtoHub>(clients.hubClient.CreateHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       spec: {
         name: input.name,
         description: input.description,
-        shortDescription: input.shortDescription || null,
-        visibility: input.visibility || "PUBLIC",
-        iconUrl: input.iconUrl || null,
-        bannerUrl: input.bannerUrl || null,
-        welcomeMessage: input.welcomeMessage || null,
+        shortDescription: input.shortDescription || undefined,
+        visibility: `HUB_VISIBILITY_${input.visibility || "PUBLIC"}` as ProtoHubSpecMessage["visibility"],
+        iconUrl: input.iconUrl || undefined,
+        bannerUrl: input.bannerUrl || undefined,
+        welcomeMessage: input.welcomeMessage || undefined,
         language: input.language || "en",
         region: input.region || "us",
       },
     });
+    return toResource(response);
   },
 
   async getHub(hubId: string, actorId: string): Promise<HubResource> {
@@ -132,11 +143,11 @@ export const hubCrudService = {
 
   async listUserHubs(hubIds: string[], actorId: string): Promise<HubResource[]> {
     const clients = getServiceClients();
-    const res = await invokeRpc<{ hubs?: HubResource[] }>(clients.hubClient, "ListUserHubs", {
+    const res = await invokeUnary<ListUserHubsRequest, ListUserHubsResponse__Output>(clients.hubClient.ListUserHubs.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubIds,
     });
-    return res.hubs || [];
+    return res.hubs.map(toResource);
   },
 
   async listMyHubs(actorId: string, limit: number = 50, cursor?: string): Promise<ListMyHubsResponse> {
@@ -146,7 +157,7 @@ export const hubCrudService = {
       limit,
       cursor,
     };
-    return invokeUnary<ListMyHubsRequest, ListMyHubsResponse>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request);
+    return await invokeUnary<ListMyHubsRequest, ListMyHubsResponse__Output>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request) as ListMyHubsResponse;
   },
 
   async searchHubs(input: {
@@ -192,10 +203,11 @@ export const hubCrudService = {
 
   async upvoteHub(hubId: string, actorId: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "UpvoteHub", {
+    const response = await invokeUnary<UpvoteHubRequest, UpvoteHubResponse__Output>(clients.hubClient.UpvoteHub.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubId,
     });
+    return { totalUpvotes: response.totalUpvotes, upvoted: response.upvoted };
   },
 
 
@@ -229,13 +241,14 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "LockdownHub", {
+    const response = await invokeUnary<LockdownHubRequest, ProtoHub>(clients.hubClient.LockdownHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       locked: input.locked,
       reason: input.reason,
       expectedVersion: input.expectedVersion,
     });
+    return toResource(response);
   },
 
   async transferOwnership(input: {
@@ -246,12 +259,13 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "TransferOwnership", {
+    const response = await invokeUnary<TransferHubOwnershipRequest, ProtoHub>(clients.hubClient.TransferOwnership.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       newOwnerId: input.newOwnerId,
       expectedVersion: input.expectedVersion,
     });
+    return toResource(response);
   },
 
   async deleteHub(input: {
@@ -262,7 +276,7 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeRpc(clients.hubClient, "DeleteHub", {
+    await invokeUnary<DeleteHubRequest, EmptyResponse__Output>(clients.hubClient.DeleteHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       confirmationName: input.confirmationName,

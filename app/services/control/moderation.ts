@@ -1,4 +1,11 @@
-import { getServiceClients, invokeRpc, makeRequestContext } from "./transport";
+import type { Appeal__Output } from "~/generated/control/v1/interchat/control/v1/Appeal";
+import type { Infraction__Output } from "~/generated/control/v1/interchat/control/v1/Infraction";
+import type { InfractionsResponse__Output } from "~/generated/control/v1/interchat/control/v1/InfractionsResponse";
+import type { ApplySanctionRequest } from "~/generated/control/v1/interchat/control/v1/ApplySanctionRequest";
+import type { RevokeSanctionRequest } from "~/generated/control/v1/interchat/control/v1/RevokeSanctionRequest";
+import type { GetInfractionsRequest } from "~/generated/control/v1/interchat/control/v1/GetInfractionsRequest";
+import type { SubmitAppealRequest } from "~/generated/control/v1/interchat/control/v1/SubmitAppealRequest";
+import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
 
 export interface Infraction {
   id: string;
@@ -22,6 +29,37 @@ export interface Appeal {
   createdAt?: string;
 }
 
+function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string | undefined {
+  if (!value) return undefined;
+  return new Date((value.seconds || 0) * 1000 + (value.nanos || 0) / 1_000_000).toISOString();
+}
+
+function toInfraction(value: Infraction__Output): Infraction {
+  return {
+    id: value.id,
+    hubId: value.hubId,
+    userId: value.userId,
+    type: value.type as Infraction["type"],
+    reason: value.reason,
+    issuerId: value.issuerId,
+    status: value.status as Infraction["status"],
+    expiresAt: timestamp(value.expiresAt),
+    createdAt: timestamp(value.createdAt),
+  };
+}
+
+function toAppeal(value: Appeal__Output): Appeal {
+  return {
+    id: value.id,
+    infractionId: value.infractionId,
+    hubId: value.hubId,
+    userId: value.userId,
+    reason: value.reason,
+    status: value.status,
+    createdAt: timestamp(value.createdAt),
+  };
+}
+
 export const moderationService = {
   async applySanction(input: {
     hubId: string;
@@ -33,7 +71,7 @@ export const moderationService = {
     idempotencyKey: string;
   }): Promise<Infraction> {
     const clients = getServiceClients();
-    return invokeRpc(clients.moderationClient, "ApplySanction", {
+    const response = await invokeUnary<ApplySanctionRequest, Infraction__Output>(clients.moderationClient.ApplySanction.bind(clients.moderationClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       userId: input.userId,
@@ -41,6 +79,7 @@ export const moderationService = {
       reason: input.reason,
       durationSeconds: input.durationSeconds || 0,
     });
+    return toInfraction(response);
   },
 
   async revokeSanction(input: {
@@ -51,12 +90,13 @@ export const moderationService = {
     idempotencyKey: string;
   }): Promise<Infraction> {
     const clients = getServiceClients();
-    return invokeRpc(clients.moderationClient, "RevokeSanction", {
+    const response = await invokeUnary<RevokeSanctionRequest, Infraction__Output>(clients.moderationClient.RevokeSanction.bind(clients.moderationClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       infractionId: input.infractionId,
       reason: input.reason,
     });
+    return toInfraction(response);
   },
 
   async getInfractions(params: {
@@ -65,16 +105,15 @@ export const moderationService = {
     actorId: string;
   }): Promise<Infraction[]> {
     const clients = getServiceClients();
-    const res = await invokeRpc<{ infractions?: Infraction[] }>(
-      clients.moderationClient,
-      "GetInfractions",
+    const res = await invokeUnary<GetInfractionsRequest, InfractionsResponse__Output>(
+      clients.moderationClient.GetInfractions.bind(clients.moderationClient),
       {
         context: makeRequestContext(params.actorId),
         hubId: params.hubId,
         userId: params.userId,
       }
     );
-    return res.infractions || [];
+    return (res as InfractionsResponse__Output).infractions.map(toInfraction);
   },
 
   async submitAppeal(input: {
@@ -85,12 +124,12 @@ export const moderationService = {
     idempotencyKey: string;
   }): Promise<Appeal> {
     const clients = getServiceClients();
-    return invokeRpc(clients.moderationClient, "SubmitAppeal", {
+    const response = await invokeUnary<SubmitAppealRequest, Appeal__Output>(clients.moderationClient.SubmitAppeal.bind(clients.moderationClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       infractionId: input.infractionId,
       reason: input.reason,
     });
+    return toAppeal(response);
   },
 };
-
