@@ -48,11 +48,13 @@ export const hubService = {
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const res = await controlHubService.listMyHubs(userId);
     const hubs = await Promise.all(
-      res.hubs.map(async (summary) => {
+      (res.hubs || []).map(async (summary) => {
+        const id = summary.id;
+        if (!id) return null;
         try {
-          return await controlHubService.getHub(summary.id, userId);
+          return await controlHubService.getHub(id, userId);
         } catch (error) {
-          console.error(`Failed to load Hub ${summary.id} after authorization`, error);
+          console.error(`Failed to load Hub ${id} after authorization`, error);
           return null;
         }
       }),

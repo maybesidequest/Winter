@@ -2,6 +2,9 @@ import type { HubResource, HubSpec } from "~/resources/hub";
 import type { Hub__Output as ProtoHub } from "~/generated/control/v1/interchat/control/v1/Hub";
 import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/interchat/control/v1/HubSpec";
 import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
+import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyHubsRequest";
+import type { ListMyHubsResponse } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
+import type { ManagedHubSummary } from "~/generated/control/v1/interchat/control/v1/ManagedHubSummary";
 import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
 import { getServiceClients, invokeRpc, invokeUnary, makeRequestContext } from "../transport";
 
@@ -130,18 +133,14 @@ export const hubCrudService = {
     return res.hubs || [];
   },
 
-  async listMyHubs(actorId: string, limit: number = 50, cursor?: string): Promise<{ hubs: any[]; nextCursor?: string; totalCount: number }> {
+  async listMyHubs(actorId: string, limit: number = 50, cursor?: string): Promise<ListMyHubsResponse> {
     const clients = getServiceClients();
-    const res = await invokeRpc<{ hubs?: any[]; nextCursor?: string; totalCount?: number }>(clients.hubClient, "ListMyHubs", {
+    const request: ListMyHubsRequest = {
       context: makeRequestContext(actorId),
       limit,
       cursor,
-    });
-    return {
-      hubs: res.hubs || [],
-      nextCursor: res.nextCursor,
-      totalCount: res.totalCount || 0,
     };
+    return invokeUnary<ListMyHubsRequest, ListMyHubsResponse>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request);
   },
 
   async searchHubs(input: {
