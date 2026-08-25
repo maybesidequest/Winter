@@ -19,7 +19,7 @@ export default function HubsPage() {
         eyebrow="Places"
         title="Hubs"
         description="Persistent spaces where connected Discord communities share conversation, rules, and a moderation team."
-        actions={
+        actions={import.meta.env.DEV ? (
           <button
             className="dashboard-btn-primary px-4 py-2 text-xs font-bold"
             type="button"
@@ -28,7 +28,7 @@ export default function HubsPage() {
             <PlusOutlined />
             <span>Create Hub</span>
           </button>
-        }
+        ) : undefined}
       />
 
       {isError && (
@@ -141,7 +141,7 @@ export default function HubsPage() {
         )}
       </div>
 
-      <CreateHubWizard
+      {import.meta.env.DEV && <CreateHubWizard
         mode="modal"
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
@@ -152,7 +152,7 @@ export default function HubsPage() {
           });
           navigate(`/dashboard/hubs/${hubId}/overview`);
         }}
-      />
+      />}
     </div>
   );
 }

@@ -20,7 +20,7 @@ export function DashboardHome() {
         eyebrow="Overview"
         title="Your InterChat workspace"
         description="Manage the Hubs and Discord servers you have access to."
-        actions={
+        actions={import.meta.env.DEV ? (
           <Link
             to="/dashboard/browse"
             className="dashboard-btn-secondary !min-h-[34px] !px-3.5 !py-1.5 !text-xs !font-bold"
@@ -28,7 +28,7 @@ export function DashboardHome() {
             <span>Explore Hubs</span>
             <ArrowRightOutlined className="text-[10px]" />
           </Link>
-        }
+        ) : undefined}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

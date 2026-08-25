@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { redirect, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CompassOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
@@ -13,6 +13,11 @@ import { HubConnectModal } from "~/components/discovery/HubConnectModal";
 import { HubDetailsDrawer } from "~/components/discovery/HubDetailsDrawer";
 import type { HubPublicResource } from "~/resources/hubDiscovery";
 import type { HubDiscoverySort } from "~/schemas/hubDiscovery";
+
+export async function loader() {
+  if (!import.meta.env.DEV) throw redirect("/dashboard");
+  return null;
+}
 
 export default function BrowseRoute() {
   const [searchParams, setSearchParams] = useSearchParams();

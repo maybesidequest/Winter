@@ -62,7 +62,7 @@ export function GeneralSidebarTabs({
 
         {!collapsed.community && (
           <nav className="flex flex-col gap-1">
-            <NavLink
+            {import.meta.env.DEV && <NavLink
               to="/dashboard/browse"
               onClick={onNavigate}
               className={({ isActive }) =>
@@ -76,7 +76,7 @@ export function GeneralSidebarTabs({
                 <CompassOutlined />
               </span>
               <span>Explore Directory</span>
-            </NavLink>
+            </NavLink>}
 
             {isLoading ? (
               <div className="flex flex-col gap-1.5 px-3.5 py-1 animate-pulse">
