@@ -31,7 +31,9 @@ export function SettingsMiniSidebar({
       { id: "account", label: "My Account", icon: <UserOutlined /> },
       { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
       { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
-      { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
+      ...(import.meta.env.DEV
+        ? [{ id: "bot_config" as const, label: "Bot & Staff", icon: <RobotOutlined /> }]
+        : []),
     ];
 
   return (

@@ -19,6 +19,12 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>("account");
 
+  useEffect(() => {
+    if (!import.meta.env.DEV && activeCategory === "bot_config") {
+      setActiveCategory("account");
+    }
+  }, [activeCategory]);
+
   const { data: userResource, isLoading: userLoading } = useQuery({
     ...orpc.user.get.queryOptions(),
     enabled: isOpen,
