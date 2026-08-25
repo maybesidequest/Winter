@@ -120,10 +120,16 @@ export function invokeUnary<TReq, TRes>(
   request: TReq,
 ): Promise<TRes> {
   return new Promise((resolve, reject) => {
-    method(request, new grpc.Metadata(), { deadline: new Date(Date.now() + Number(process.env.CONTROL_PLANE_TIMEOUT_MS || 5000)) }, (error, response) => {
+    // The descriptor loaded by proto-loader still serializes using the
+    // proto field names (snake_case), even with keepCase=false. Keep the
+    // application-facing generated types camelCase, but normalize at the
+    // transport boundary so nested RequestContext fields are not silently
+    // dropped (which would make every call appear unauthenticated).
+    const wireRequest = deepToSnakeCase<TReq>(request);
+    method(wireRequest, new grpc.Metadata(), { deadline: new Date(Date.now() + Number(process.env.CONTROL_PLANE_TIMEOUT_MS || 5000)) }, (error, response) => {
       if (error) return reject(error);
       if (response === undefined) return reject(new Error("Control Plane returned an empty response."));
-      resolve(response);
+      resolve(deepToCamelCase<TRes>(response));
     });
   });
 }
