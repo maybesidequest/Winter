@@ -130,7 +130,7 @@ export function HubSettings({
             <h3 className="text-base font-bold text-white font-['Sora'] m-0">Transfer Ownership</h3>
           </div>
           <p className="text-xs text-white/60 m-0">
-            Transfer primary ownership and billing controls of this Hub to another Discord user. This action cannot be undone.
+            Transfer primary ownership of this Hub to another Discord user. This action cannot be undone.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <input

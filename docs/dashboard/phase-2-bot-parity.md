@@ -5,6 +5,8 @@ Phase 2 makes Winter cover every non-contextual management job available to a no
 Previous: [Phase 1 — Make the dashboard trustworthy](./phase-1-foundation.md)  
 Next: [Phase 3 — Make it better and release it](./phase-3-release.md)
 
+Execution guide: [Phase 2 completion plan](./phase-2-completion-plan.md). Use it to repair the current implementation, prove each capability, and prevent premature completion claims.
+
 ## Start here
 
 Take one row from the capability checklist and finish it across the whole system:

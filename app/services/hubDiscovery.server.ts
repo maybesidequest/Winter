@@ -43,7 +43,7 @@ export const hubDiscoveryService = {
       tags,
       language: language !== "ALL" ? language : undefined,
       region: region !== "ALL" ? region : undefined,
-      nsfwFilter: nsfw ? "NSFW_FILTER_ALLOW_ALL" : "NSFW_FILTER_SFW_ONLY",
+      nsfwFilter: nsfw ? "NSFW_FILTER_ALL" : "NSFW_FILTER_SFW_ONLY",
       limit,
       actorId: userId,
     });

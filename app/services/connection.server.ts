@@ -32,10 +32,13 @@ export const connectionService = {
 
   async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
     try {
+      const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
+        .find((connection) => connection.metadata.id === connectionId);
+      if (!current) return { success: false, error: "Connection not found." };
       await controlConnectionService.toggleConnection({
         connectionId,
         enabled,
-        expectedVersion: 1,
+        expectedVersion: current.version,
         actorId: userId,
         idempotencyKey: idempotencyKey || crypto.randomUUID(),
       });

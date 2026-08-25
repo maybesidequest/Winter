@@ -14,6 +14,23 @@ const ADMINISTRATOR = 1n << 3n;
 
 type DiscordGuild = { id: string; name: string; icon: string | null; owner?: boolean; permissions: string };
 
+function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {
+  callChannelId?: string;
+  callPing?: boolean;
+  callRequeue?: boolean;
+  callNsfwFilter?: boolean;
+}): ServerResource["spec"] {
+  return {
+    prefix: spec.prefix ?? null,
+    hideServerName: spec.hideServerName ?? false,
+    pingOnMatch: spec.pingOnMatch ?? spec.callPing ?? false,
+    autoRequeueOnSkip: spec.autoRequeueOnSkip ?? spec.callRequeue ?? false,
+    autoRequeueOnHangup: spec.autoRequeueOnHangup ?? false,
+    filterNsfw: spec.filterNsfw ?? spec.callNsfwFilter ?? true,
+    lobbyChannelIds: spec.lobbyChannelIds ?? (spec.callChannelId ? [spec.callChannelId] : []),
+  };
+}
+
 async function discordFetch(path: string, authorization: string) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.DISCORD_API_TIMEOUT_MS || 4000));
@@ -86,7 +103,7 @@ export const serverService = {
             name: guild.name,
             iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
           },
-          spec: server.spec,
+          spec: normalizeServerSpec(server.spec),
           status: {
             ...server.status,
             botInstalled: true,
@@ -132,7 +149,7 @@ export const serverService = {
           name: guild.name,
           iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
         },
-        spec: res.spec,
+        spec: normalizeServerSpec(res.spec),
         status: {
           ...res.status,
           manageable: true,
@@ -172,7 +189,10 @@ export const serverService = {
     const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
     return channels
       .filter((channel) => channel.type === 0 || channel.type === 5)
-      .map((channel) => ({ ...channel, canCreateWebhook: true }));
+      // Discord's channel listing does not include the bot's effective
+      // webhook permission. Let the Control Plane perform the authoritative
+      // check instead of advertising a fabricated capability.
+      .map((channel) => ({ ...channel, canCreateWebhook: false }));
   },
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
@@ -252,4 +272,3 @@ export const serverService = {
     return { success: true };
   },
 };
-

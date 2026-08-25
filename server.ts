@@ -1,4 +1,6 @@
 import { createRequestHandler } from "react-router";
+import { checkControlPlaneReady } from "./app/services/control/transport";
+import { winterStorage } from "./app/services/winterStorage.server";
 
 // @ts-expect-error - This file is generated dynamically by Vite during the build process
 const build = (await import('./build/server/index.js')) as ServerBuild;
@@ -9,6 +11,19 @@ Bun.serve({
   port: process.env.PORT || 4000,
   async fetch(req) {
     const url = new URL(req.url);
+
+    if (url.pathname === "/healthz") {
+      return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
+    }
+    if (url.pathname === "/readyz") {
+      try {
+        await Promise.all([winterStorage.checkReady(), checkControlPlaneReady()]);
+        return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
+      } catch (error) {
+        console.error("Winter readiness check failed", error);
+        return new Response("not ready", { status: 503, headers: { "content-type": "text/plain" } });
+      }
+    }
 
     // 1. Serve static client assets built by Vite
     // We check if the file exists in the build/client folder.

@@ -3,18 +3,9 @@ import { winterStorage } from "./winterStorage.server";
 const encoder = new TextEncoder();
 
 async function encryptionKey() {
-  const secret = process.env.OAUTH_TOKEN_ENCRYPTION_KEY || process.env.SESSION_SECRET;
+  const secret = process.env.OAUTH_TOKEN_ENCRYPTION_KEY;
   if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("OAUTH_TOKEN_ENCRYPTION_KEY or SESSION_SECRET environment variable is required in production");
-    }
-    return crypto.subtle.importKey(
-      "raw",
-      await crypto.subtle.digest("SHA-256", encoder.encode("dev_only_oauth_token_encryption_key_32_bytes!")),
-      "AES-GCM",
-      false,
-      ["encrypt", "decrypt"]
-    );
+    throw new Error("OAUTH_TOKEN_ENCRYPTION_KEY environment variable is required");
   }
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(secret));
   return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
@@ -70,4 +61,3 @@ export async function getDiscordAccessToken(userId: string) {
   if (!record.refreshToken) throw new Error("Discord authorization expired. Sign in again.");
   return refreshDiscordToken(userId, record.refreshToken);
 }
-

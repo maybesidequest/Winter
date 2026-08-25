@@ -23,6 +23,8 @@ interface HubSidebarTabsProps {
   onNavigate?: () => void;
 }
 
+// Phase 1 exposes only the proven read/General slice. Later capabilities stay
+// hidden until their control-plane cutover and failure states are complete.
 const showUnfinishedFeatures = import.meta.env.DEV;
 
 export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
@@ -34,13 +36,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
     { path: "general", label: "General", icon: <EditOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
-    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: can("MANAGE_CONNECTIONS") },
-    { path: "modules", label: "Modules", icon: <AppstoreOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: showUnfinishedFeatures && can("MANAGE_CONNECTIONS") },
     {
       path: "moderation",
       label: "Moderation",
       icon: <SafetyCertificateOutlined />,
-      visible: can("MANAGE_RULES", "MODERATE_MESSAGES", "MANAGE_BANS", "LOCKDOWN_HUB"),
+      visible: showUnfinishedFeatures && can("MANAGE_RULES", "MODERATE_MESSAGES", "MANAGE_BANS", "LOCKDOWN_HUB"),
     },
     {
       path: "logging",
@@ -72,7 +73,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
       icon: <BellOutlined />,
       visible: showUnfinishedFeatures && can("ANNOUNCE"),
     },
-    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS") },
   ].filter((item) => item.visible !== false);
 
   return (

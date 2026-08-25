@@ -47,45 +47,17 @@ export const hubService = {
 
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const res = await controlHubService.listMyHubs(userId);
-    return res.hubs.map((h: any) => ({
-      metadata: {
-        id: h.id,
-        name: h.name,
-        ownerId: h.ownerId,
-        createdAt: h.createdAt || new Date().toISOString(),
-        updatedAt: h.updatedAt || new Date().toISOString(),
-        effectiveRole: h.effectiveRole,
-        permissions: h.permissions || {},
-      },
-      spec: {
-        name: h.name,
-        shortDescription: h.shortDescription || null,
-        description: h.shortDescription || h.name,
-        iconUrl: h.iconUrl || null,
-        bannerUrl: null,
-        welcomeMessage: null,
-        language: "en",
-        region: "us",
-        visibility: h.visibility || "PUBLIC",
-        locked: h.locked ?? false,
-        nsfw: h.nsfw ?? false,
-        rules: [],
-        appealCooldownHours: 168,
-        settings: 0,
-      },
-      status: {
-        activityLevel: "LOW",
-        verified: false,
-        partnered: false,
-        featured: false,
-        weeklyMessageCount: h.weeklyMessageCount || 0,
-        averageRating: 0,
-        connectionCount: h.connectionCount || 0,
-        upvoteCount: 0,
-        reviewCount: 0,
-      },
-      version: 1,
-    }));
+    const hubs = await Promise.all(
+      res.hubs.map(async (summary) => {
+        try {
+          return await controlHubService.getHub(summary.id, userId);
+        } catch (error) {
+          console.error(`Failed to load Hub ${summary.id} after authorization`, error);
+          return null;
+        }
+      }),
+    );
+    return hubs.filter((hub): hub is HubResource => hub !== null);
   },
 
 
@@ -126,7 +98,7 @@ export const hubService = {
   async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
     try {
       const updateMask: string[] = [];
-      const spec: any = {};
+      const spec: Record<string, unknown> = {};
 
       if (input.name !== undefined) { spec.name = input.name; updateMask.push("name"); }
       if (input.shortDescription !== undefined) { spec.shortDescription = input.shortDescription; updateMask.push("short_description"); }
@@ -156,7 +128,7 @@ export const hubService = {
         spec,
         updateMask,
         expectedVersion,
-        idempotencyKey: input.idempotencyKey,
+        idempotencyKey: input.idempotencyKey || crypto.randomUUID(),
       });
 
       return { success: true, hub: updated };

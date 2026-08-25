@@ -329,7 +329,7 @@ Repository: `Winter`
 
 - [ ] Show only working Hub and Server tabs to normal users.
 - [ ] Allow development builds or explicit staff feature flags to expose work in progress.
-- [ ] Keep Billing visible but disabled with `Coming Soon`; it is not part of parity.
+- [ ] Keep Billing out of production navigation and routes; billing is explicitly out of scope.
 - [ ] Remove mock activity, counters, and status labels from authenticated production pages.
 - [ ] Replace hard-coded `Active`, healthy, or real-time claims with observed status or neutral copy.
 - [ ] Give empty states a next action and permission-denied states a plain explanation.
@@ -397,7 +397,7 @@ Phase 1 is complete only when all statements are true:
 - [ ] Repeating a request is safe, concurrent edits are detected, and every change is audited.
 - [ ] The service survives a replica restart without losing committed side effects.
 - [ ] Production users see no mock data or unfinished feature tabs.
-- [ ] Billing is disabled and marked `Coming Soon`.
+- [ ] Billing is not exposed in production; it remains out of scope.
 - [ ] CI and the browser smoke test pass.
 - [ ] The control service and Winter have probes, resources, mTLS, restricted network access, and useful alerts.
 

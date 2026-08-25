@@ -5,19 +5,16 @@ let schemaInitPromise: Promise<void> | null = null;
 
 function getWinterPool(): pg.Pool {
   if (!pool) {
-    const connectionString =
-      process.env.WINTER_DATABASE_URL || process.env.DATABASE_URL;
+    const connectionString = process.env.WINTER_DATABASE_URL;
 
-    if (!connectionString && process.env.NODE_ENV === "production") {
+    if (!connectionString) {
       throw new Error(
-        "WINTER_DATABASE_URL environment variable is required in production"
+        "WINTER_DATABASE_URL environment variable is required"
       );
     }
 
     pool = new pg.Pool({
-      connectionString:
-        connectionString ||
-        "postgresql://postgres:postgres@localhost:5432/winter",
+      connectionString,
       max: 10,
       idleTimeoutMillis: 30000,
     });
@@ -59,6 +56,11 @@ export interface StoredOAuthTokenRecord {
 }
 
 export const winterStorage = {
+  async checkReady(): Promise<void> {
+    await ensureWinterSchema();
+    await getWinterPool().query("SELECT 1");
+  },
+
   async saveTokens(record: {
     userId: string;
     scope: string;

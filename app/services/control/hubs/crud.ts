@@ -1,5 +1,84 @@
 import type { HubResource, HubSpec } from "~/resources/hub";
-import { getServiceClients, invokeRpc, makeRequestContext } from "../transport";
+import type { Hub__Output as ProtoHub } from "~/generated/control/v1/interchat/control/v1/Hub";
+import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/interchat/control/v1/HubSpec";
+import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
+import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
+import { getServiceClients, invokeRpc, invokeUnary, makeRequestContext } from "../transport";
+
+function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string {
+  if (!value) return new Date(0).toISOString();
+  return new Date((value.seconds || 0) * 1000 + (value.nanos || 0) / 1_000_000).toISOString();
+}
+
+function visibility(value: string): HubSpec["visibility"] {
+  return value.replace("HUB_VISIBILITY_", "") as HubSpec["visibility"];
+}
+
+function activity(value: string): HubResource["status"]["activityLevel"] {
+  return value.replace("HUB_ACTIVITY_LEVEL_", "") as HubResource["status"]["activityLevel"];
+}
+
+function toResource(hub: ProtoHub): HubResource {
+  const metadata = hub.metadata;
+  const spec = hub.spec;
+  const status = hub.status;
+  if (!metadata || !spec || !status) throw new Error("Control Plane returned an incomplete Hub resource.");
+  return {
+    metadata: {
+      id: metadata.id,
+      name: metadata.name,
+      createdAt: timestamp(metadata.createdAt),
+      updatedAt: timestamp(metadata.updatedAt),
+      effectiveRole: metadata.effectiveRole,
+      permissions: metadata.permissions as HubResource["metadata"]["permissions"],
+    },
+    spec: {
+      description: spec.description,
+      shortDescription: spec.shortDescription || null,
+      visibility: visibility(spec.visibility),
+      language: spec.language || null,
+      region: spec.region || null,
+      welcomeMessage: spec.welcomeMessage || null,
+      iconUrl: spec.iconUrl || null,
+      bannerUrl: spec.bannerUrl || null,
+      locked: spec.locked,
+      nsfw: spec.nsfw,
+      rules: spec.rules || [],
+      appealCooldownHours: spec.appealCooldownHours,
+      settings: spec.settings,
+    },
+    status: {
+      activityLevel: activity(status.activityLevel),
+      verified: status.verified,
+      partnered: status.partnered,
+      featured: status.featured,
+      weeklyMessageCount: status.weeklyMessageCount,
+      averageRating: status.averageRating,
+      connectionCount: status.connectionCount,
+      upvoteCount: status.upvoteCount,
+      reviewCount: status.reviewCount,
+    },
+    version: hub.version,
+  };
+}
+
+function toProtoSpec(spec: Partial<HubSpec> & { name?: string }): ProtoHubSpecMessage {
+  const result: ProtoHubSpecMessage = {};
+  if (spec.name !== undefined) result.name = spec.name;
+  if (spec.description !== undefined) result.description = spec.description;
+  if (spec.shortDescription !== undefined && spec.shortDescription !== null) result.shortDescription = spec.shortDescription;
+  if (spec.visibility !== undefined) result.visibility = `HUB_VISIBILITY_${spec.visibility}` as ProtoHubSpecMessage["visibility"];
+  if (spec.iconUrl !== undefined && spec.iconUrl !== null) result.iconUrl = spec.iconUrl;
+  if (spec.bannerUrl !== undefined && spec.bannerUrl !== null) result.bannerUrl = spec.bannerUrl;
+  if (spec.welcomeMessage !== undefined && spec.welcomeMessage !== null) result.welcomeMessage = spec.welcomeMessage;
+  if (spec.language !== undefined && spec.language !== null) result.language = spec.language;
+  if (spec.region !== undefined && spec.region !== null) result.region = spec.region;
+  if (spec.locked !== undefined) result.locked = spec.locked;
+  if (spec.nsfw !== undefined) result.nsfw = spec.nsfw;
+  if (spec.appealCooldownHours !== undefined) result.appealCooldownHours = spec.appealCooldownHours;
+  if (spec.settings !== undefined) result.settings = spec.settings;
+  return result;
+}
 
 export const hubCrudService = {
   async createHub(input: {
@@ -34,10 +113,12 @@ export const hubCrudService = {
 
   async getHub(hubId: string, actorId: string): Promise<HubResource> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "GetHub", {
+    const request: GetHubRequest = {
       context: makeRequestContext(actorId),
       hubId,
-    });
+    };
+    const response = await invokeUnary<GetHubRequest, ProtoHub>(clients.hubClient.GetHub.bind(clients.hubClient), request);
+    return toResource(response);
   },
 
   async listUserHubs(hubIds: string[], actorId: string): Promise<HubResource[]> {
@@ -113,20 +194,22 @@ export const hubCrudService = {
 
   async patchHub(input: {
     hubId: string;
-    spec: Partial<HubSpec>;
+    spec: Partial<HubSpec> & { name?: string };
     updateMask: string[];
     expectedVersion: number;
     actorId: string;
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    return invokeRpc(clients.hubClient, "PatchHub", {
+    const request: PatchHubRequest = {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
-      spec: input.spec,
+      spec: toProtoSpec(input.spec),
       updateMask: { paths: input.updateMask },
       expectedVersion: input.expectedVersion,
-    });
+    };
+    const response = await invokeUnary<PatchHubRequest, ProtoHub>(clients.hubClient.PatchHub.bind(clients.hubClient), request);
+    return toResource(response);
   },
 
   async lockdownHub(input: {

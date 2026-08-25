@@ -8,6 +8,7 @@ import type { ConnectionServiceClient } from "~/generated/control/v1/interchat/c
 import type { ServerServiceClient } from "~/generated/control/v1/interchat/control/v1/ServerService";
 import type { UserServiceClient } from "~/generated/control/v1/interchat/control/v1/UserService";
 import type { ModerationServiceClient } from "~/generated/control/v1/interchat/control/v1/ModerationService";
+import type { RequestContext as GeneratedRequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
 
 export type UnaryMethod<TReq, TRes> = (
   request: TReq,
@@ -17,6 +18,7 @@ export type UnaryMethod<TReq, TRes> = (
 ) => void;
 
 export type ServiceClient = grpc.Client | unknown;
+export type RequestContext = GeneratedRequestContext;
 
 export interface ServiceRegistry {
   hubClient?: HubServiceClient;
@@ -95,6 +97,67 @@ export function getServiceClients(): Required<ServiceRegistry> {
   return registry as Required<ServiceRegistry>;
 }
 
+export function invokeUnary<TReq, TRes>(
+  method: UnaryMethod<TReq, TRes>,
+  request: TReq,
+): Promise<TRes> {
+  return new Promise((resolve, reject) => {
+    method(request, new grpc.Metadata(), { deadline: new Date(Date.now() + Number(process.env.CONTROL_PLANE_TIMEOUT_MS || 5000)) }, (error, response) => {
+      if (error) return reject(error);
+      if (response === undefined) return reject(new Error("Control Plane returned an empty response."));
+      resolve(response);
+    });
+  });
+}
+
+export async function checkControlPlaneReady(timeoutMs = 2000): Promise<void> {
+  const client = getServiceClients().hubClient;
+  await new Promise<void>((resolve, reject) => {
+    client.waitForReady(new Date(Date.now() + timeoutMs), (error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
+}
+
+function toSnakeCase(str: string): string {
+  if (/^[A-Z0-9_]+$/.test(str)) return str;
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+}
+
+function toCamelCase(str: string): string {
+  if (/^[A-Z0-9_]+$/.test(str)) return str;
+  return str.replace(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase());
+}
+
+export function deepToSnakeCase<T = any>(obj: any): T {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(deepToSnakeCase) as any;
+  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as any;
+
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const snakeKey = toSnakeCase(key);
+    result[snakeKey] = deepToSnakeCase(value);
+  }
+  return result as T;
+}
+
+export function deepToCamelCase<T = any>(obj: any): T {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(deepToCamelCase) as any;
+  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as any;
+
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const camelKey = toCamelCase(key);
+    result[camelKey] = deepToCamelCase(value);
+    if (camelKey !== key) {
+      result[key] = result[camelKey];
+    }
+  }
+  return result as T;
+}
 export function invokeRpc<TRes, TReq = unknown>(
   client: ServiceClient,
   method: string,
@@ -111,25 +174,16 @@ export function invokeRpc<TRes, TReq = unknown>(
     if (typeof rpc !== "function") {
       return reject(new Error(`Control Plane method ${method} is unavailable.`));
     }
+    const snakedRequest = deepToSnakeCase(request);
     rpc.call(
       client,
-      request,
+      snakedRequest,
       new grpc.Metadata(),
       { deadline },
       (error: grpc.ServiceError | null, response?: unknown) =>
-        error ? reject(error) : resolve(response as TRes)
+        error ? reject(error) : resolve(deepToCamelCase<TRes>(response))
     );
   });
-}
-
-export interface RequestContext {
-  requestId?: string;
-  actorId: string;
-  actorType?: string;
-  servicePrincipal: string;
-  idempotencyKey?: string;
-  traceId?: string;
-  source: string;
 }
 
 export function makeRequestContext(
@@ -140,14 +194,16 @@ export function makeRequestContext(
   if (mutation && !idempotencyKey) {
     throw new Error("Idempotency key is required for mutations.");
   }
+  const reqId = crypto.randomUUID();
+  const trId = crypto.randomUUID();
+  const idemKey = idempotencyKey || (mutation ? crypto.randomUUID() : "");
   return {
-    requestId: crypto.randomUUID(),
-    actorId,
-    actorType: "ACTOR_TYPE_HUMAN",
+    requestId: reqId,
+    actorId: actorId,
     servicePrincipal: "interchat-winter",
-    idempotencyKey: idempotencyKey || (mutation ? crypto.randomUUID() : ""),
-    traceId: crypto.randomUUID(),
+    actorType: "ACTOR_TYPE_HUMAN",
+    idempotencyKey: idemKey,
+    traceId: trId,
     source: "WINTER",
   };
 }
-

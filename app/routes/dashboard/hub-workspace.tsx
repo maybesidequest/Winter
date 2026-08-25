@@ -28,11 +28,14 @@ const LEGACY_VIEWS: Record<string, string> = {
   members: "team",
 };
 
+const PHASE_1_VIEWS = new Set(["overview", "general"]);
+
 export default function HubWorkspace() {
   const params = useParams();
   const hubId = params.hubId || "";
   const requestedView = params.view || "overview";
-  const activeTab = LEGACY_VIEWS[requestedView] || requestedView;
+  const requestedTab = LEGACY_VIEWS[requestedView] || requestedView;
+  const activeTab = PHASE_1_VIEWS.has(requestedTab) || import.meta.env.DEV ? requestedTab : "overview";
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 

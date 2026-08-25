@@ -30,23 +30,27 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
       path: "bridges",
       label: "Hubs",
       icon: <ApartmentOutlined />,
+      visible: import.meta.env.DEV,
     },
     {
       path: "calls",
       label: "Calls",
       icon: <ThunderboltOutlined />,
+      visible: false,
     },
     {
       path: "safety",
       label: "Blocklist",
       icon: <SafetyCertificateOutlined />,
+      visible: import.meta.env.DEV,
     },
     {
       path: "settings",
       label: "Settings",
       icon: <SettingOutlined />,
+      visible: import.meta.env.DEV,
     },
-  ];
+  ].filter((item) => item.visible !== false);
 
   return (
     <div className="flex flex-col gap-1 py-1">
