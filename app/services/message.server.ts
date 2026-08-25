@@ -68,7 +68,7 @@ export const messageService = {
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     await permissionService.assertCanPerform(authorId, hubId, "MODERATE_MESSAGES");
     const connections = await connectionService.getHubConnections(hubId, authorId);
-    const validConn = connections.find(c => c.serverId === guildId && c.channelId === channelId);
+    const validConn = connections.find(c => c.spec.serverId === guildId && c.spec.channelId === channelId);
     if (!validConn) {
       return { success: false, error: "The specified server and channel are not connected to this Hub." };
     }
