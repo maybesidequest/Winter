@@ -135,7 +135,7 @@ export default function HubsPage() {
             </div>
             <h3 className="text-base font-bold text-white font-['Sora']">No accessible Hubs</h3>
             <p className="text-xs text-white/50 max-w-sm">
-              Create one here or ask a Hub owner to add you to their team.
+              Ask a Hub owner to add you to their team.
             </p>
           </div>
         )}
