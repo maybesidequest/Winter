@@ -8,31 +8,32 @@ This file records evidence only. Code presence, a passing unit test, or a previo
 
 | Requirement | Evidence | Status |
 | --- | --- | --- |
-| Bot and Winter use the same Hub General Control Plane operation | Control RPC contract, Bot test, Winter test, staging trace | Pending |
-| Winter cannot bypass authorization or write the Hub directly | Static access scan, deployment manifest, denied-write test | Pending |
-| Idempotency, optimistic concurrency, and audit are correct | Replay, conflict, rollback, and audit tests | Pending |
-| Committed outbox work survives restart | Publisher restart test and staging replay evidence | Pending |
-| Production UI contains no mock data or unfinished controls | Browser smoke and route/navigation scan | Pending |
-| Billing is absent | Production route and navigation scan | Pending |
-| CI and browser smoke pass | Linked CI run and dated staging smoke record | Pending |
-| mTLS, probes, resources, NetworkPolicy, OTEL, and alerts are verified | Rendered manifests, rollout result, dashboard/alert links | Pending |
+| Bot and Winter use the same Hub General Control Plane operation | InterChat commits `27d1dd8c`, `4c53ced8`; Winter commits `2ce6649`, `c4233c4`; staging rollout flag | Code complete; staging trace pending |
+| Winter cannot bypass authorization or write the Hub directly | Winter commit `648d385`; staging render exposes only `WINTER_DATABASE_URL` and Control Plane mTLS variables | Code/render pass; denied-write test pending |
+| Idempotency, optimistic concurrency, and audit are correct | Control Plane test suite (`uv run ic test control`) | Automated pass; staging replay pending |
+| Committed outbox work survives restart | Control Plane outbox tests | Automated pass; staging restart pending |
+| Production UI contains no mock data or unfinished controls | Winter commit `2ce6649`; Docker build and image smoke passed | Code/build pass; browser smoke pending |
+| Billing is absent | Billing component, route, and sidebar removed in `2ce6649` | Code pass; browser scan pending |
+| CI and browser smoke pass | Lint/tests pass; bot Pyright has two pre-existing moderation errors | CI/browser gate pending |
+| mTLS, probes, resources, NetworkPolicy, OTEL, and alerts are verified | GitOps commits `c8cc17d`, `3cd6f58`, `d7c04af`; staging Kustomize renders pass | Render pass; rollout/alerts pending |
 
 ## Required automated evidence
 
 - `uv run ic lint`
-- `uv run ic typecheck control bot`
+- `uv run ic typecheck control` (pass); `bot` is blocked by two pre-existing moderation errors in `blocklist_dashboard.py`
 - `uv run ic test control bot`
 - `buf lint`
 - `buf breaking --against '.git#branch=main'`
-- `bun run generate:control-types`
-- `bun run typecheck`
-- `bun run build`
+- `npm run generate:control-types` (pass; no generated diff)
+- `./node_modules/.bin/tsc --noEmit` (pass)
+- `docker build interchat-winter-phase1-smoke` (pass)
 - `kubectl kustomize kubernetes/apps/control-plane/overlays/staging`
 - `kubectl kustomize kubernetes/apps/winter/overlays/staging`
+- `kubectl kustomize kubernetes/apps/otel-collector/overlays/staging`
 
 ## Staging evidence
 
-Record the date, image digests, environment, operator, and result for:
+Staging-only evidence is still required. Record the date, image digests, environment, operator, and result for:
 
 1. Sign in with Discord.
 2. Select a Hub.
