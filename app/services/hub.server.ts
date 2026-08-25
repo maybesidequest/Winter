@@ -1,6 +1,3 @@
-import { db } from "~/db.server";
-import { hub, authRole, authUserAssignment } from "../../drizzle/schema";
-import { eq, or, and, inArray } from "drizzle-orm";
 import type { CreateHubInput, PatchHubConfigInput } from "~/schemas/hub";
 import type { HubResource } from "~/resources/hub";
 import { permissionService } from "~/services/permission.server";
@@ -50,110 +47,19 @@ export const hubService = {
 
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const authorizedHubIds = await irisClient.getAuthorizedHubs(userId);
-    const conditions = [eq(hub.ownerId, userId)];
-    if (authorizedHubIds.length > 0) {
-      conditions.push(inArray(hub.id, authorizedHubIds));
+    if (authorizedHubIds.length === 0) {
+      return [];
     }
 
-    const rows = await db
-      .select({
-        hub,
-        roleId: authRole.id,
-        roleName: authRole.name,
-        permissions: authRole.permissions,
-        position: authRole.position,
-        assignmentId: authUserAssignment.id,
-      })
-      .from(hub)
-      .leftJoin(authRole, eq(authRole.hubId, hub.id))
-      .leftJoin(
-        authUserAssignment,
-        and(
-          eq(authUserAssignment.roleId, authRole.id),
-          eq(authUserAssignment.userId, userId)
-        )
-      )
-      .where(or(...conditions));
-
-    const hubGroups = new Map<string, {
-      hubRecord: typeof hub.$inferSelect;
-      assignments: Array<{ roleName: string; permissions: number; position: number }>;
-    }>();
-
-    for (const row of rows) {
-      const hubId = row.hub.id;
-      if (!hubGroups.has(hubId)) {
-        hubGroups.set(hubId, { hubRecord: row.hub, assignments: [] });
-      }
-      if (row.assignmentId && row.roleName !== null && row.permissions !== null) {
-        hubGroups.get(hubId)!.assignments.push({
-          roleName: row.roleName,
-          permissions: row.permissions,
-          position: row.position ?? 0,
-        });
-      }
+    try {
+      return await controlHubService.listUserHubs(authorizedHubIds, userId);
+    } catch (err) {
+      console.warn("Failed to batch list user hubs from control plane", err);
+      return [];
     }
-
-    return Array.from(hubGroups.values()).map(({ hubRecord, assignments }) => {
-      const isOwner = hubRecord.ownerId === userId;
-      let effectiveRole: string;
-      let permissions: Record<PermissionAction, boolean>;
-
-      if (isOwner) {
-        effectiveRole = "OWNER";
-        permissions = permissionService.getOwnerPermissions();
-      } else if (assignments.length === 0) {
-        effectiveRole = "NONE";
-        permissions = getDefaultPermissions();
-      } else {
-        let bits = 0;
-        for (const ass of assignments) {
-          bits |= ass.permissions;
-        }
-        permissions = bitsToRecord(bits);
-        const sorted = [...assignments].sort((a, b) => b.position - a.position);
-        effectiveRole = sorted[0].roleName;
-      }
-
-      return {
-        metadata: {
-          id: hubRecord.id,
-          name: hubRecord.name,
-          createdAt: hubRecord.createdAt,
-          updatedAt: hubRecord.updatedAt,
-          effectiveRole,
-          permissions,
-        },
-        spec: {
-          description: hubRecord.description,
-          shortDescription: hubRecord.shortDescription,
-          visibility: hubRecord.visibility,
-          language: hubRecord.language,
-          region: hubRecord.region,
-          welcomeMessage: hubRecord.welcomeMessage,
-          iconUrl: hubRecord.iconUrl,
-          bannerUrl: hubRecord.bannerUrl,
-          locked: hubRecord.locked,
-          nsfw: hubRecord.nsfw,
-          rules: hubRecord.rules,
-          appealCooldownHours: hubRecord.appealCooldownHours,
-          settings: hubRecord.settings,
-        },
-        status: {
-          activityLevel: hubRecord.activityLevel,
-          verified: hubRecord.verified,
-          partnered: hubRecord.partnered,
-          featured: hubRecord.featured,
-          weeklyMessageCount: hubRecord.weeklyMessageCount,
-          averageRating: hubRecord.averageRating,
-          connectionCount: hubRecord.connectionCount,
-          upvoteCount: hubRecord.upvoteCount,
-          reviewCount: hubRecord.reviewCount,
-        },
-        version: Number(hubRecord.version ?? 1),
-      };
-    });
   },
+
+
 
   async createHub(userId: string, input: CreateHubInput, idempotencyKey?: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
     try {

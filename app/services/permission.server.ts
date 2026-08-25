@@ -2,9 +2,6 @@ import { redis } from "../redis.server";
 import { irisClient } from "./iris.server";
 import { permissionCache } from "./permissionCache.server";
 import { ORPCError } from "@orpc/server";
-import { db } from "../db.server";
-import { hub } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
@@ -35,20 +32,6 @@ export const permissionService = {
   // ------------------------------------------------------------------ //
 
   async canPerform(userId: string, hubId: string, action: PermissionAction): Promise<boolean> {
-    // 0. Hub Owner bypass
-    try {
-      const [hubRecord] = await db
-        .select({ ownerId: hub.ownerId })
-        .from(hub)
-        .where(eq(hub.id, hubId))
-        .limit(1);
-      if (hubRecord && hubRecord.ownerId === userId) {
-        return true;
-      }
-    } catch (err) {
-      console.warn("[permissionService] Hub owner check failed:", err);
-    }
-
     const mask = PERMISSION_BITMASKS[action];
 
     // 1. L1: in-memory lru-cache
@@ -90,20 +73,6 @@ export const permissionService = {
   // ------------------------------------------------------------------ //
 
   async getPermissionsRecord(userId: string, hubId: string): Promise<Record<PermissionAction, boolean>> {
-    // 0. Hub Owner bypass
-    try {
-      const [hubRecord] = await db
-        .select({ ownerId: hub.ownerId })
-        .from(hub)
-        .where(eq(hub.id, hubId))
-        .limit(1);
-      if (hubRecord && hubRecord.ownerId === userId) {
-        return this.getOwnerPermissions();
-      }
-    } catch (err) {
-      console.warn("[permissionService] Hub owner check failed:", err);
-    }
-
     // 1. L1
     const l1Bits = permissionCache.get(userId, hubId);
     if (l1Bits !== undefined) return bitsToRecord(l1Bits);
@@ -126,6 +95,7 @@ export const permissionService = {
     permissionCache.set(userId, hubId, bits);
     return bitsToRecord(bits);
   },
+
 
   /**
    * Returns the all-true permissions record for hub owners.

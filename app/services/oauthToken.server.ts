@@ -6,10 +6,22 @@ const encoder = new TextEncoder();
 
 async function encryptionKey() {
   const secret = process.env.OAUTH_TOKEN_ENCRYPTION_KEY || process.env.SESSION_SECRET;
-  if (!secret) throw new Error("OAUTH_TOKEN_ENCRYPTION_KEY or SESSION_SECRET is required");
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("OAUTH_TOKEN_ENCRYPTION_KEY or SESSION_SECRET environment variable is required in production");
+    }
+    return crypto.subtle.importKey(
+      "raw",
+      await crypto.subtle.digest("SHA-256", encoder.encode("dev_only_oauth_token_encryption_key_32_bytes!")),
+      "AES-GCM",
+      false,
+      ["encrypt", "decrypt"]
+    );
+  }
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(secret));
   return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
 }
+
 
 export async function encryptToken(value: string) {
   const iv = crypto.getRandomValues(new Uint8Array(12));

@@ -5,6 +5,8 @@ import type { FieldMask as _google_protobuf_FieldMask, FieldMask__Output as _goo
 import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _google_protobuf_Timestamp__Output } from './google/protobuf/Timestamp';
 import type { AddBlockRequest as _interchat_control_v1_AddBlockRequest, AddBlockRequest__Output as _interchat_control_v1_AddBlockRequest__Output } from './interchat/control/v1/AddBlockRequest';
 import type { Appeal as _interchat_control_v1_Appeal, Appeal__Output as _interchat_control_v1_Appeal__Output } from './interchat/control/v1/Appeal';
+import type { BatchGetServersRequest as _interchat_control_v1_BatchGetServersRequest, BatchGetServersRequest__Output as _interchat_control_v1_BatchGetServersRequest__Output } from './interchat/control/v1/BatchGetServersRequest';
+import type { BatchGetServersResponse as _interchat_control_v1_BatchGetServersResponse, BatchGetServersResponse__Output as _interchat_control_v1_BatchGetServersResponse__Output } from './interchat/control/v1/BatchGetServersResponse';
 import type { BlocklistResponse as _interchat_control_v1_BlocklistResponse, BlocklistResponse__Output as _interchat_control_v1_BlocklistResponse__Output } from './interchat/control/v1/BlocklistResponse';
 import type { Connection as _interchat_control_v1_Connection, Connection__Output as _interchat_control_v1_Connection__Output } from './interchat/control/v1/Connection';
 import type { ConnectionMetadata as _interchat_control_v1_ConnectionMetadata, ConnectionMetadata__Output as _interchat_control_v1_ConnectionMetadata__Output } from './interchat/control/v1/ConnectionMetadata';
@@ -57,6 +59,8 @@ export interface ProtoGrpcType {
         ActorType: EnumTypeDefinition
         AddBlockRequest: MessageTypeDefinition<_interchat_control_v1_AddBlockRequest, _interchat_control_v1_AddBlockRequest__Output>
         Appeal: MessageTypeDefinition<_interchat_control_v1_Appeal, _interchat_control_v1_Appeal__Output>
+        BatchGetServersRequest: MessageTypeDefinition<_interchat_control_v1_BatchGetServersRequest, _interchat_control_v1_BatchGetServersRequest__Output>
+        BatchGetServersResponse: MessageTypeDefinition<_interchat_control_v1_BatchGetServersResponse, _interchat_control_v1_BatchGetServersResponse__Output>
         BlockTargetType: EnumTypeDefinition
         BlocklistResponse: MessageTypeDefinition<_interchat_control_v1_BlocklistResponse, _interchat_control_v1_BlocklistResponse__Output>
         Connection: MessageTypeDefinition<_interchat_control_v1_Connection, _interchat_control_v1_Connection__Output>

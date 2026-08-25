@@ -1,6 +1,3 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
-import { connection, hub, serverBlocklist, serverData } from "../../drizzle/schema";
-import { db } from "~/db.server";
 import { redis } from "~/redis.server";
 import type {
   DiscordChannelResource,
@@ -10,7 +7,7 @@ import type {
 } from "~/resources/server";
 import { getDiscordAccessToken } from "~/services/oauthToken.server";
 import type { AddBlockInput, PatchCallConfigInput, RemoveBlockInput } from "~/schemas/server";
-import { controlServerService } from "~/services/control.server";
+import { controlServerService, controlConnectionService } from "~/services/control.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
@@ -67,10 +64,38 @@ export const serverService = {
   async list(userId: string, forceRefresh = false): Promise<ServerResource[]> {
     const guilds = await manageableGuilds(userId, forceRefresh);
     if (guilds.length === 0) return [];
-    const rows = await db.select().from(serverData).where(inArray(serverData.id, guilds.map((guild) => guild.id)));
-    const byId = new Map(rows.map((row) => [row.id, row]));
+
+    const guildIds = guilds.map((g) => g.id);
+    const installedServersMap = new Map<string, ServerResource>();
+
+    try {
+      const batchRes = await controlServerService.batchGetServers(guildIds, userId);
+      for (const s of batchRes.servers) {
+        installedServersMap.set(s.metadata.id, s);
+      }
+    } catch (err) {
+      console.warn("Failed to batch get servers from control plane", err);
+    }
+
     return guilds.map((guild) => {
-      const row = byId.get(guild.id);
+      const server = installedServersMap.get(guild.id);
+      if (server) {
+        return {
+          metadata: {
+            id: guild.id,
+            name: guild.name,
+            iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
+          },
+          spec: server.spec,
+          status: {
+            ...server.status,
+            botInstalled: true,
+            manageable: true,
+          },
+          version: server.version,
+        };
+      }
+
       return {
         metadata: {
           id: guild.id,
@@ -78,56 +103,71 @@ export const serverService = {
           iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
         },
         spec: {
-          prefix: row?.prefix ?? null,
-          hideServerName: row?.hideServerName ?? false,
-          pingOnMatch: row?.pingOnMatch ?? false,
-          autoRequeueOnSkip: row?.autoRequeueOnSkip ?? false,
-          autoRequeueOnHangup: row?.autoRequeueOnHangup ?? false,
-          filterNsfw: row?.filterNsfw ?? true,
-          lobbyChannelIds: row?.lobbyChannelIds ?? [],
+          prefix: null,
+          hideServerName: false,
+          pingOnMatch: false,
+          autoRequeueOnSkip: false,
+          autoRequeueOnHangup: false,
+          filterNsfw: true,
+          lobbyChannelIds: [],
         },
         status: {
-          botInstalled: !!row,
+          botInstalled: false,
           manageable: true,
-          callCount: row?.callCount ?? 0,
-          messageCount: row?.messageCount ?? 0,
+          callCount: 0,
+          messageCount: 0,
         },
       };
     });
   },
 
+
   async get(userId: string, serverId: string): Promise<ServerResource> {
     const guild = await assertManageable(userId, serverId);
-    const [row] = await db.select().from(serverData).where(eq(serverData.id, serverId)).limit(1);
-    return {
-      metadata: {
-        id: guild.id,
-        name: guild.name,
-        iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
-      },
-      spec: {
-        prefix: row?.prefix ?? null,
-        hideServerName: row?.hideServerName ?? false,
-        pingOnMatch: row?.pingOnMatch ?? false,
-        autoRequeueOnSkip: row?.autoRequeueOnSkip ?? false,
-        autoRequeueOnHangup: row?.autoRequeueOnHangup ?? false,
-        filterNsfw: row?.filterNsfw ?? true,
-        lobbyChannelIds: row?.lobbyChannelIds ?? [],
-      },
-      status: {
-        botInstalled: !!row,
-        manageable: true,
-        callCount: row?.callCount ?? 0,
-        messageCount: row?.messageCount ?? 0,
-      },
-    };
+    try {
+      const res = await controlServerService.getServer(serverId, userId);
+      return {
+        metadata: {
+          id: guild.id,
+          name: guild.name,
+          iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
+        },
+        spec: res.spec,
+        status: {
+          ...res.status,
+          manageable: true,
+        },
+      };
+    } catch {
+      return {
+        metadata: {
+          id: guild.id,
+          name: guild.name,
+          iconUrl: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=128` : null,
+        },
+        spec: {
+          prefix: null,
+          hideServerName: false,
+          pingOnMatch: false,
+          autoRequeueOnSkip: false,
+          autoRequeueOnHangup: false,
+          filterNsfw: true,
+          lobbyChannelIds: [],
+        },
+        status: {
+          botInstalled: false,
+          manageable: true,
+          callCount: 0,
+          messageCount: 0,
+        },
+      };
+    }
   },
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
     await assertManageable(userId, serverId);
-    const botToken = process.env.DISCORD_TOKEN;
-    if (!botToken) throw new Error("Discord bot credentials are unavailable.");
-    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bot ${botToken}`);
+    const token = await getDiscordAccessToken(userId);
+    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bearer ${token}`);
     if (!response.ok) return [];
     const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
     return channels
@@ -155,49 +195,35 @@ export const serverService = {
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
     await assertManageable(userId, serverId);
-    const rows = await db
-      .select({
-        id: connection.id,
-        channelId: connection.channelId,
-        hubId: connection.hubId,
-        hubName: hub.name,
-        hubIconUrl: hub.iconUrl,
-        connected: connection.connected,
-        pausedByBot: connection.pausedByBot,
-        pauseReason: connection.pauseReason,
-        createdAt: connection.createdAt,
-      })
-      .from(connection)
-      .leftJoin(hub, eq(connection.hubId, hub.id))
-      .where(eq(connection.serverId, serverId));
+    const connections = await controlConnectionService.getConnections({
+      serverId,
+      actorId: userId,
+    });
 
-    return rows.map((r) => ({
-      id: r.id,
-      channelId: r.channelId,
+    return connections.map((conn) => ({
+      id: conn.metadata.id,
+      channelId: conn.metadata.channelId || "",
       channelName: null,
-      hubId: r.hubId,
-      hubName: r.hubName || "Unnamed Hub",
-      hubIconUrl: r.hubIconUrl || null,
-      connected: r.connected,
-      pausedByBot: r.pausedByBot,
-      pauseReason: r.pauseReason,
-      createdAt: r.createdAt,
+      hubId: conn.metadata.hubId || "",
+      hubName: conn.spec.customName || `Hub ${conn.metadata.hubId}`,
+      hubIconUrl: null,
+      connected: conn.spec.connected,
+      pausedByBot: !conn.status.healthy,
+      pauseReason: conn.status.statusMessage || null,
+      createdAt: conn.metadata.createdAt || new Date().toISOString(),
     }));
   },
 
+
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
     await assertManageable(userId, serverId);
-    const rows = await db
-      .select()
-      .from(serverBlocklist)
-      .where(eq(serverBlocklist.serverId, serverId))
-      .orderBy(desc(serverBlocklist.createdAt));
+    const blocks = await controlServerService.getBlocklist(serverId, userId);
 
-    return rows.map((r) => ({
-      id: r.id,
-      targetType: r.blockedUserId ? "user" : "server",
-      targetId: r.blockedUserId || r.blockedServerId || "",
-      createdAt: r.createdAt,
+    return blocks.map((b) => ({
+      id: b.id,
+      targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : "server",
+      targetId: b.targetId,
+      createdAt: b.createdAt || new Date().toISOString(),
     }));
   },
 
@@ -226,3 +252,4 @@ export const serverService = {
     return { success: true };
   },
 };
+

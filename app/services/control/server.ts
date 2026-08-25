@@ -30,6 +30,26 @@ export const serverService = {
     });
   },
 
+  async batchGetServers(
+    serverIds: string[],
+    actorId: string
+  ): Promise<{ servers: ServerResource[]; missingServerIds: string[] }> {
+    const clients = getServiceClients();
+    const res = await invokeRpc<{ servers?: ServerResource[]; missingServerIds?: string[] }>(
+      clients.serverClient,
+      "BatchGetServers",
+      {
+        context: makeRequestContext(actorId),
+        serverIds,
+      }
+    );
+    return {
+      servers: res.servers || [],
+      missingServerIds: res.missingServerIds || [],
+    };
+  },
+
+
   async patchServer(input: {
     serverId: string;
     spec: Partial<ServerSpec>;

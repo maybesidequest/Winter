@@ -26,6 +26,8 @@ import type { HubStaffResponse as _interchat_control_v1_HubStaffResponse, HubSta
 import type { ListHubAnnouncementsRequest as _interchat_control_v1_ListHubAnnouncementsRequest, ListHubAnnouncementsRequest__Output as _interchat_control_v1_ListHubAnnouncementsRequest__Output } from '../../../interchat/control/v1/ListHubAnnouncementsRequest';
 import type { ListHubInvitesRequest as _interchat_control_v1_ListHubInvitesRequest, ListHubInvitesRequest__Output as _interchat_control_v1_ListHubInvitesRequest__Output } from '../../../interchat/control/v1/ListHubInvitesRequest';
 import type { ListHubStaffRequest as _interchat_control_v1_ListHubStaffRequest, ListHubStaffRequest__Output as _interchat_control_v1_ListHubStaffRequest__Output } from '../../../interchat/control/v1/ListHubStaffRequest';
+import type { ListUserHubsRequest as _interchat_control_v1_ListUserHubsRequest, ListUserHubsRequest__Output as _interchat_control_v1_ListUserHubsRequest__Output } from '../../../interchat/control/v1/ListUserHubsRequest';
+import type { ListUserHubsResponse as _interchat_control_v1_ListUserHubsResponse, ListUserHubsResponse__Output as _interchat_control_v1_ListUserHubsResponse__Output } from '../../../interchat/control/v1/ListUserHubsResponse';
 import type { LockdownHubRequest as _interchat_control_v1_LockdownHubRequest, LockdownHubRequest__Output as _interchat_control_v1_LockdownHubRequest__Output } from '../../../interchat/control/v1/LockdownHubRequest';
 import type { PatchHubBadgesRequest as _interchat_control_v1_PatchHubBadgesRequest, PatchHubBadgesRequest__Output as _interchat_control_v1_PatchHubBadgesRequest__Output } from '../../../interchat/control/v1/PatchHubBadgesRequest';
 import type { PatchHubLogConfigRequest as _interchat_control_v1_PatchHubLogConfigRequest, PatchHubLogConfigRequest__Output as _interchat_control_v1_PatchHubLogConfigRequest__Output } from '../../../interchat/control/v1/PatchHubLogConfigRequest';
@@ -155,6 +157,15 @@ export interface HubServiceClient extends grpc.Client {
   listStaff(argument: _interchat_control_v1_ListHubStaffRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_HubStaffResponse__Output>): grpc.ClientUnaryCall;
   listStaff(argument: _interchat_control_v1_ListHubStaffRequest, callback: grpc.requestCallback<_interchat_control_v1_HubStaffResponse__Output>): grpc.ClientUnaryCall;
   
+  ListUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  ListUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  listUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  listUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  listUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  listUserHubs(argument: _interchat_control_v1_ListUserHubsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListUserHubsResponse__Output>): grpc.ClientUnaryCall;
+  
   LockdownHub(argument: _interchat_control_v1_LockdownHubRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   LockdownHub(argument: _interchat_control_v1_LockdownHubRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
   LockdownHub(argument: _interchat_control_v1_LockdownHubRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Hub__Output>): grpc.ClientUnaryCall;
@@ -274,6 +285,8 @@ export interface HubServiceHandlers extends grpc.UntypedServiceImplementation {
   
   ListStaff: grpc.handleUnaryCall<_interchat_control_v1_ListHubStaffRequest__Output, _interchat_control_v1_HubStaffResponse>;
   
+  ListUserHubs: grpc.handleUnaryCall<_interchat_control_v1_ListUserHubsRequest__Output, _interchat_control_v1_ListUserHubsResponse>;
+  
   LockdownHub: grpc.handleUnaryCall<_interchat_control_v1_LockdownHubRequest__Output, _interchat_control_v1_Hub>;
   
   PatchBadges: grpc.handleUnaryCall<_interchat_control_v1_PatchHubBadgesRequest__Output, _interchat_control_v1_HubBadgeConfig>;
@@ -310,6 +323,7 @@ export interface HubServiceDefinition extends grpc.ServiceDefinition {
   ListInvites: MethodDefinition<_interchat_control_v1_ListHubInvitesRequest, _interchat_control_v1_HubInvitesResponse, _interchat_control_v1_ListHubInvitesRequest__Output, _interchat_control_v1_HubInvitesResponse__Output>
   ListRules: MethodDefinition<_interchat_control_v1_GetHubRequest, _interchat_control_v1_HubRulesResponse, _interchat_control_v1_GetHubRequest__Output, _interchat_control_v1_HubRulesResponse__Output>
   ListStaff: MethodDefinition<_interchat_control_v1_ListHubStaffRequest, _interchat_control_v1_HubStaffResponse, _interchat_control_v1_ListHubStaffRequest__Output, _interchat_control_v1_HubStaffResponse__Output>
+  ListUserHubs: MethodDefinition<_interchat_control_v1_ListUserHubsRequest, _interchat_control_v1_ListUserHubsResponse, _interchat_control_v1_ListUserHubsRequest__Output, _interchat_control_v1_ListUserHubsResponse__Output>
   LockdownHub: MethodDefinition<_interchat_control_v1_LockdownHubRequest, _interchat_control_v1_Hub, _interchat_control_v1_LockdownHubRequest__Output, _interchat_control_v1_Hub__Output>
   PatchBadges: MethodDefinition<_interchat_control_v1_PatchHubBadgesRequest, _interchat_control_v1_HubBadgeConfig, _interchat_control_v1_PatchHubBadgesRequest__Output, _interchat_control_v1_HubBadgeConfig__Output>
   PatchHub: MethodDefinition<_interchat_control_v1_PatchHubRequest, _interchat_control_v1_Hub, _interchat_control_v1_PatchHubRequest__Output, _interchat_control_v1_Hub__Output>

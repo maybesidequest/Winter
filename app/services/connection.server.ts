@@ -1,54 +1,34 @@
-import { db } from "~/db.server";
-import { connection, serverData } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import type { HubConnectionResource } from "~/resources/connection";
-import { discordService } from "~/services/discord.server";
-import { permissionService } from "~/services/permission.server";
 import { controlConnectionService } from "~/services/control.server";
 
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
-    await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
-    const results = await db
-      .select({
-        connection,
-        serverName: serverData.name,
-      })
-      .from(connection)
-      .leftJoin(serverData, eq(connection.serverId, serverData.id))
-      .where(eq(connection.hubId, hubId));
+    const connections = await controlConnectionService.getConnections({
+      hubId,
+      actorId: userId,
+    });
 
-    const connectionsWithChannels = await Promise.all(
-      results.map(async ({ connection: conn, serverName }) => {
-        let channelName = null;
-        if (conn.channelId) {
-          channelName = await discordService.getChannelName(conn.channelId);
-        }
-
-        return {
-          metadata: {
-            id: conn.id,
-            name: serverName || `Connection-${conn.id}`,
-            createdAt: conn.createdAt,
-            updatedAt: conn.lastActive || conn.createdAt,
-          },
-          spec: {
-            channelId: conn.channelId || "",
-            serverId: conn.serverId,
-            connected: conn.connected,
-            pausedByBot: conn.pausedByBot,
-          },
-          status: {
-            serverName: serverName || "Unknown Server",
-            channelName: channelName || `#${conn.channelId}`,
-            lastActive: conn.lastActive || conn.createdAt,
-          },
-        };
-      })
-    );
-
-    return connectionsWithChannels;
+    return connections.map((conn) => ({
+      metadata: {
+        id: conn.metadata.id,
+        name: `Connection-${conn.metadata.id}`,
+        createdAt: conn.metadata.createdAt || new Date().toISOString(),
+        updatedAt: conn.metadata.updatedAt || new Date().toISOString(),
+      },
+      spec: {
+        channelId: conn.metadata.channelId || "",
+        serverId: conn.metadata.serverId || "",
+        connected: conn.spec.connected,
+        pausedByBot: !conn.status.healthy,
+      },
+      status: {
+        serverName: conn.spec.customName || `Server ${conn.metadata.serverId}`,
+        channelName: `#${conn.metadata.channelId}`,
+        lastActive: conn.status.lastRelayedAt || conn.metadata.updatedAt || conn.metadata.createdAt || new Date().toISOString(),
+      },
+    }));
   },
+
 
   async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
     try {

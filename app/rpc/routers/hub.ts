@@ -3,7 +3,6 @@ import { z } from "zod";
 import { base, protectedBase } from "~/rpc/context";
 import { hubService } from "~/services/hub.server";
 import { connectionService } from "~/services/connection.server";
-import { messageService } from "~/services/message.server";
 import {
   createHubSchema,
   patchHubConfigSchema,
@@ -46,32 +45,6 @@ export const hubRouter = base.router({
       return connectionService.getHubConnections(input.hubId, context.user.id);
     }),
 
-  getRecentMessages: protectedBase
-    .input(z.object({ hubId: z.string(), limit: z.number().optional().default(50), cursor: z.string().optional() }))
-    .handler(async ({ input, context }) => {
-      return messageService.getRecentMessages(input.hubId, context.user.id, input.limit, input.cursor);
-    }),
-
-  sendMessage: protectedBase
-    .input(z.object({
-      hubId: z.string(),
-      content: z.string().min(1).max(4000),
-      guildId: z.string(),
-      channelId: z.string(),
-    }))
-    .handler(async ({ input, context }) => {
-      const result = await messageService.sendMessage(
-        input.hubId,
-        input.content,
-        context.user.id,
-        input.guildId,
-        input.channelId
-      );
-      if (!result.success) {
-        throw new ORPCError("BAD_REQUEST", { message: result.error });
-      }
-      return { success: true, messageId: result.messageId };
-    }),
 
   toggleConnection: protectedBase
     .input(z.object({

@@ -3,6 +3,8 @@
 import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'
 import type { AddBlockRequest as _interchat_control_v1_AddBlockRequest, AddBlockRequest__Output as _interchat_control_v1_AddBlockRequest__Output } from '../../../interchat/control/v1/AddBlockRequest';
+import type { BatchGetServersRequest as _interchat_control_v1_BatchGetServersRequest, BatchGetServersRequest__Output as _interchat_control_v1_BatchGetServersRequest__Output } from '../../../interchat/control/v1/BatchGetServersRequest';
+import type { BatchGetServersResponse as _interchat_control_v1_BatchGetServersResponse, BatchGetServersResponse__Output as _interchat_control_v1_BatchGetServersResponse__Output } from '../../../interchat/control/v1/BatchGetServersResponse';
 import type { BlocklistResponse as _interchat_control_v1_BlocklistResponse, BlocklistResponse__Output as _interchat_control_v1_BlocklistResponse__Output } from '../../../interchat/control/v1/BlocklistResponse';
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from '../../../interchat/control/v1/EmptyResponse';
 import type { GetBlocklistRequest as _interchat_control_v1_GetBlocklistRequest, GetBlocklistRequest__Output as _interchat_control_v1_GetBlocklistRequest__Output } from '../../../interchat/control/v1/GetBlocklistRequest';
@@ -21,6 +23,15 @@ export interface ServerServiceClient extends grpc.Client {
   addBlock(argument: _interchat_control_v1_AddBlockRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ServerBlock__Output>): grpc.ClientUnaryCall;
   addBlock(argument: _interchat_control_v1_AddBlockRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ServerBlock__Output>): grpc.ClientUnaryCall;
   addBlock(argument: _interchat_control_v1_AddBlockRequest, callback: grpc.requestCallback<_interchat_control_v1_ServerBlock__Output>): grpc.ClientUnaryCall;
+  
+  BatchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  BatchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  BatchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  BatchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  batchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  batchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  batchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
+  batchGetServers(argument: _interchat_control_v1_BatchGetServersRequest, callback: grpc.requestCallback<_interchat_control_v1_BatchGetServersResponse__Output>): grpc.ClientUnaryCall;
   
   GetBlocklist(argument: _interchat_control_v1_GetBlocklistRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_BlocklistResponse__Output>): grpc.ClientUnaryCall;
   GetBlocklist(argument: _interchat_control_v1_GetBlocklistRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_BlocklistResponse__Output>): grpc.ClientUnaryCall;
@@ -63,6 +74,8 @@ export interface ServerServiceClient extends grpc.Client {
 export interface ServerServiceHandlers extends grpc.UntypedServiceImplementation {
   AddBlock: grpc.handleUnaryCall<_interchat_control_v1_AddBlockRequest__Output, _interchat_control_v1_ServerBlock>;
   
+  BatchGetServers: grpc.handleUnaryCall<_interchat_control_v1_BatchGetServersRequest__Output, _interchat_control_v1_BatchGetServersResponse>;
+  
   GetBlocklist: grpc.handleUnaryCall<_interchat_control_v1_GetBlocklistRequest__Output, _interchat_control_v1_BlocklistResponse>;
   
   GetServer: grpc.handleUnaryCall<_interchat_control_v1_GetServerRequest__Output, _interchat_control_v1_Server>;
@@ -75,6 +88,7 @@ export interface ServerServiceHandlers extends grpc.UntypedServiceImplementation
 
 export interface ServerServiceDefinition extends grpc.ServiceDefinition {
   AddBlock: MethodDefinition<_interchat_control_v1_AddBlockRequest, _interchat_control_v1_ServerBlock, _interchat_control_v1_AddBlockRequest__Output, _interchat_control_v1_ServerBlock__Output>
+  BatchGetServers: MethodDefinition<_interchat_control_v1_BatchGetServersRequest, _interchat_control_v1_BatchGetServersResponse, _interchat_control_v1_BatchGetServersRequest__Output, _interchat_control_v1_BatchGetServersResponse__Output>
   GetBlocklist: MethodDefinition<_interchat_control_v1_GetBlocklistRequest, _interchat_control_v1_BlocklistResponse, _interchat_control_v1_GetBlocklistRequest__Output, _interchat_control_v1_BlocklistResponse__Output>
   GetServer: MethodDefinition<_interchat_control_v1_GetServerRequest, _interchat_control_v1_Server, _interchat_control_v1_GetServerRequest__Output, _interchat_control_v1_Server__Output>
   PatchServerConfig: MethodDefinition<_interchat_control_v1_PatchServerConfigRequest, _interchat_control_v1_Server, _interchat_control_v1_PatchServerConfigRequest__Output, _interchat_control_v1_Server__Output>

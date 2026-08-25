@@ -40,6 +40,16 @@ export const hubCrudService = {
     });
   },
 
+  async listUserHubs(hubIds: string[], actorId: string): Promise<HubResource[]> {
+    const clients = getServiceClients();
+    const res = await invokeRpc<{ hubs?: HubResource[] }>(clients.hubClient, "ListUserHubs", {
+      context: makeRequestContext(actorId),
+      hubIds,
+    });
+    return res.hubs || [];
+  },
+
+
   async patchHub(input: {
     hubId: string;
     spec: Partial<HubSpec>;

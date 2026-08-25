@@ -40,6 +40,8 @@ import type { Infraction as _interchat_control_v1_Infraction, Infraction__Output
 import type { ListHubAnnouncementsRequest as _interchat_control_v1_ListHubAnnouncementsRequest, ListHubAnnouncementsRequest__Output as _interchat_control_v1_ListHubAnnouncementsRequest__Output } from './interchat/control/v1/ListHubAnnouncementsRequest';
 import type { ListHubInvitesRequest as _interchat_control_v1_ListHubInvitesRequest, ListHubInvitesRequest__Output as _interchat_control_v1_ListHubInvitesRequest__Output } from './interchat/control/v1/ListHubInvitesRequest';
 import type { ListHubStaffRequest as _interchat_control_v1_ListHubStaffRequest, ListHubStaffRequest__Output as _interchat_control_v1_ListHubStaffRequest__Output } from './interchat/control/v1/ListHubStaffRequest';
+import type { ListUserHubsRequest as _interchat_control_v1_ListUserHubsRequest, ListUserHubsRequest__Output as _interchat_control_v1_ListUserHubsRequest__Output } from './interchat/control/v1/ListUserHubsRequest';
+import type { ListUserHubsResponse as _interchat_control_v1_ListUserHubsResponse, ListUserHubsResponse__Output as _interchat_control_v1_ListUserHubsResponse__Output } from './interchat/control/v1/ListUserHubsResponse';
 import type { LockdownHubRequest as _interchat_control_v1_LockdownHubRequest, LockdownHubRequest__Output as _interchat_control_v1_LockdownHubRequest__Output } from './interchat/control/v1/LockdownHubRequest';
 import type { PatchHubBadgesRequest as _interchat_control_v1_PatchHubBadgesRequest, PatchHubBadgesRequest__Output as _interchat_control_v1_PatchHubBadgesRequest__Output } from './interchat/control/v1/PatchHubBadgesRequest';
 import type { PatchHubLogConfigRequest as _interchat_control_v1_PatchHubLogConfigRequest, PatchHubLogConfigRequest__Output as _interchat_control_v1_PatchHubLogConfigRequest__Output } from './interchat/control/v1/PatchHubLogConfigRequest';
@@ -116,6 +118,8 @@ export interface ProtoGrpcType {
         ListHubAnnouncementsRequest: MessageTypeDefinition<_interchat_control_v1_ListHubAnnouncementsRequest, _interchat_control_v1_ListHubAnnouncementsRequest__Output>
         ListHubInvitesRequest: MessageTypeDefinition<_interchat_control_v1_ListHubInvitesRequest, _interchat_control_v1_ListHubInvitesRequest__Output>
         ListHubStaffRequest: MessageTypeDefinition<_interchat_control_v1_ListHubStaffRequest, _interchat_control_v1_ListHubStaffRequest__Output>
+        ListUserHubsRequest: MessageTypeDefinition<_interchat_control_v1_ListUserHubsRequest, _interchat_control_v1_ListUserHubsRequest__Output>
+        ListUserHubsResponse: MessageTypeDefinition<_interchat_control_v1_ListUserHubsResponse, _interchat_control_v1_ListUserHubsResponse__Output>
         LockdownHubRequest: MessageTypeDefinition<_interchat_control_v1_LockdownHubRequest, _interchat_control_v1_LockdownHubRequest__Output>
         PatchHubBadgesRequest: MessageTypeDefinition<_interchat_control_v1_PatchHubBadgesRequest, _interchat_control_v1_PatchHubBadgesRequest__Output>
         PatchHubLogConfigRequest: MessageTypeDefinition<_interchat_control_v1_PatchHubLogConfigRequest, _interchat_control_v1_PatchHubLogConfigRequest__Output>
