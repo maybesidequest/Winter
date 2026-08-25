@@ -32,6 +32,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, onSave }: Hu
         bannerUrl: bannerUrl.trim() || null,
         shortDescription: shortDescription.trim() || null,
         description: description.trim() || null,
+        version: hub.version,
       });
     }
   };

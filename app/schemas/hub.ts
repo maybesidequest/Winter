@@ -63,6 +63,7 @@ export const patchHubConfigSchema = z.object({
   appealCooldownHours: z.number().min(0).max(8760).optional(),
   welcomeMessage: z.string().max(2000).optional().nullable(),
   settings: z.number().int().min(0).optional(),
+  version: z.number().int().min(1).optional(),
 });
 
 export type PatchHubConfigInput = z.infer<typeof patchHubConfigSchema>;

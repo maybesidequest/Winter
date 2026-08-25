@@ -41,4 +41,5 @@ export type HubResource = {
   metadata: ResourceMetadata;
   spec: HubSpec;
   status: HubStatus;
+  version: number;
 };

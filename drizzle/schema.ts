@@ -270,6 +270,7 @@ export const feedbackHandlerJob = pgTable("FeedbackHandlerJob", {
 
 export const hub = pgTable("Hub", {
 	id: text().primaryKey().notNull(),
+	version: bigint({ mode: 'number' }).default(sql`1`).notNull(),
 	name: varchar({ length: 100 }).notNull(),
 	description: varchar({ length: 1024 }).notNull(),
 	ownerId: text().notNull(),

@@ -5,6 +5,7 @@ import type { CreateHubInput } from "../schemas/hub";
 import type { HubResource } from "../resources/hub";
 import { permissionService } from "./permission.server";
 import { irisClient } from "./iris.server";
+import { controlClient } from "./control.server";
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
@@ -142,7 +143,8 @@ export const hubService = {
           connectionCount: hubRecord.connectionCount,
           upvoteCount: hubRecord.upvoteCount,
           reviewCount: hubRecord.reviewCount,
-        }
+        },
+        version: Number(hubRecord.version ?? 1),
       };
     });
 
@@ -193,47 +195,105 @@ export const hubService = {
   },
 
   /**
-   * Updates specific configuration fields of a hub.
+   * Updates specific configuration fields of a hub through the Control Plane.
    */
-  async updateHubConfig(userId: string, input: import("../schemas/hub").PatchHubConfigInput): Promise<{ success: boolean; error?: string }> {
+  async updateHubConfig(userId: string, input: import("../schemas/hub").PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
     try {
-      const canEdit = await permissionService.canPerform(userId, input.hubId, "MANAGE_HUB_SETTINGS");
+      const updateMask: string[] = [];
+      const spec: any = {};
 
-      if (!canEdit) {
+      if (input.name !== undefined) {
+        spec.name = input.name;
+        updateMask.push("name");
+      }
+      if (input.shortDescription !== undefined) {
+        spec.shortDescription = input.shortDescription;
+        updateMask.push("short_description");
+      }
+      if (input.description !== undefined) {
+        spec.description = input.description;
+        updateMask.push("description");
+      }
+      if (input.iconUrl !== undefined) {
+        spec.iconUrl = input.iconUrl ? input.iconUrl.trim() : "";
+        updateMask.push("icon_url");
+      }
+      if (input.bannerUrl !== undefined) {
+        spec.bannerUrl = input.bannerUrl ? input.bannerUrl.trim() : "";
+        updateMask.push("banner_url");
+      }
+      if (input.welcomeMessage !== undefined) {
+        spec.welcomeMessage = input.welcomeMessage ? input.welcomeMessage.trim() : "";
+        updateMask.push("welcome_message");
+      }
+      if (input.language !== undefined) {
+        spec.language = input.language;
+        updateMask.push("language");
+      }
+      if (input.region !== undefined) {
+        spec.region = input.region;
+        updateMask.push("region");
+      }
+      if (input.visibility !== undefined) {
+        spec.visibility = input.visibility;
+        updateMask.push("visibility");
+      }
+      if (input.nsfw !== undefined) {
+        spec.nsfw = input.nsfw;
+        updateMask.push("nsfw");
+      }
+      if (input.locked !== undefined) {
+        spec.locked = input.locked;
+        updateMask.push("locked");
+      }
+      if (input.appealCooldownHours !== undefined) {
+        spec.appealCooldownHours = input.appealCooldownHours;
+        updateMask.push("appeal_cooldown_hours");
+      }
+      if (input.settings !== undefined) {
+        spec.settings = input.settings;
+        updateMask.push("settings");
+      }
+
+      if (updateMask.length === 0) {
+        return { success: true };
+      }
+
+      let expectedVersion = input.version;
+      if (!expectedVersion) {
+        const [existing] = await db
+          .select({ version: hub.version })
+          .from(hub)
+          .where(eq(hub.id, input.hubId))
+          .limit(1);
+        if (!existing) {
+          return { success: false, error: "Hub not found." };
+        }
+        expectedVersion = Number(existing.version || 1);
+      }
+
+      const updated = await controlClient.patchHub(
+        userId,
+        input.hubId,
+        spec,
+        updateMask,
+        expectedVersion
+      );
+
+      return { success: true, hub: updated };
+    } catch (error: any) {
+      console.error("Failed to update hub config via control plane", error);
+      const details = error?.details || error?.message || "Failed to update hub configuration.";
+      if (/permission/i.test(details) || error?.code === 7) {
         return { success: false, error: "You do not have permission to modify hub settings." };
       }
-
-      const updates: any = {};
-      if (input.name !== undefined) updates.name = input.name;
-      if (input.shortDescription !== undefined) updates.shortDescription = input.shortDescription;
-      if (input.description !== undefined) updates.description = input.description;
-      if (input.iconUrl !== undefined) updates.iconUrl = input.iconUrl ? input.iconUrl.trim() : null;
-      if (input.bannerUrl !== undefined) updates.bannerUrl = input.bannerUrl ? input.bannerUrl.trim() : null;
-      if (input.language !== undefined) updates.language = input.language;
-      if (input.region !== undefined) updates.region = input.region;
-      if (input.visibility !== undefined) updates.visibility = input.visibility;
-      if (input.nsfw !== undefined) updates.nsfw = input.nsfw;
-      if (input.locked !== undefined) updates.locked = input.locked;
-      if (input.appealCooldownHours !== undefined) updates.appealCooldownHours = input.appealCooldownHours;
-      if (input.welcomeMessage !== undefined) updates.welcomeMessage = input.welcomeMessage;
-      if (input.settings !== undefined) updates.settings = input.settings;
-
-      if (Object.keys(updates).length > 0) {
-        updates.updatedAt = new Date().toISOString();
-
-        const result = await db.update(hub)
-          .set(updates)
-          .where(eq(hub.id, input.hubId));
-
-        if (result.rowCount === 0) {
-           return { success: false, error: "Hub not found." };
-        }
+      if (/version|aborted|conflict/i.test(details) || error?.code === 10 || error?.code === 9) {
+        return { success: false, error: "The hub settings were updated by someone else. Please refresh and try again." };
       }
-
-      return { success: true };
-    } catch (error) {
-      console.error("Failed to update hub config", error);
-      return { success: false, error: "Internal server error while updating configuration." };
+      if (/already exists|duplicate/i.test(details) || error?.code === 6) {
+        return { success: false, error: "A hub with that name already exists." };
+      }
+      return { success: false, error: details };
     }
   },
 

@@ -150,7 +150,7 @@ export default function HubWorkspace() {
 
   const handleToggleModuleFlag = (flag: string, enabled: boolean) => {
     const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
-    patchMutation.mutate({ hubId, settings: updatedSettings });
+    patchMutation.mutate({ hubId, settings: updatedSettings, version: hub.version });
   };
   const viewTitles: Record<string, { title: string; desc: string }> = {
     overview: {
@@ -227,7 +227,7 @@ export default function HubWorkspace() {
           hub={hub}
           canEdit={canEdit}
           saving={patchMutation.isPending}
-          onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
+          onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
         />
       )}
 
@@ -258,7 +258,7 @@ export default function HubWorkspace() {
             hub={hub}
             canEdit={canEdit}
             saving={patchMutation.isPending}
-            onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
+            onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
           />
           {showUnfinishedFeatures && (
             <HubFeaturePlaceholder
@@ -286,7 +286,7 @@ export default function HubWorkspace() {
           canEdit={canEdit}
           isOwner={isOwner}
           saving={patchMutation.isPending}
-          onSave={(changes) => patchMutation.mutate({ hubId, ...changes })}
+          onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
           onDeleteHub={() => deleteHubMutation.mutate({ hubId })}
           onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId })}
           onNukeMessages={() => nukeMessagesMutation.mutate({ hubId })}
