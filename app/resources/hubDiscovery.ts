@@ -1,12 +1,12 @@
 export type HubPublicMetadata = {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string | null;
+  createdAt?: string;
+  updatedAt?: string | null;
 };
 
 export type HubPublicSpec = {
-  description: string;
+  description?: string | null;
   shortDescription: string | null;
   visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
   language: string | null;
@@ -21,16 +21,16 @@ export type HubPublicStatus = {
   verified: boolean;
   partnered: boolean;
   featured: boolean;
-  connectionCount: number;
-  weeklyMessageCount: number;
+  connectionCount?: number;
+  weeklyMessageCount?: number;
   averageRating: number | null;
-  reviewCount: number;
-  upvoteCount: number;
-  monthlyUpvotes: number;
+  reviewCount?: number;
+  upvoteCount?: number;
+  monthlyUpvotes?: number;
   activityLevel: "LOW" | "MEDIUM" | "HIGH";
-  trendingScore: number;
-  messagesLast24h: number;
-  activeUsersLast24h: number;
+  trendingScore?: number;
+  messagesLast24h?: number;
+  activeUsersLast24h?: number;
   newConnectionsLast7d?: number;
   memberGrowthRate?: number;
   hasVotedToday?: boolean;
@@ -60,4 +60,3 @@ export type HubSearchResult = {
     totalPages: number;
   };
 };
-

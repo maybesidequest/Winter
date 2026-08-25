@@ -5,7 +5,7 @@ import { orpc } from "~/lib/orpc";
 
 interface HubVoteButtonProps {
   hubId: string;
-  initialVoteCount: number;
+  initialVoteCount?: number;
   hasVoted?: boolean;
 }
 
@@ -22,13 +22,13 @@ export function HubVoteButton({
   const upvoteMutation = useMutation(
     orpc.hubDiscovery.upvote.mutationOptions({
       onMutate: () => {
-        setVoteCount((prev) => prev + 1);
+        setVoteCount((prev) => (prev ?? 0) + 1);
         setVoted(true);
         setErrorMsg(null);
       },
       onError: (error: any) => {
         // Rollback on error
-        setVoteCount((prev) => Math.max(0, prev - 1));
+        setVoteCount((prev) => (prev === undefined ? undefined : Math.max(0, prev - 1)));
         setVoted(hasVoted);
         setErrorMsg(error.message || "Failed to vote");
       },
@@ -67,7 +67,7 @@ export function HubVoteButton({
         ) : (
           <LikeOutlined className="text-xs" />
         )}
-        <span className="font-['Sora'] font-semibold">{voteCount}</span>
+        <span className="font-['Sora'] font-semibold">{voteCount ?? "—"}</span>
       </button>
 
       {errorMsg && (

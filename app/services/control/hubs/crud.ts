@@ -6,6 +6,12 @@ import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control
 import type { ListMyHubsResponse } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
 import type { ManagedHubSummary } from "~/generated/control/v1/interchat/control/v1/ManagedHubSummary";
 import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
+import type { SearchHubsRequest } from "~/generated/control/v1/interchat/control/v1/SearchHubsRequest";
+import type { SearchHubsResponse } from "~/generated/control/v1/interchat/control/v1/SearchHubsResponse";
+import type { GetPopularTagsRequest } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsRequest";
+import type { GetPopularTagsResponse } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsResponse";
+import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
+import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
 import { getServiceClients, invokeRpc, invokeUnary, makeRequestContext } from "../transport";
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string {
@@ -145,17 +151,17 @@ export const hubCrudService = {
 
   async searchHubs(input: {
     query?: string;
-    sort?: string;
+    sort?: HubSearchSort;
     tags?: string[];
     language?: string;
     region?: string;
-    nsfwFilter?: string;
+    nsfwFilter?: NsfwFilter;
     limit?: number;
     cursor?: string;
     actorId?: string;
-  }): Promise<{ hubs: any[]; nextCursor?: string; totalCount: number }> {
+  }): Promise<SearchHubsResponse> {
     const clients = getServiceClients();
-    const res = await invokeRpc<{ hubs?: any[]; nextCursor?: string; totalCount?: number }>(clients.hubClient, "SearchHubs", {
+    const request: SearchHubsRequest = {
       context: makeRequestContext(input.actorId || "anonymous"),
       query: input.query || "",
       sort: input.sort || "HUB_SEARCH_SORT_TRENDING",
@@ -165,20 +171,23 @@ export const hubCrudService = {
       nsfwFilter: input.nsfwFilter || "NSFW_FILTER_SFW_ONLY",
       limit: input.limit || 24,
       cursor: input.cursor,
-    });
-    return {
-      hubs: res.hubs || [],
-      nextCursor: res.nextCursor,
-      totalCount: res.totalCount || 0,
     };
+    return invokeUnary<SearchHubsRequest, SearchHubsResponse>(
+      clients.hubClient.SearchHubs.bind(clients.hubClient),
+      request,
+    );
   },
 
-  async getPopularTags(limit: number = 50): Promise<{ tags: any[] }> {
+  async getPopularTags(limit: number = 50): Promise<GetPopularTagsResponse> {
     const clients = getServiceClients();
-    const res = await invokeRpc<{ tags?: any[] }>(clients.hubClient, "GetPopularTags", {
+    const request: GetPopularTagsRequest = {
+      context: makeRequestContext("anonymous"),
       limit,
-    });
-    return { tags: res.tags || [] };
+    };
+    return invokeUnary<GetPopularTagsRequest, GetPopularTagsResponse>(
+      clients.hubClient.GetPopularTags.bind(clients.hubClient),
+      request,
+    );
   },
 
   async upvoteHub(hubId: string, actorId: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {

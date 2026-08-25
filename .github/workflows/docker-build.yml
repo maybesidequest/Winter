@@ -36,6 +36,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Validate Phase 2 capability matrix
+        run: bun run validate:phase2
+
       - name: Determine tags and environment
         id: vars
         run: |

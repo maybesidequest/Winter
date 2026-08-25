@@ -7,7 +7,59 @@ import type {
   HubSearchResult,
   HubTagResource,
 } from "~/resources/hubDiscovery";
+import type { HubDirectoryItem } from "~/generated/control/v1/interchat/control/v1/HubDirectoryItem";
+import type { HubTag } from "~/generated/control/v1/interchat/control/v1/HubTag";
+import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
+import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
 import { controlConnectionService, controlHubService } from "~/services/control.server";
+
+function activityLevel(value: HubDirectoryItem["activityLevel"]): HubPublicResource["status"]["activityLevel"] {
+  switch (value) {
+    case "HUB_ACTIVITY_LEVEL_HIGH":
+      return "HIGH";
+    case "HUB_ACTIVITY_LEVEL_MEDIUM":
+      return "MEDIUM";
+    default:
+      return "LOW";
+  }
+}
+
+function directoryHubToResource(hub: HubDirectoryItem): HubPublicResource {
+  const name = hub.name || "Unnamed Hub";
+  return {
+    metadata: { id: hub.id || "", name },
+    spec: {
+      shortDescription: hub.shortDescription || null,
+      description: null,
+      visibility: "PUBLIC",
+      language: hub.language || null,
+      region: hub.region || null,
+      iconUrl: hub.iconUrl || null,
+      bannerUrl: hub.bannerUrl || null,
+      nsfw: hub.nsfw === true,
+    },
+    status: {
+      verified: hub.verified === true,
+      partnered: hub.partnered === true,
+      featured: hub.featured === true,
+      connectionCount: hub.connectionCount,
+      averageRating: hub.averageRating === undefined ? null : Number(hub.averageRating),
+      upvoteCount: hub.upvoteCount,
+      activityLevel: activityLevel(hub.activityLevel),
+    },
+    tags: (hub.tags || []).map((name) => ({ id: name, name })),
+  };
+}
+
+function tagToResource(tag: HubTag): HubTagResource {
+  return {
+    id: tag.id || tag.name || "",
+    name: tag.name || "",
+    category: tag.category || null,
+    color: tag.color || null,
+    usageCount: tag.usageCount,
+  };
+}
 
 export const hubDiscoveryService = {
   /**
@@ -28,7 +80,7 @@ export const hubDiscoveryService = {
       limit = 24,
     } = input;
 
-    const sortMap: Record<string, string> = {
+    const sortMap: Record<string, HubSearchSort> = {
       trending: "HUB_SEARCH_SORT_TRENDING",
       popular: "HUB_SEARCH_SORT_POPULAR",
       upvotes: "HUB_SEARCH_SORT_UPVOTES",
@@ -43,55 +95,12 @@ export const hubDiscoveryService = {
       tags,
       language: language !== "ALL" ? language : undefined,
       region: region !== "ALL" ? region : undefined,
-      nsfwFilter: nsfw ? "NSFW_FILTER_ALL" : "NSFW_FILTER_SFW_ONLY",
+      nsfwFilter: (nsfw ? "NSFW_FILTER_ALL" : "NSFW_FILTER_SFW_ONLY") as NsfwFilter,
       limit,
       actorId: userId,
     });
 
-    const items: HubPublicResource[] = res.hubs.map((h: any) => ({
-      metadata: {
-        id: h.id,
-        name: h.name,
-        createdAt: h.createdAt || new Date().toISOString(),
-        updatedAt: h.updatedAt || null,
-      },
-      spec: {
-        name: h.name,
-        shortDescription: h.shortDescription || null,
-        description: h.shortDescription || h.name,
-        visibility: "PUBLIC",
-        language: h.language || "en",
-        region: h.region || "us",
-        iconUrl: h.iconUrl || null,
-        bannerUrl: h.bannerUrl || null,
-        nsfw: h.nsfw ?? false,
-        rules: [],
-      },
-      status: {
-        verified: h.verified ?? false,
-        partnered: h.partnered ?? false,
-        featured: h.featured ?? false,
-        connectionCount: h.connectionCount || 0,
-        weeklyMessageCount: 0,
-        averageRating: h.averageRating || 0,
-        reviewCount: 0,
-        upvoteCount: h.upvoteCount || 0,
-        monthlyUpvotes: 0,
-        activityLevel: (h.activityLevel as any) || "LOW",
-        trendingScore: 0,
-        messagesLast24h: 0,
-        activeUsersLast24h: 0,
-        newConnectionsLast7d: 0,
-        memberGrowthRate: 0,
-      },
-      tags: (h.tags || []).map((t: any) => ({
-        id: t.id || t.name,
-        name: t.name,
-        category: t.category || "General",
-        color: t.color || "#8175ee",
-        usageCount: t.usageCount || 0,
-      })),
-    }));
+    const items = (res.hubs || []).map(directoryHubToResource);
 
     const totalItems = res.totalCount || items.length;
 
@@ -114,44 +123,7 @@ export const hubDiscoveryService = {
       sort: "HUB_SEARCH_SORT_POPULAR",
       limit: 6,
     });
-    return res.hubs.map((h: any) => ({
-      metadata: {
-        id: h.id,
-        name: h.name,
-        createdAt: h.createdAt || new Date().toISOString(),
-        updatedAt: h.updatedAt || null,
-      },
-      spec: {
-        name: h.name,
-        shortDescription: h.shortDescription || null,
-        description: h.shortDescription || h.name,
-        visibility: "PUBLIC",
-        language: h.language || "en",
-        region: h.region || "us",
-        iconUrl: h.iconUrl || null,
-        bannerUrl: h.bannerUrl || null,
-        nsfw: h.nsfw ?? false,
-        rules: [],
-      },
-      status: {
-        verified: h.verified ?? false,
-        partnered: h.partnered ?? false,
-        featured: true,
-        connectionCount: h.connectionCount || 0,
-        weeklyMessageCount: 0,
-        averageRating: h.averageRating || 0,
-        reviewCount: 0,
-        upvoteCount: h.upvoteCount || 0,
-        monthlyUpvotes: 0,
-        activityLevel: (h.activityLevel as any) || "LOW",
-        trendingScore: 0,
-        messagesLast24h: 0,
-        activeUsersLast24h: 0,
-        newConnectionsLast7d: 0,
-        memberGrowthRate: 0,
-      },
-      tags: [],
-    }));
+    return (res.hubs || []).map(directoryHubToResource);
   },
 
   /**
@@ -159,13 +131,7 @@ export const hubDiscoveryService = {
    */
   async getPopularTags(limit = 25): Promise<HubTagResource[]> {
     const res = await controlHubService.getPopularTags(limit);
-    return res.tags.map((t: any) => ({
-      id: t.id,
-      name: t.name,
-      category: t.category,
-      color: t.color,
-      usageCount: t.usageCount,
-    }));
+    return (res.tags || []).map(tagToResource);
   },
 
   /**
@@ -181,10 +147,10 @@ export const hubDiscoveryService = {
         success: true,
         upvoteCount: res.totalUpvotes,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || "Failed to submit upvote.",
+        error: error instanceof Error ? error.message : "Failed to submit upvote.",
       };
     }
   },

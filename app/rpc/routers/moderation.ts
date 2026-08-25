@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { base, protectedBase } from "../context";
 import { hubStaffService } from "../../services/hubStaff.server";
 import { z } from "zod";
+import { requireCapability } from "~/rpc/capabilityGuard";
 
 const hubRoleSchema = z.enum(["MANAGER", "MODERATOR"]);
 
@@ -13,6 +14,7 @@ export const moderationRouter = base.router({
   getStaff: protectedBase
     .input(z.object({ hubId: z.string() }))
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
       return hubStaffService.getStaff(input.hubId, context.user.id);
     }),
 
@@ -25,6 +27,7 @@ export const moderationRouter = base.router({
       })
     )
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
       const result = await hubStaffService.assignRole(
         context.user.id,
         input.targetUserId,
@@ -45,6 +48,7 @@ export const moderationRouter = base.router({
       })
     )
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
       const result = await hubStaffService.removeRole(
         context.user.id,
         input.targetUserId,
