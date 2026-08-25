@@ -58,30 +58,19 @@ export const hubService = {
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const res = await controlHubService.listMyHubs(userId);
     const hubs = await Promise.all(
-      (res.hubs || []).map(async (summary) => {
-        const id = summary.id;
-        if (!id) return null;
-        try {
-          return await controlHubService.getHub(id, userId);
-        } catch (error) {
-          console.error(`Failed to load Hub ${id} after authorization`, error);
-          return null;
-        }
+      (res.hubs || []).map((summary) => {
+        if (!summary.id) throw new Error("Control Plane returned a Hub summary without an ID.");
+        return controlHubService.getHub(summary.id, userId);
       }),
     );
-    return hubs.filter((hub): hub is HubResource => hub !== null);
+    return hubs;
   },
 
 
 
 
-  async getHub(hubId: string, userId: string): Promise<HubResource | null> {
-    try {
-      return await controlHubService.getHub(hubId, userId);
-    } catch (error: unknown) {
-      console.error("Failed to fetch hub details via control plane", error);
-      return null;
-    }
+  async getHub(hubId: string, userId: string): Promise<HubResource> {
+    return controlHubService.getHub(hubId, userId);
   },
 
   async createHub(userId: string, input: CreateHubInput, idempotencyKey?: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
