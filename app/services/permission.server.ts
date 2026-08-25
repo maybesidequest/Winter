@@ -1,6 +1,4 @@
-import { redis } from "../redis.server";
 import { irisClient } from "./iris.server";
-import { permissionCache } from "./permissionCache.server";
 import { ORPCError } from "@orpc/server";
 import {
   PERMISSION_ACTIONS,
@@ -10,12 +8,6 @@ import {
   type PermissionAction,
   type HubRole,
 } from "../permissions/config";
-
-const CACHE_KEY_PREFIX = "iris:perms:v1";
-
-function cacheKey(userId: string, hubId: string): string {
-  return `${CACHE_KEY_PREFIX}:${userId}:${hubId}`;
-}
 
 function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
   const record = getDefaultPermissions();
@@ -28,34 +20,14 @@ function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
 
 export const permissionService = {
   // ------------------------------------------------------------------ //
-  //  Permission checks (3-layer cache: L1 → L2 Redis → L3 Iris)        //
+  //  Permission checks. Iris is authoritative and enforces its           //
+  //  authorization-version barrier. Do not read Iris's Redis cache here. //
   // ------------------------------------------------------------------ //
 
   async canPerform(userId: string, hubId: string, action: PermissionAction): Promise<boolean> {
     const mask = PERMISSION_BITMASKS[action];
 
-    // 1. L1: in-memory lru-cache
-    const l1Bits = permissionCache.get(userId, hubId);
-    if (l1Bits !== undefined) {
-      return !!(l1Bits & mask);
-    }
-
-    // 2. L2: Redis
-    const key = cacheKey(userId, hubId);
-    try {
-      const l2Val = await redis.get(key);
-      if (l2Val !== null) {
-        const bits = parseInt(l2Val, 10);
-        permissionCache.set(userId, hubId, bits);
-        return !!(bits & mask);
-      }
-    } catch (err) {
-      console.warn("[permissionService] Redis get failed:", err);
-    }
-
-    // 3. L3: Iris microservice → Postgres. Iris writes back to Redis.
     const bits = await irisClient.getEffectivePermissions(userId, hubId);
-    permissionCache.set(userId, hubId, bits);
     return !!(bits & mask);
   },
 
@@ -73,26 +45,7 @@ export const permissionService = {
   // ------------------------------------------------------------------ //
 
   async getPermissionsRecord(userId: string, hubId: string): Promise<Record<PermissionAction, boolean>> {
-    // 1. L1
-    const l1Bits = permissionCache.get(userId, hubId);
-    if (l1Bits !== undefined) return bitsToRecord(l1Bits);
-
-    // 2. L2
-    const key = cacheKey(userId, hubId);
-    try {
-      const l2Val = await redis.get(key);
-      if (l2Val !== null) {
-        const bits = parseInt(l2Val, 10);
-        permissionCache.set(userId, hubId, bits);
-        return bitsToRecord(bits);
-      }
-    } catch (err) {
-      console.warn("[permissionService] Redis get failed:", err);
-    }
-
-    // 3. L3
     const bits = await irisClient.getEffectivePermissions(userId, hubId);
-    permissionCache.set(userId, hubId, bits);
     return bitsToRecord(bits);
   },
 
