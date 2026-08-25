@@ -63,6 +63,7 @@ function loadPackageDefinition(): Record<string, new (address: string, creds: gr
 export function getServiceClients(): Required<ServiceRegistry> {
   if (registry.hubClient) return registry as Required<ServiceRegistry>;
 
+  const pkg = loadPackageDefinition();
   const address =
     process.env.CONTROL_PLANE_GRPC_ADDRESS ||
     process.env.CONTROL_PLANE_ADDRESS ||
