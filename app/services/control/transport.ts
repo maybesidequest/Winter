@@ -134,7 +134,7 @@ export function makeRequestContext(
     requestId: crypto.randomUUID(),
     actorId,
     actorType: "ACTOR_TYPE_HUMAN",
-    servicePrincipal: "winter",
+    servicePrincipal: "interchat-winter",
     idempotencyKey: idempotencyKey || (mutation ? crypto.randomUUID() : ""),
     traceId: crypto.randomUUID(),
     source: "WINTER",
