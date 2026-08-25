@@ -137,6 +137,7 @@ export const serverService = {
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
     const guild = await assertManageable(userId, input.serverId, true);
+    const current = await controlServerService.getServer(input.serverId, userId);
     await controlServerService.patchServer({
       serverId: input.serverId,
       spec: {
@@ -145,7 +146,7 @@ export const serverService = {
         callNsfwFilter: input.filterNsfw,
       },
       updateMask: ["call_ping", "call_requeue", "call_nsfw_filter"],
-      expectedVersion: 1,
+      expectedVersion: current.version || 1,
       actorId: userId,
       idempotencyKey: crypto.randomUUID(),
     });

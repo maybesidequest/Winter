@@ -3,6 +3,7 @@ import { message, user, serverData } from "../../drizzle/schema";
 import { eq, desc, lt, and } from "drizzle-orm";
 import type { MessageResource } from "../resources/message";
 import { permissionService } from "./permission.server";
+import { connectionService } from "./connection.server";
 
 export const messageService = {
   async getRecentMessages(hubId: string, userId: string, limit: number = 50, cursor?: string): Promise<{ items: MessageResource[], nextCursor: string | null }> {
@@ -66,6 +67,11 @@ export const messageService = {
     channelId: string
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     await permissionService.assertCanPerform(authorId, hubId, "MODERATE_MESSAGES");
+    const connections = await connectionService.getHubConnections(hubId, authorId);
+    const validConn = connections.find(c => c.serverId === guildId && c.channelId === channelId);
+    if (!validConn) {
+      return { success: false, error: "The specified server and channel are not connected to this Hub." };
+    }
     try {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();

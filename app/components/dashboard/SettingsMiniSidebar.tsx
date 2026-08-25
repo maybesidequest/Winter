@@ -13,8 +13,7 @@ export type SettingsCategory =
   | "preferences"
   | "appearance"
   | "calls"
-  | "bot_config"
-  | "billing";
+  | "bot_config";
 
 interface SettingsMiniSidebarProps {
   activeCategory: SettingsCategory;
@@ -37,7 +36,6 @@ export function SettingsMiniSidebar({
       { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
       { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
       { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
-      { id: "billing", label: "Billing", icon: <CreditCardOutlined />, disabled: true, badge: "Coming Soon" },
     ];
 
   return (

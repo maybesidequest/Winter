@@ -11,6 +11,7 @@ export type ServerResource = {
     lobbyChannelIds: string[];
   };
   status: { botInstalled: boolean; manageable: boolean; callCount: number; messageCount: number };
+  version?: number;
 };
 
 export type DiscordChannelResource = {

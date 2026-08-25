@@ -11,7 +11,6 @@ import { PreferencesSection } from "./settings/PreferencesSection";
 import { AppearanceSection } from "./settings/AppearanceSection";
 import { CallHistorySection } from "./settings/CallHistorySection";
 import { BotConfigSection } from "./settings/BotConfigSection";
-import { BillingSection } from "./settings/BillingSection";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -111,13 +110,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
           {activeCategory === "bot_config" && (
             <BotConfigSection
-              userResource={userResource}
-              isLoading={userLoading}
-            />
-          )}
-
-          {activeCategory === "billing" && (
-            <BillingSection
               userResource={userResource}
               isLoading={userLoading}
             />
