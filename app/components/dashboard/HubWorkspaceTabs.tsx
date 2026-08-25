@@ -22,6 +22,7 @@ interface HubWorkspaceTabsProps {
   canManageConnections: boolean;
   isOwner: boolean;
   isSaving: boolean;
+  saveError?: string;
   isRoutePending: boolean;
   onSaveConfig: (changes: Partial<PatchHubConfigInput>) => void;
   onToggleRoute: (conn: HubConnectionResource) => void;
@@ -39,6 +40,7 @@ export function HubWorkspaceTabs({
   canManageConnections,
   isOwner,
   isSaving,
+  saveError,
   isRoutePending,
   onSaveConfig,
   onToggleRoute,
@@ -51,7 +53,7 @@ export function HubWorkspaceTabs({
     case "overview":
       return <HubSummary hub={hub} />;
     case "general":
-      return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} onSave={onSaveConfig} />;
+      return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} error={saveError} onSave={onSaveConfig} />;
     case "connections":
       return (
         <HubRoutes

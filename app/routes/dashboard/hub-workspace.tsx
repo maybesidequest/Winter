@@ -153,6 +153,7 @@ export default function HubWorkspace() {
         canManageConnections={!!hub.metadata.permissions?.MANAGE_CONNECTIONS}
         isOwner={hub.metadata.effectiveRole === "OWNER"}
         isSaving={patchMutation.isPending}
+        saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}
         isRoutePending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
         onSaveConfig={(changes) => patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), version: hub.version, ...changes })}
         onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected })}

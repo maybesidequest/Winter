@@ -33,6 +33,16 @@ function controlErrorMessage(error: unknown, fallback: string): string {
   }
 }
 
+type HubUpdateErrorCode = "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" | "SERVICE_UNAVAILABLE";
+
+function controlErrorCode(error: unknown): HubUpdateErrorCode {
+  const code = (error as { code?: number }).code;
+  if (code === 7 || code === 16) return "FORBIDDEN";
+  if (code === 9 || code === 10 || code === 6) return "CONFLICT";
+  if (code === 4 || code === 14) return "SERVICE_UNAVAILABLE";
+  return "BAD_REQUEST";
+}
+
 function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
   const record = getDefaultPermissions();
   for (const action of PERMISSION_ACTIONS) {
@@ -97,7 +107,7 @@ export const hubService = {
     }
   },
 
-  async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
+  async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string; errorCode?: HubUpdateErrorCode }> {
     try {
       const phase1Fields = new Set([
         "name",
@@ -156,7 +166,11 @@ export const hubService = {
       return { success: true, hub: updated };
     } catch (error: unknown) {
       console.error("Failed to update hub config via control plane", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to update hub configuration.") };
+      return {
+        success: false,
+        error: controlErrorMessage(error, "Failed to update hub configuration."),
+        errorCode: controlErrorCode(error),
+      };
     }
   },
 

@@ -45,7 +45,7 @@ export const hubRouter = base.router({
     .handler(async ({ input, context }) => {
       const result = await hubService.updateHubConfig(context.user.id, input);
       if (!result.success) {
-        throw new ORPCError("FORBIDDEN", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error });
       }
       return { success: true, hub: result.hub };
     }),

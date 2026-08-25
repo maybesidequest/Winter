@@ -8,10 +8,11 @@ interface HubOverviewProps {
   hub: HubResource;
   canEdit?: boolean;
   saving?: boolean;
+  error?: string;
   onSave?: (changes: Partial<PatchHubConfigInput>) => void;
 }
 
-export function HubOverview({ hub, canEdit = false, saving = false, onSave }: HubOverviewProps) {
+export function HubOverview({ hub, canEdit = false, saving = false, error, onSave }: HubOverviewProps) {
   const [name, setName] = useState(hub.metadata.name);
   const [iconUrl, setIconUrl] = useState(hub.spec.iconUrl || "");
   const [bannerUrl, setBannerUrl] = useState(hub.spec.bannerUrl || "");
@@ -50,6 +51,11 @@ export function HubOverview({ hub, canEdit = false, saving = false, onSave }: Hu
     <div className="flex flex-col gap-6 max-w-5xl w-full">
       {/* Profile & Branding Editor */}
       <form onSubmit={handleSubmit} className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
+        {error && (
+          <div role="alert" className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
+            {error}
+          </div>
+        )}
         <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
           <PictureOutlined className="text-violet-400 text-base" />
           <h3 className="text-base font-bold text-white font-['Sora'] m-0">Hub Identity & Branding</h3>
