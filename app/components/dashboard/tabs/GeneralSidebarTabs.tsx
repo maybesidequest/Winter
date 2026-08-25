@@ -2,9 +2,7 @@ import {
   CloudServerOutlined,
   CompassOutlined,
   DownOutlined,
-  HistoryOutlined,
   HomeOutlined,
-  ThunderboltOutlined,
   UpOutlined
 } from "@ant-design/icons";
 import { useState } from "react";
@@ -28,7 +26,6 @@ export function GeneralSidebarTabs({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     community: false,
     servers: false,
-    calls: false,
   });
 
   const toggle = (key: string) => setCollapsed((p) => ({ ...p, [key]: !p[key] }));
@@ -185,54 +182,6 @@ export function GeneralSidebarTabs({
         )}
       </div>
 
-      {/* Realtime Calls */}
-      <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={() => toggle("calls")}
-          className="flex items-center justify-between px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-purple-300/40 hover:text-purple-300/70 transition-colors cursor-pointer"
-        >
-          <span>Realtime Calls</span>
-          <span className="text-[10px]">{collapsed.calls ? <DownOutlined /> : <UpOutlined />}</span>
-        </button>
-
-        {!collapsed.calls && (
-          <nav className="flex flex-col gap-1">
-            <NavLink
-              to="/dashboard/calls"
-              end
-              onClick={onNavigate}
-              className={({ isActive }) =>
-                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
-                  ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
-                  : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
-                }`
-              }
-            >
-              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
-                <ThunderboltOutlined />
-              </span>
-              <span>Active Lobbies</span>
-            </NavLink>
-
-            <NavLink
-              to="/dashboard/calls/history"
-              onClick={onNavigate}
-              className={({ isActive }) =>
-                `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
-                  ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
-                  : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"
-                }`
-              }
-            >
-              <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5">
-                <HistoryOutlined />
-              </span>
-              <span>Call History</span>
-            </NavLink>
-          </nav>
-        )}
-      </div>
     </div>
   );
 }

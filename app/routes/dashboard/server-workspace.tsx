@@ -31,11 +31,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const server = await serverService.get(user.id, serverId);
-  const [channels, bridges, blocks] = await Promise.all([
-    server.status.botInstalled ? serverService.channels(user.id, serverId) : Promise.resolve([]),
-    server.status.botInstalled ? serverService.bridges(user.id, serverId) : Promise.resolve([]),
-    server.status.botInstalled ? serverService.blocklist(user.id, serverId) : Promise.resolve([]),
-  ]);
+  const allowExperimentalViews = process.env.NODE_ENV !== "production";
+  const [channels, bridges, blocks] = allowExperimentalViews
+    ? await Promise.all([
+        server.status.botInstalled ? serverService.channels(user.id, serverId) : Promise.resolve([]),
+        server.status.botInstalled ? serverService.bridges(user.id, serverId) : Promise.resolve([]),
+        server.status.botInstalled ? serverService.blocklist(user.id, serverId) : Promise.resolve([]),
+      ])
+    : [[], [], []];
 
   return {
     server,
@@ -48,7 +51,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export default function ServerWorkspace() {
   const { server, channels, bridges, blocks } = useLoaderData<typeof loader>();
   const params = useParams();
-  const view = params.view || "overview";
+  const requestedView = params.view || "overview";
+  const view = import.meta.env.DEV ? requestedView : "overview";
 
   const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
     overview: {

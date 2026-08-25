@@ -12,6 +12,7 @@ import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPa
 import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
+import type { PatchHubConfigInput } from "~/schemas/hub";
 
 interface HubWorkspaceTabsProps {
   activeTab: string;
@@ -22,7 +23,7 @@ interface HubWorkspaceTabsProps {
   isOwner: boolean;
   isSaving: boolean;
   isRoutePending: boolean;
-  onSaveConfig: (changes: any) => void;
+  onSaveConfig: (changes: Partial<PatchHubConfigInput>) => void;
   onToggleRoute: (conn: HubConnectionResource) => void;
   onDisconnectRoute: (conn: HubConnectionResource) => void;
   onToggleModuleFlag: (flag: string, enabled: boolean) => void;

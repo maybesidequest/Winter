@@ -10,6 +10,20 @@ import type { UserServiceClient } from "~/generated/control/v1/interchat/control
 import type { ModerationServiceClient } from "~/generated/control/v1/interchat/control/v1/ModerationService";
 import type { RequestContext as GeneratedRequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
 
+type ServiceConstructor<T extends grpc.Client> = new (
+  address: string,
+  credentials: grpc.ChannelCredentials,
+  options?: grpc.ClientOptions,
+) => T;
+
+interface ControlPackage {
+  HubService: ServiceConstructor<HubServiceClient>;
+  ServerService: ServiceConstructor<ServerServiceClient>;
+  ConnectionService: ServiceConstructor<ConnectionServiceClient>;
+  UserService: ServiceConstructor<UserServiceClient>;
+  ModerationService: ServiceConstructor<ModerationServiceClient>;
+}
+
 export type UnaryMethod<TReq, TRes> = (
   request: TReq,
   metadata: grpc.Metadata,
@@ -17,7 +31,7 @@ export type UnaryMethod<TReq, TRes> = (
   callback: (error: grpc.ServiceError | null, response?: TRes) => void
 ) => void;
 
-export type ServiceClient = grpc.Client | unknown;
+export type ServiceClient = grpc.Client;
 export type RequestContext = GeneratedRequestContext;
 
 export interface ServiceRegistry {
@@ -53,7 +67,7 @@ function credentials(): grpc.ChannelCredentials {
   throw new Error("Control Plane mTLS credentials are not configured.");
 }
 
-function loadPackageDefinition(): Record<string, any> {
+function loadPackageDefinition(): ControlPackage {
   const definition = protoLoader.loadFileDescriptorSetFromBuffer(
     Buffer.from(CONTROL_DESCRIPTOR_BASE64, "base64"),
     {
@@ -64,8 +78,12 @@ function loadPackageDefinition(): Record<string, any> {
       oneofs: true,
     }
   );
-  const root = grpc.loadPackageDefinition(definition) as any;
-  return root.interchat.control.v1;
+  const root = grpc.loadPackageDefinition(definition) as unknown as {
+    interchat?: { control?: { v1?: ControlPackage } };
+  };
+  const control = root.interchat?.control?.v1;
+  if (!control) throw new Error("Control Plane protobuf package is unavailable.");
+  return control;
 }
 
 export function getServiceClients(): Required<ServiceRegistry> {
@@ -169,7 +187,7 @@ export function invokeRpc<TRes, TReq = unknown>(
     }
     const timeoutMs = Number(process.env.CONTROL_PLANE_TIMEOUT_MS || 5000);
     const deadline = new Date(Date.now() + timeoutMs);
-    const rec = client as Record<string, Function>;
+    const rec = client as unknown as Record<string, (...args: unknown[]) => void>;
     const rpc = rec[method] || rec[method.charAt(0).toLowerCase() + method.slice(1)];
     if (typeof rpc !== "function") {
       return reject(new Error(`Control Plane method ${method} is unavailable.`));

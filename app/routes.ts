@@ -9,7 +9,6 @@ export default [
     route("dashboard", "routes/dashboard/index.tsx"),
     route("dashboard/inbox", "routes/dashboard/inbox.tsx"),
     route("dashboard/browse", "routes/dashboard/browse.tsx"),
-    route("dashboard/calls/:tab?", "routes/dashboard/calls.tsx"),
     route("dashboard/hubs", "routes/dashboard/hubs.tsx"),
     route("dashboard/hubs/:hubId/:view?", "routes/dashboard/hub-workspace.tsx"),
     route("dashboard/servers", "routes/dashboard/servers.tsx"),

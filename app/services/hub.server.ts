@@ -97,6 +97,26 @@ export const hubService = {
 
   async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
     try {
+      const phase1Fields = new Set([
+        "name",
+        "shortDescription",
+        "description",
+        "iconUrl",
+        "bannerUrl",
+        "welcomeMessage",
+        "visibility",
+        "hubId",
+        "idempotencyKey",
+        "version",
+      ]);
+      const unsupportedFields = Object.keys(input).filter((field) => !phase1Fields.has(field));
+      if (unsupportedFields.length > 0) {
+        return {
+          success: false,
+          error: `These Hub settings are not available yet: ${unsupportedFields.join(", ")}`,
+        };
+      }
+
       const updateMask: string[] = [];
       const spec: Record<string, unknown> = {};
 

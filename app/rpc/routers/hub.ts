@@ -47,7 +47,7 @@ export const hubRouter = base.router({
       if (!result.success) {
         throw new ORPCError("FORBIDDEN", { message: result.error });
       }
-      return { success: true };
+      return { success: true, hub: result.hub };
     }),
 
   getConnections: protectedBase

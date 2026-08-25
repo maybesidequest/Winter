@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 import { AccountSection } from "./settings/AccountSection";
 import { PreferencesSection } from "./settings/PreferencesSection";
 import { AppearanceSection } from "./settings/AppearanceSection";
-import { CallHistorySection } from "./settings/CallHistorySection";
 import { BotConfigSection } from "./settings/BotConfigSection";
 
 interface SettingsModalProps {
@@ -99,12 +98,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <AppearanceSection
               userResource={userResource}
               isLoading={userLoading}
-            />
-          )}
-
-          {activeCategory === "calls" && (
-            <CallHistorySection
-              isLoadingUser={userLoading}
             />
           )}
 

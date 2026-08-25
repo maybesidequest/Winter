@@ -1,9 +1,7 @@
 import {
   BellOutlined,
   BgColorsOutlined,
-  CreditCardOutlined,
   RobotOutlined,
-  ThunderboltOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import type { ReactNode } from "react";
@@ -12,7 +10,6 @@ export type SettingsCategory =
   | "account"
   | "preferences"
   | "appearance"
-  | "calls"
   | "bot_config";
 
 interface SettingsMiniSidebarProps {
@@ -34,7 +31,6 @@ export function SettingsMiniSidebar({
       { id: "account", label: "My Account", icon: <UserOutlined /> },
       { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
       { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
-      { id: "calls", label: "Call History", icon: <ThunderboltOutlined /> },
       { id: "bot_config", label: "Bot & Staff", icon: <RobotOutlined /> },
     ];
 

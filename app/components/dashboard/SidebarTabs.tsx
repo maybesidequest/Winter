@@ -8,7 +8,6 @@ export type SidebarContext =
   | { type: "dashboard" }
   | { type: "hub"; id: string; hub?: HubResource }
   | { type: "server"; id: string; server?: ServerResource }
-  | { type: "calls" }
   | { type: "browse" };
 
 interface SidebarTabsProps {
@@ -43,4 +42,3 @@ export function SidebarTabs({
     />
   );
 }
-

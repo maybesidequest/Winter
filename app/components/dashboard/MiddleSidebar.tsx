@@ -41,9 +41,6 @@ export function MiddleSidebar({
     const server = servers.find((s) => s.metadata.id === params.serverId);
     context = { type: "server", id: params.serverId, server };
     currentTitle = server ? server.metadata.name : "Server Workspace";
-  } else if (location.pathname.startsWith("/dashboard/calls")) {
-    context = { type: "calls" };
-    currentTitle = "Global Calls";
   } else if (location.pathname.startsWith("/dashboard/browse")) {
     context = { type: "browse" };
     currentTitle = "Hub Directory";

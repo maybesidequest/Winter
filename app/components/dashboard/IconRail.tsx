@@ -3,7 +3,6 @@ import {
   HomeOutlined,
   PlusOutlined,
   CompassOutlined,
-  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { Tooltip } from "antd";
 import type { ServerResource } from "~/resources/server";
@@ -43,7 +42,6 @@ export function IconRail({
 
   const isHomeActive = location.pathname === "/dashboard";
   const isBrowseActive = location.pathname.startsWith("/dashboard/browse");
-  const isCallsActive = location.pathname.startsWith("/dashboard/calls");
 
   const instances =
     instanceType === "servers"
@@ -216,39 +214,6 @@ export function IconRail({
           </Tooltip>
         </div>
 
-        {/* Global Calls */}
-        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
-          <span
-            className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
-              isCallsActive
-                ? "h-9 bg-[#8175ee] opacity-100 scale-100"
-                : "h-2 bg-transparent opacity-0 scale-50 group-hover:h-5 group-hover:bg-white/60 group-hover:opacity-80 group-hover:scale-100"
-            }`}
-          />
-          <Tooltip
-            placement="right"
-            mouseEnterDelay={0.05}
-            title={<span className="font-bold text-white text-[13px] font-['Sora']">Global Calls</span>}
-            styles={tooltipStyles}
-            arrow={false}
-          >
-            <Link
-              to="/dashboard/calls"
-              className={`flex items-center justify-center w-12 h-12 text-lg transition-all duration-150 ${
-                isCallsActive
-                  ? "rounded-2xl bg-[#5b4ccb] text-white"
-                  : "rounded-3xl bg-[#13141f] text-white/80 hover:bg-[#5b4ccb] hover:text-white hover:rounded-2xl"
-              }`}
-              style={{
-                border: isCallsActive ? "1px solid #7d70e8" : "1px solid rgba(255, 255, 255, 0.08)",
-                boxShadow: isCallsActive ? "0 1.5px 0 0 #7d70e8" : "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
-              }}
-              aria-label="Global Calls"
-            >
-              <ThunderboltOutlined className="text-xl" />
-            </Link>
-          </Tooltip>
-        </div>
       </div>
     </aside>
   );
