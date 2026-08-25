@@ -1,11 +1,16 @@
 import { CheckOutlined, CloseOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input, message, Modal, Segmented } from "antd";
-import { useSearchParams } from "react-router";
+import { redirect, useSearchParams } from "react-router";
 import { orpc } from "~/lib/orpc";
 import type { SafetyItemType } from "~/resources/safety";
 import type { SafetyItemResource } from "~/resources/safety";
 import { PageHeader } from "~/components/dashboard/WorkspacePrimitives";
+
+export async function loader() {
+  if (!import.meta.env.DEV) throw redirect("/dashboard");
+  return null;
+}
 
 const types: Array<{ label: string; value: SafetyItemType }> = [
   { label: "Held", value: "review" }, { label: "Reports", value: "report" }, { label: "Appeals", value: "appeal" },

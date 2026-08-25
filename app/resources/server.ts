@@ -10,7 +10,8 @@ export type ServerResource = {
     filterNsfw: boolean;
     lobbyChannelIds: string[];
   };
-  status: { botInstalled: boolean; manageable: boolean; callCount: number; messageCount: number };
+  /** Observed integration state. Counts are intentionally not included until backed by Control Plane data. */
+  status: { botInstalled: boolean; manageable: boolean };
   version?: number;
 };
 
@@ -41,4 +42,3 @@ export type ServerBlockResource = {
   targetName?: string;
   createdAt: string;
 };
-

@@ -1,4 +1,4 @@
-import { FireOutlined, SafetyCertificateOutlined, TrophyOutlined } from "@ant-design/icons";
+import { SafetyCertificateOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
 import { getBadgeInfo } from "~/resources/badge";
 import type { UserResource } from "~/resources/user";
@@ -117,35 +117,9 @@ export function AccountSection({ userResource, isLoading }: AccountSectionProps)
         </span>
       </div>
 
-      {/* Statistics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {[
-          { label: "Reputation", value: status.reputation, icon: <TrophyOutlined className="text-amber-400" /> },
-          { label: "Hubs Owned", value: status.hubsCount, icon: "🏠" },
-          { label: "Calls Completed", value: status.callCount, icon: "📞" },
-          { label: "Messages Sent", value: status.messageCount, icon: "💬" },
-          { label: "Active Streak", value: `${status.currentStreak}d`, icon: <FireOutlined className="text-orange-400" /> },
-          { label: "Streak Freezes", value: `${status.streakFreezes}/2`, icon: "❄️" },
-        ].map((stat, idx) => (
-          <div
-            key={idx}
-            className="relative overflow-hidden p-3 sm:p-3.5 rounded-2xl border flex flex-col justify-between"
-            style={{
-              background: "#13141f",
-              borderColor: "rgba(255, 255, 255, 0.08)",
-              boxShadow: "0 2px 0 0 rgba(10, 8, 23, 0.5)",
-            }}
-          >
-            <div className="flex items-center justify-between text-xs text-white/50 font-medium">
-              <span>{stat.label}</span>
-              <span className="text-sm">{stat.icon}</span>
-            </div>
-            <p className="text-lg sm:text-xl font-bold text-white mt-1 font-['Sora']">
-              {stat.value}
-            </p>
-          </div>
-        ))}
-      </div>
+      <p className="text-xs text-white/45">
+        Activity totals and call history will appear here when their authoritative Control Plane resources are released.
+      </p>
     </div>
   );
 }

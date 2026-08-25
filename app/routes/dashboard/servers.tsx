@@ -82,8 +82,6 @@ export default function ServersPage() {
                   {/* Meta Details */}
                   <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 text-xs">
                     <div className="text-white/60 hidden md:block">
-                      <span className="font-semibold text-white/90">{server.status.callCount}</span> text Calls
-                      <span className="mx-1.5 text-white/20">·</span>
                       <span className="font-semibold text-white/90">
                         {server.spec.lobbyChannelIds.length || "Any"}
                       </span> allowed channels

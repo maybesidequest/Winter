@@ -53,8 +53,6 @@ function toServer(value: Server__Output): ServerResource {
     status: {
       botInstalled: value.status.botInstalled,
       manageable: value.status.botInstalled,
-      callCount: value.status.activeCall ? 1 : 0,
-      messageCount: value.status.connectionCount,
     },
     version: value.version,
   };

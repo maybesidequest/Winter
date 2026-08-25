@@ -51,7 +51,7 @@ export function IconRail({
           initials: s.metadata.name.slice(0, 2).toUpperCase(),
           color: "#2a7198",
           iconUrl: s.metadata.iconUrl,
-          memberCount: s.status.callCount,
+          memberCount: undefined,
           type: "server" as const,
         }))
       : hubs.map((h) => ({

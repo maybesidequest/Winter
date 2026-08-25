@@ -131,8 +131,6 @@ export const serverService = {
         status: {
           botInstalled: false,
           manageable: true,
-          callCount: 0,
-          messageCount: 0,
         },
       };
     });
@@ -174,8 +172,6 @@ export const serverService = {
         status: {
           botInstalled: false,
           manageable: true,
-          callCount: 0,
-          messageCount: 0,
         },
       };
     }

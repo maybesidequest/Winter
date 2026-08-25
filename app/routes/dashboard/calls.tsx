@@ -1,6 +1,11 @@
-import { useParams } from "react-router";
+import { redirect, useParams } from "react-router";
 import { ThunderboltOutlined, HistoryOutlined } from "@ant-design/icons";
 import { PlaceholderView } from "~/components/dashboard/PlaceholderView";
+
+export async function loader() {
+  if (!import.meta.env.DEV) throw redirect("/dashboard");
+  return null;
+}
 
 export default function CallsRoute() {
   const params = useParams();
