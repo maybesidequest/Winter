@@ -50,6 +50,7 @@ export type CreateHubInput = z.infer<typeof createHubSchema>;
 
 export const patchHubConfigSchema = z.object({
   hubId: z.string(),
+  idempotencyKey: z.string().min(1, "Retryable changes need an idempotency key."),
   name: z.string().min(1).max(100).optional(),
   shortDescription: z.string().max(100).optional().nullable(),
   description: z.string().max(1024).optional().nullable(),

@@ -19,8 +19,15 @@ import { HubSummary } from "~/components/dashboard/HubSummary";
 import { HubFeaturePlaceholder } from "~/components/dashboard/HubFeaturePlaceholder";
 import { HubRoutes } from "~/components/dashboard/HubRoutes";
 import { HubSafetyView } from "~/components/dashboard/HubSafetyView";
+import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
+import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
+import { HubBadgesPanel } from "~/components/dashboard/HubBadgesPanel";
+import { HubLoggingPanel } from "~/components/dashboard/HubLoggingPanel";
+import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPanel";
+import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
+
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
 import type { HubConnectionResource } from "~/resources/connection";
 
@@ -150,7 +157,7 @@ export default function HubWorkspace() {
 
   const handleToggleModuleFlag = (flag: string, enabled: boolean) => {
     const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
-    patchMutation.mutate({ hubId, settings: updatedSettings, version: hub.version });
+    patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), settings: updatedSettings, version: hub.version });
   };
   const viewTitles: Record<string, { title: string; desc: string }> = {
     overview: {
@@ -227,7 +234,7 @@ export default function HubWorkspace() {
           hub={hub}
           canEdit={canEdit}
           saving={patchMutation.isPending}
-          onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
+          onSave={(changes) => patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), version: hub.version, ...changes })}
         />
       )}
 
@@ -258,15 +265,9 @@ export default function HubWorkspace() {
             hub={hub}
             canEdit={canEdit}
             saving={patchMutation.isPending}
-            onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
+            onSave={(changes) => patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), version: hub.version, ...changes })}
           />
-          {showUnfinishedFeatures && (
-            <HubFeaturePlaceholder
-              icon={<SafetyCertificateOutlined />}
-              title="AutoMod"
-              description="Pattern rules and safe-list controls are still managed through Discord."
-            />
-          )}
+          <HubRulesPanel hub={hub} canEdit={canEdit} />
         </div>
       )}
 
@@ -286,51 +287,41 @@ export default function HubWorkspace() {
           canEdit={canEdit}
           isOwner={isOwner}
           saving={patchMutation.isPending}
-          onSave={(changes) => patchMutation.mutate({ hubId, version: hub.version, ...changes })}
-          onDeleteHub={() => deleteHubMutation.mutate({ hubId })}
-          onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId })}
+          onSave={(changes) => patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), version: hub.version, ...changes })}
+          onDeleteHub={() => deleteHubMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID() })}
+          onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId, idempotencyKey: crypto.randomUUID() })}
           onNukeMessages={() => nukeMessagesMutation.mutate({ hubId })}
         />
       )}
 
       {activeTab === "logging" && (
-        <HubFeaturePlaceholder
-          icon={<FileTextOutlined />}
-          title="Logging"
-          description="Log channels and notification roles are still managed through Discord."
-        />
+        <div className="max-w-4xl">
+          <HubLoggingPanel hub={hub} canEdit={canEdit} />
+        </div>
       )}
 
       {activeTab === "badges" && (
-        <HubFeaturePlaceholder
-          icon={<IdcardOutlined />}
-          title="Badges"
-          description="Staff badge visibility is still managed through Discord."
-        />
+        <div className="max-w-4xl">
+          <HubBadgesPanel hub={hub} canEdit={canEdit} />
+        </div>
       )}
 
       {activeTab === "invites" && (
-        <HubFeaturePlaceholder
-          icon={<LinkOutlined />}
-          title="Invites"
-          description="Creating and revoking invite codes is still handled through Discord."
-        />
+        <div className="max-w-4xl">
+          <HubInvitesPanel hub={hub} canEdit={canEdit} />
+        </div>
       )}
 
       {activeTab === "team" && (
-        <HubFeaturePlaceholder
-          icon={<ApartmentOutlined />}
-          title="Team"
-          description="Staff membership, roles, and permissions are still managed through Discord."
-        />
+        <div className="max-w-4xl">
+          <HubTeamPanel hub={hub} canEdit={canEdit} />
+        </div>
       )}
 
       {activeTab === "announcements" && (
-        <HubFeaturePlaceholder
-          icon={<BellOutlined />}
-          title="Announcements"
-          description="Scheduled announcements are still managed through Discord."
-        />
+        <div className="max-w-4xl">
+          <HubAnnouncementsPanel hub={hub} canEdit={canEdit} />
+        </div>
       )}
     </div>
   );

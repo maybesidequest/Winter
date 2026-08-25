@@ -5,7 +5,8 @@ import type { CreateHubInput } from "../schemas/hub";
 import type { HubResource } from "../resources/hub";
 import { permissionService } from "./permission.server";
 import { irisClient } from "./iris.server";
-import { controlClient } from "./control.server";
+import { controlHubService } from "./control.server";
+
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
@@ -14,6 +15,26 @@ import {
 } from "../permissions/config";
 
 const DEFAULT_HUB_ICON_URL = "https://interchat.tech/images/interchat.png";
+
+function controlErrorMessage(error: unknown, fallback: string): string {
+  const rpcError = error as { code?: number; details?: string; message?: string };
+  switch (rpcError.code) {
+    case 3:
+      return rpcError.details || "The submitted values are invalid.";
+    case 6:
+      return "This idempotency key was already used for a different request.";
+    case 7:
+    case 16:
+      return "You do not have permission to perform this action.";
+    case 9:
+    case 10:
+      return "This item changed while you were editing it. Refresh and try again.";
+    case 14:
+      return "The control plane is temporarily unavailable. Try again shortly.";
+    default:
+      return rpcError.details || rpcError.message || fallback;
+  }
+}
 
 function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
   const record = getDefaultPermissions();
@@ -261,39 +282,23 @@ export const hubService = {
 
       let expectedVersion = input.version;
       if (!expectedVersion) {
-        const [existing] = await db
-          .select({ version: hub.version })
-          .from(hub)
-          .where(eq(hub.id, input.hubId))
-          .limit(1);
-        if (!existing) {
-          return { success: false, error: "Hub not found." };
-        }
-        expectedVersion = Number(existing.version || 1);
+        const current = await controlHubService.getHub(input.hubId, userId);
+        expectedVersion = current.version;
       }
 
-      const updated = await controlClient.patchHub(
-        userId,
-        input.hubId,
+      const updated = await controlHubService.patchHub({
+        actorId: userId,
+        hubId: input.hubId,
         spec,
         updateMask,
-        expectedVersion
-      );
+        expectedVersion,
+        idempotencyKey: input.idempotencyKey,
+      });
 
       return { success: true, hub: updated };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to update hub config via control plane", error);
-      const details = error?.details || error?.message || "Failed to update hub configuration.";
-      if (/permission/i.test(details) || error?.code === 7) {
-        return { success: false, error: "You do not have permission to modify hub settings." };
-      }
-      if (/version|aborted|conflict/i.test(details) || error?.code === 10 || error?.code === 9) {
-        return { success: false, error: "The hub settings were updated by someone else. Please refresh and try again." };
-      }
-      if (/already exists|duplicate/i.test(details) || error?.code === 6) {
-        return { success: false, error: "A hub with that name already exists." };
-      }
-      return { success: false, error: details };
+      return { success: false, error: controlErrorMessage(error, "Failed to update hub configuration.") };
     }
   },
 
@@ -301,30 +306,20 @@ export const hubService = {
    * Deletes a hub and all associated data (cascaded by FK constraints).
    * Validates that only the actual Hub Owner is authorized.
    */
-  async deleteHub(userId: string, hubId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteHub(userId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const [hubRecord] = await db
-        .select({ ownerId: hub.ownerId })
-        .from(hub)
-        .where(eq(hub.id, hubId))
-        .limit(1);
-
-      if (!hubRecord) {
-        return { success: false, error: "Hub not found." };
-      }
-
-      if (hubRecord.ownerId !== userId) {
-        return { success: false, error: "Only the hub owner can delete a hub." };
-      }
-
-      const result = await db.delete(hub).where(eq(hub.id, hubId));
-      if (result.rowCount === 0) {
-        return { success: false, error: "Hub not found." };
-      }
+      const current = await controlHubService.getHub(hubId, userId);
+      await controlHubService.deleteHub({
+        actorId: userId,
+        hubId,
+        confirmationName: current.metadata.name,
+        expectedVersion: current.version,
+        idempotencyKey,
+      });
       return { success: true };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to delete hub", error);
-      return { success: false, error: "Internal server error." };
+      return { success: false, error: controlErrorMessage(error, "Failed to delete hub.") };
     }
   },
 
@@ -332,53 +327,109 @@ export const hubService = {
    * Transfers ownership of a hub to another user.
    * Validates that only the actual Hub Owner is authorized.
    */
-  async transferOwnership(userId: string, hubId: string, newOwnerId: string): Promise<{ success: boolean; error?: string }> {
+  async transferOwnership(userId: string, hubId: string, newOwnerId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const [hubRecord] = await db
-        .select({ ownerId: hub.ownerId })
-        .from(hub)
-        .where(eq(hub.id, hubId))
-        .limit(1);
-
-      if (!hubRecord) {
-        return { success: false, error: "Hub not found." };
-      }
-
-      if (hubRecord.ownerId !== userId) {
-        return { success: false, error: "Only the hub owner can transfer ownership." };
-      }
-
-      const result = await db.update(hub)
-        .set({ ownerId: newOwnerId, updatedAt: new Date().toISOString() })
-        .where(eq(hub.id, hubId));
-
-      if (result.rowCount === 0) {
-        return { success: false, error: "Hub not found." };
-      }
-
-      await permissionService.invalidateHub(hubId);
+      const current = await controlHubService.getHub(hubId, userId);
+      await controlHubService.transferOwnership({
+        actorId: userId,
+        hubId,
+        newOwnerId,
+        expectedVersion: current.version,
+        idempotencyKey,
+      });
       return { success: true };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to transfer hub ownership", error);
-      return { success: false, error: "Internal server error." };
+      return { success: false, error: controlErrorMessage(error, "Failed to transfer hub ownership.") };
     }
   },
 
-  /**
-   * Deletes all messages in a hub (nuke).
-   */
+
   async nukeHubMessages(userId: string, hubId: string): Promise<{ success: boolean; error?: string; deletedCount?: number }> {
     try {
       const canPerform = await permissionService.canPerform(userId, hubId, "MODERATE_MESSAGES");
       if (!canPerform) {
         return { success: false, error: "You do not have permission to nuke messages." };
       }
-
       const result = await db.delete(message).where(eq(message.hubId, hubId));
       return { success: true, deletedCount: result.rowCount ?? 0 };
     } catch (error) {
       console.error("Failed to nuke hub messages", error);
       return { success: false, error: "Internal server error." };
     }
+  },
+
+
+  async listRules(userId: string, hubId: string) {
+
+    return controlHubService.listRules(hubId, userId);
+  },
+
+  async createRule(userId: string, input: { hubId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.createRule({ ...input, actorId: userId });
+  },
+
+  async updateRule(userId: string, input: { hubId: string; ruleId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.updateRule({ ...input, actorId: userId });
+  },
+
+  async deleteRule(userId: string, input: { hubId: string; ruleId: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.deleteRule({ ...input, actorId: userId });
+  },
+
+  async reorderRules(userId: string, input: { hubId: string; ruleIds: string[]; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.reorderRules({ ...input, actorId: userId });
+  },
+
+  async listInvites(userId: string, hubId: string) {
+    return controlHubService.listInvites(hubId, userId);
+  },
+
+  async createInvite(userId: string, input: { hubId: string; maxUses?: number; durationSeconds?: number; idempotencyKey: string }) {
+    return controlHubService.createInvite({ ...input, actorId: userId });
+  },
+
+  async revokeInvite(userId: string, input: { hubId: string; inviteCode: string; idempotencyKey: string }) {
+    return controlHubService.revokeInvite({ ...input, actorId: userId });
+  },
+
+  async patchBadges(userId: string, input: { hubId: string; ownerBadge?: string; managerBadge?: string; moderatorBadge?: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.patchBadges({ ...input, actorId: userId });
+  },
+
+  async patchLogConfig(userId: string, input: { hubId: string; channelId: string; eventFlags: number; notificationRoleId?: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.patchLogConfig({ ...input, actorId: userId });
+  },
+
+  async listAnnouncements(userId: string, hubId: string) {
+    return controlHubService.listAnnouncements(hubId, userId);
+  },
+
+  async createAnnouncement(userId: string, input: { hubId: string; content: string; idempotencyKey: string }) {
+    return controlHubService.createAnnouncement({ ...input, actorId: userId });
+  },
+
+  async updateAnnouncement(userId: string, input: { hubId: string; announcementId: string; content: string; idempotencyKey: string }) {
+    return controlHubService.updateAnnouncement({ ...input, actorId: userId });
+  },
+
+  async deleteAnnouncement(userId: string, input: { hubId: string; announcementId: string; idempotencyKey: string }) {
+    return controlHubService.deleteAnnouncement({ ...input, actorId: userId });
+  },
+
+  async listStaff(userId: string, hubId: string) {
+    return controlHubService.listStaff(hubId, userId);
+  },
+
+  async assignStaffRole(userId: string, input: { hubId: string; userId: string; role: string; permissionsBitmask: number; idempotencyKey: string }) {
+    return controlHubService.assignStaffRole({ ...input, actorId: userId });
+  },
+
+  async removeStaffRole(userId: string, input: { hubId: string; userId: string; idempotencyKey: string }) {
+    return controlHubService.removeStaffRole({ ...input, actorId: userId });
+  },
+
+  async lockdownHub(userId: string, input: { hubId: string; locked: boolean; reason: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.lockdownHub({ ...input, actorId: userId });
   },
 };
