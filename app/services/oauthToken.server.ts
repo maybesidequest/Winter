@@ -1,6 +1,4 @@
-import { account } from "../../drizzle/schema";
-import { db } from "../db.server";
-import { eq } from "drizzle-orm";
+import { winterStorage } from "./winterStorage.server";
 
 const encoder = new TextEncoder();
 
@@ -22,7 +20,6 @@ async function encryptionKey() {
   return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
 }
 
-
 export async function encryptToken(value: string) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await encryptionKey(), encoder.encode(value));
@@ -38,19 +35,17 @@ export async function decryptToken(value: string) {
 type DiscordTokens = { accessToken: string; refreshToken?: string; expiresIn: number; scope?: string };
 
 export async function saveDiscordTokens(userId: string, tokens: DiscordTokens) {
-  const id = `discord:${userId}`;
-  const values = {
-    id,
+  const encryptedAccessToken = await encryptToken(tokens.accessToken);
+  const encryptedRefreshToken = tokens.refreshToken ? await encryptToken(tokens.refreshToken) : null;
+  const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
+
+  await winterStorage.saveTokens({
     userId,
-    accountId: userId,
-    providerId: "discord",
     scope: tokens.scope || "identify guilds",
-    accessToken: await encryptToken(tokens.accessToken),
-    refreshToken: tokens.refreshToken ? await encryptToken(tokens.refreshToken) : null,
-    accessTokenExpiresAt: new Date(Date.now() + tokens.expiresIn * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  await db.insert(account).values(values).onConflictDoUpdate({ target: account.id, set: values });
+    accessToken: encryptedAccessToken,
+    refreshToken: encryptedRefreshToken,
+    expiresAt,
+  });
 }
 
 async function refreshDiscordToken(userId: string, encryptedRefreshToken: string) {
@@ -68,10 +63,11 @@ async function refreshDiscordToken(userId: string, encryptedRefreshToken: string
 }
 
 export async function getDiscordAccessToken(userId: string) {
-  const [record] = await db.select().from(account).where(eq(account.id, `discord:${userId}`)).limit(1);
+  const record = await winterStorage.getTokens(userId);
   if (!record?.accessToken) throw new Error("Discord authorization is unavailable. Sign in again.");
   const expiresAt = record.accessTokenExpiresAt ? new Date(record.accessTokenExpiresAt).getTime() : 0;
   if (expiresAt > Date.now() + 60_000) return decryptToken(record.accessToken);
   if (!record.refreshToken) throw new Error("Discord authorization expired. Sign in again.");
   return refreshDiscordToken(userId, record.refreshToken);
 }
+
