@@ -96,3 +96,4 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
     </DashboardSectionCard>
   );
 }
+

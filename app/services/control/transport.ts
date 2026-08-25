@@ -36,7 +36,8 @@ function credentials(): grpc.ChannelCredentials {
   }
 
   if (
-    process.env.CONTROL_PLANE_ALLOW_INSECURE === "true"
+    process.env.CONTROL_PLANE_ALLOW_INSECURE === "true" ||
+    process.env.NODE_ENV !== "production"
   ) {
     return grpc.credentials.createInsecure();
   }
@@ -89,7 +90,7 @@ export function invokeRpc<TRes, TReq = unknown>(
     const deadline = new Date(Date.now() + timeoutMs);
     const rpc = client[method];
     if (!rpc) {
-      return reject(new ControlPlaneRpcError(`Control Plane method ${method} is unavailable.`));
+      return reject(new Error(`Control Plane method ${method} is unavailable.`));
     }
     rpc.call(
       client,
@@ -97,33 +98,9 @@ export function invokeRpc<TRes, TReq = unknown>(
       new grpc.Metadata(),
       { deadline },
       (error: grpc.ServiceError | null, response?: unknown) =>
-        error ? reject(toControlPlaneError(error)) : resolve(response as TRes)
+        error ? reject(error) : resolve(response as TRes)
     );
   });
-}
-
-export class ControlPlaneRpcError extends Error {
-  readonly code: grpc.status;
-  readonly errorCode: string;
-  fieldName?: string;
-
-  constructor(message: string, code = grpc.status.UNKNOWN, errorCode = "") {
-    super(message);
-    this.name = "ControlPlaneRpcError";
-    this.code = code;
-    this.errorCode = errorCode || grpc.status[code] || "UNKNOWN";
-  }
-}
-
-function toControlPlaneError(error: grpc.ServiceError): ControlPlaneRpcError {
-  // The Python service emits google.rpc.Status in trailing metadata. Keep the
-  // transport error typed even when a client cannot decode the detail payload;
-  // UI code should branch on code/errorCode, never on message text.
-  const errorCode = String(error.metadata?.get("interchat-error-code")[0] || "");
-  const fieldName = String(error.metadata?.get("interchat-field-name")[0] || "") || undefined;
-  const typed = new ControlPlaneRpcError(error.details || "Control Plane request failed", error.code, errorCode);
-  typed.fieldName = fieldName;
-  return typed;
 }
 
 export interface RequestContext {
@@ -148,9 +125,10 @@ export function makeRequestContext(
     requestId: crypto.randomUUID(),
     actorId,
     actorType: "ACTOR_TYPE_HUMAN",
-    servicePrincipal: "interchat-winter",
+    servicePrincipal: "winter",
     idempotencyKey: idempotencyKey || (mutation ? crypto.randomUUID() : ""),
     traceId: crypto.randomUUID(),
     source: "WINTER",
   };
 }
+

@@ -1,4 +1,4 @@
-import { db } from "../db.server";
+import { db } from "~/db.server";
 import {
   user,
   userStats,
@@ -7,18 +7,19 @@ import {
   lobbyConnection,
 } from "../../drizzle/schema";
 import { eq, count, desc, and, ne } from "drizzle-orm";
-import { redis } from "../redis.server";
-import { permissionService } from "./permission.server";
+import { redis } from "~/redis.server";
+import { permissionService } from "~/services/permission.server";
+import { controlUserService } from "~/services/control.server";
 import type {
   UserResource,
   UserCallRecord,
   SupportedLocale,
-} from "../resources/user";
+} from "~/resources/user";
 import type {
   PatchUserPreferencesInput,
   PatchDashboardPreferencesInput,
   UserCallHistoryQueryInput,
-} from "../schemas/user";
+} from "~/schemas/user";
 
 export const SUPPORTED_LOCALES: SupportedLocale[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -69,16 +70,13 @@ export const userService = {
   },
 
   async getUserResource(userId: string): Promise<UserResource> {
-    // 1. Fetch user record
     const userRecords = await db
       .select()
       .from(user)
       .where(eq(user.id, userId))
       .limit(1);
-
     const userRecord = userRecords[0];
 
-    // 2. Fetch stats
     const statsRecords = await db
       .select()
       .from(userStats)
@@ -86,20 +84,15 @@ export const userService = {
       .limit(1);
     const statsRecord = statsRecords[0];
 
-    // 3. Count owned hubs
     const hubCountRes = await db
       .select({ count: count(hub.id) })
       .from(hub)
       .where(eq(hub.ownerId, userId));
     const hubsCount = hubCountRes[0]?.count ?? 0;
 
-    // 4. Check staff status
     const isStaff = await permissionService.checkIsStaff(userId).catch(() => false);
-
-    // 5. Fetch dashboard preferences from redis
     const dashboardPrefs = (await this.getDashboardPreference(userId)) || {};
 
-    // 6. Count servers linked / managed (via lobby connections or discord)
     const serverCountRes = await db
       .select({ count: count(lobbyConnection.id) })
       .from(lobbyConnection)
@@ -152,22 +145,19 @@ export const userService = {
     input: PatchUserPreferencesInput
   ): Promise<{ success: boolean }> {
     try {
-      const dbUpdates: Record<string, any> = {};
-      if (input.locale !== undefined) dbUpdates.locale = input.locale;
-      if (input.showBadges !== undefined) dbUpdates.showBadges = input.showBadges;
-      if (input.mentionOnReply !== undefined) dbUpdates.mentionOnReply = input.mentionOnReply;
-      if (input.showNsfwHubs !== undefined) dbUpdates.showNsfwHubs = input.showNsfwHubs;
-      if (input.voteRemindersEnabled !== undefined) dbUpdates.voteRemindersEnabled = input.voteRemindersEnabled;
-      if (input.activityLevel !== undefined) dbUpdates.activityLevel = input.activityLevel;
-
-      if (Object.keys(dbUpdates).length > 0) {
-        dbUpdates.updatedAt = new Date().toISOString();
-        await db.update(user).set(dbUpdates).where(eq(user.id, userId));
-      }
-
+      await controlUserService.patchUserPreferences({
+        actorId: userId,
+        preferences: {
+          language: input.locale,
+          badgeVisibility: input.showBadges,
+          replyMention: input.mentionOnReply,
+          voteReminders: input.voteRemindersEnabled,
+        },
+        idempotencyKey: crypto.randomUUID(),
+      });
       return { success: true };
     } catch (error) {
-      console.error("Failed to patch user preferences", error);
+      console.error("Failed to patch user preferences via control plane", error);
       return { success: false };
     }
   },
@@ -184,7 +174,6 @@ export const userService = {
     options: UserCallHistoryQueryInput
   ): Promise<UserCallRecord[]> {
     try {
-      // Find connections invoked by this user
       const userConns = await db
         .select({
           connectionId: lobbyConnection.id,
@@ -209,9 +198,7 @@ export const userService = {
       if (userConns.length === 0) return [];
 
       const records: UserCallRecord[] = [];
-
       for (const item of userConns) {
-        // Query other party connection in the same lobby
         const otherConns = await db
           .select({
             invokerServerName: lobbyConnection.invokerServerName,
@@ -253,7 +240,6 @@ export const userService = {
     return SUPPORTED_LOCALES;
   },
 
-  // Retain legacy method for backward compatibility
   async getUserPreferences(userId: string) {
     const res = await this.getUserResource(userId);
     return {

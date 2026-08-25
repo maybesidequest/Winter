@@ -1,18 +1,10 @@
-import { db } from "../db.server";
+import { db } from "~/db.server";
 import { connection, serverData } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
-import type { HubConnectionResource } from "../resources/connection";
-import { discordService } from "./discord.server";
-import { permissionService } from "./permission.server";
-
-import { serverService } from "./server.server";
-
-const VALID_WEBHOOK_PREFIXES = [
-  "https://discord.com/api/webhooks/",
-  "https://discordapp.com/api/webhooks/",
-  "https://ptb.discord.com/api/webhooks/",
-  "https://canary.discord.com/api/webhooks/",
-];
+import { eq } from "drizzle-orm";
+import type { HubConnectionResource } from "~/resources/connection";
+import { discordService } from "~/services/discord.server";
+import { permissionService } from "~/services/permission.server";
+import { controlConnectionService } from "~/services/control.server";
 
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
@@ -58,42 +50,35 @@ export const connectionService = {
     return connectionsWithChannels;
   },
 
-  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean): Promise<{ success: boolean; error?: string }> {
-    await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
+  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const result = await db
-        .update(connection)
-        .set({
-          connected: enabled,
-          pausedByBot: !enabled,
-          lastActive: new Date().toISOString(),
-        })
-        .where(and(eq(connection.id, connectionId), eq(connection.hubId, hubId)));
-
-      if (result.rowCount === 0) {
-        return { success: false, error: "Connection not found." };
-      }
+      await controlConnectionService.toggleConnection({
+        connectionId,
+        enabled,
+        expectedVersion: 1,
+        actorId: userId,
+        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+      });
       return { success: true };
-    } catch (error) {
-      console.error("Failed to toggle connection", error);
-      return { success: false, error: "Internal server error." };
+    } catch (error: unknown) {
+      console.error("Failed to toggle connection via control plane", error);
+      const msg = error instanceof Error ? error.message : "Failed to toggle connection.";
+      return { success: false, error: msg };
     }
   },
 
-  async disconnectConnection(userId: string, connectionId: string, hubId: string): Promise<{ success: boolean; error?: string }> {
-    await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
+  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const result = await db
-        .delete(connection)
-        .where(and(eq(connection.id, connectionId), eq(connection.hubId, hubId)));
-
-      if (result.rowCount === 0) {
-        return { success: false, error: "Connection not found." };
-      }
+      await controlConnectionService.disconnectChannel({
+        connectionId,
+        actorId: userId,
+        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+      });
       return { success: true };
-    } catch (error) {
-      console.error("Failed to disconnect connection", error);
-      return { success: false, error: "Internal server error." };
+    } catch (error: unknown) {
+      console.error("Failed to disconnect connection via control plane", error);
+      const msg = error instanceof Error ? error.message : "Failed to disconnect connection.";
+      return { success: false, error: msg };
     }
   },
 
@@ -102,42 +87,25 @@ export const connectionService = {
     hubId: string,
     channelId: string,
     serverId: string,
-    webhookUrl: string,
-    parentId?: string
+    inviteCode?: string,
+    customName?: string,
+    idempotencyKey?: string
   ): Promise<{ success: boolean; hubId?: string; error?: string }> {
-    // 1. Assert Hub permission
-    await permissionService.assertCanPerform(userId, hubId, "MANAGE_CONNECTIONS");
-
-    // 2. Assert Server Manage permission to prevent cross-server BOLA
-    await serverService.get(userId, serverId);
-
-    // 3. Validate Webhook URL integrity
-    const isDiscordWebhook = VALID_WEBHOOK_PREFIXES.some((prefix) => webhookUrl.startsWith(prefix));
-    if (!isDiscordWebhook) {
-      return { success: false, error: "Invalid Discord webhook URL." };
-    }
-
-    const id = crypto.randomUUID();
     try {
-      await db.insert(connection).values({
-        id,
+      await controlConnectionService.connectChannel({
+        actorId: userId,
         hubId,
         channelId,
         serverId,
-        webhookUrl,
-        parentId: parentId || null,
-        connected: true,
-        pausedByBot: false,
+        inviteCode,
+        customName,
+        idempotencyKey: idempotencyKey || crypto.randomUUID(),
       });
       return { success: true, hubId };
-    } catch (error) {
-      const pgErr: any = (error as any)?.cause ?? error;
-      const msg: string = pgErr?.message ?? (error instanceof Error ? error.message : "Failed to create connection.");
-      if (/duplicate key/i.test(msg)) {
-        return { success: false, error: "This channel is already connected." };
-      }
+    } catch (error: unknown) {
+      console.error("Failed to create connection via control plane", error);
+      const msg = error instanceof Error ? error.message : "Failed to create connection.";
       return { success: false, error: msg };
     }
   },
 };
-

@@ -14,7 +14,7 @@ interface HubConnectModalProps {
 export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
   const [selectedServerId, setSelectedServerId] = useState<string | undefined>();
   const [selectedChannelId, setSelectedChannelId] = useState<string | undefined>();
-  const [webhookUrl, setWebhookUrl] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const queryClient = useQueryClient();
 
   // Load manageable servers
@@ -49,21 +49,21 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
   const handleClose = () => {
     setSelectedServerId(undefined);
     setSelectedChannelId(undefined);
-    setWebhookUrl("");
+    setInviteCode("");
     onCancel();
   };
 
   const handleConnect = () => {
-    if (!hub || !selectedServerId || !selectedChannelId || !webhookUrl.trim()) return;
+    if (!hub || !selectedServerId || !selectedChannelId) return;
     connectMutation.mutate({
       hubId: hub.metadata.id,
       serverId: selectedServerId,
       channelId: selectedChannelId,
-      webhookUrl: webhookUrl.trim(),
+      inviteCode: inviteCode.trim() || undefined,
     });
   };
 
-  const isFormValid = !!selectedServerId && !!selectedChannelId && !!webhookUrl.trim();
+  const isFormValid = !!selectedServerId && !!selectedChannelId;
 
   return (
     <Modal
@@ -92,7 +92,7 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
     >
       <div className="flex flex-col gap-4 py-4 text-xs">
         <p className="text-white/60">
-          Bridge a channel from one of your Discord servers into this public hub. Messages sent in your channel will be broadcasted to all connected servers.
+          Bridge a channel from one of your Discord servers into this hub. Messages sent in your channel will be broadcasted to all connected servers.
         </p>
 
         {/* Server Select */}
@@ -131,20 +131,19 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
           />
         </div>
 
-        {/* Webhook URL Input */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-white/80 font-semibold">3. Discord Webhook URL</label>
-          <input
-            type="url"
-            value={webhookUrl}
-            onChange={(e) => setWebhookUrl(e.target.value)}
-            placeholder="https://discord.com/api/webhooks/..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 focus:border-violet-500/50 text-white text-xs outline-none transition-colors"
-          />
-          <span className="text-[10px] text-white/40">
-            Create a webhook in your Discord channel settings (Integrations &gt; Webhooks) and paste the URL here.
-          </span>
-        </div>
+        {/* Invite Code (Optional) */}
+        {hub?.spec.visibility === "PRIVATE" && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-white/80 font-semibold">3. Invite Code (Required for Private Hubs)</label>
+            <input
+              type="text"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              placeholder="e.g. HUB-INVITE-CODE"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 focus:border-violet-500/50 text-white text-xs outline-none transition-colors"
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08] mt-2">

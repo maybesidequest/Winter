@@ -161,3 +161,4 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     </DashboardSectionCard>
   );
 }
+

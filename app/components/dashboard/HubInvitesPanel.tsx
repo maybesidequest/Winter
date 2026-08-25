@@ -165,3 +165,4 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
     </DashboardSectionCard>
   );
 }
+

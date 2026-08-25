@@ -1,15 +1,16 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { connection, hub, serverBlocklist, serverData, user } from "../../drizzle/schema";
-import { db } from "../db.server";
-import { redis } from "../redis.server";
+import { connection, hub, serverBlocklist, serverData } from "../../drizzle/schema";
+import { db } from "~/db.server";
+import { redis } from "~/redis.server";
 import type {
   DiscordChannelResource,
   ServerBlockResource,
   ServerBridgeResource,
   ServerResource,
-} from "../resources/server";
-import { getDiscordAccessToken } from "./oauthToken.server";
-import type { AddBlockInput, PatchCallConfigInput, RemoveBlockInput } from "../schemas/server";
+} from "~/resources/server";
+import { getDiscordAccessToken } from "~/services/oauthToken.server";
+import type { AddBlockInput, PatchCallConfigInput, RemoveBlockInput } from "~/schemas/server";
+import { controlServerService } from "~/services/control.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
@@ -39,7 +40,7 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
       try {
         return JSON.parse(cached) as DiscordGuild[];
       } catch {
-        // invalid JSON in cache, continue to fetch
+        // invalid JSON in cache
       }
     }
   }
@@ -136,28 +137,18 @@ export const serverService = {
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
     const guild = await assertManageable(userId, input.serverId, true);
-    const [existing] = await db.select().from(serverData).where(eq(serverData.id, input.serverId)).limit(1);
-    if (!existing) throw new Error("Install InterChat in this server before changing Call settings.");
-
-    // Validate that provided lobbyChannelIds legitimately belong to this server
-    let validatedChannelIds = input.lobbyChannelIds;
-    if (validatedChannelIds.length > 0) {
-      const validChannels = await serverService.channels(userId, input.serverId);
-      const validChannelSet = new Set(validChannels.map((c) => c.id));
-      validatedChannelIds = validatedChannelIds.filter((id) => validChannelSet.has(id));
-    }
-
-    const { serverId, lobbyChannelIds, ...settings } = input;
-    await db
-      .update(serverData)
-      .set({
-        ...settings,
-        lobbyChannelIds: validatedChannelIds,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(serverData.id, serverId));
-    await redis.del(`server:settings:${serverId}`);
-    await redis.incr(`server:settings:version:${serverId}`);
+    await controlServerService.patchServer({
+      serverId: input.serverId,
+      spec: {
+        callPing: input.pingOnMatch,
+        callRequeue: input.autoRequeueOnSkip,
+        callNsfwFilter: input.filterNsfw,
+      },
+      updateMask: ["call_ping", "call_requeue", "call_nsfw_filter"],
+      expectedVersion: 1,
+      actorId: userId,
+      idempotencyKey: crypto.randomUUID(),
+    });
     return { success: true, serverName: guild.name };
   },
 
@@ -211,47 +202,26 @@ export const serverService = {
 
   async addBlock(userId: string, input: AddBlockInput) {
     await assertManageable(userId, input.serverId, true);
-    const [existingServer] = await db.select().from(serverData).where(eq(serverData.id, input.serverId)).limit(1);
-    if (!existingServer) throw new Error("Server not found.");
-
-    if (input.targetType === "server" && input.targetId === input.serverId) {
-      throw new Error("You cannot block your own server.");
-    }
-    if (input.targetType === "user" && input.targetId === userId) {
-      throw new Error("You cannot block yourself.");
-    }
-
-    if (input.targetType === "user") {
-      await db
-        .insert(user)
-        .values({ id: input.targetId, name: `User ${input.targetId}` })
-        .onConflictDoNothing();
-    } else {
-      await db
-        .insert(serverData)
-        .values({ id: input.targetId, name: `Server ${input.targetId}` })
-        .onConflictDoNothing();
-    }
-
-    const id = crypto.randomUUID();
-    await db.insert(serverBlocklist).values({
-      id,
+    const targetType = input.targetType === "user" ? "BLOCK_TARGET_TYPE_USER" : "BLOCK_TARGET_TYPE_SERVER";
+    const res = await controlServerService.addBlock({
       serverId: input.serverId,
-      blockedUserId: input.targetType === "user" ? input.targetId : null,
-      blockedServerId: input.targetType === "server" ? input.targetId : null,
-      reason: input.reason || null,
+      targetId: input.targetId,
+      targetType,
+      reason: input.reason || "",
+      actorId: userId,
+      idempotencyKey: crypto.randomUUID(),
     });
-
-    return { success: true, id };
+    return { success: true, id: res.id };
   },
 
   async removeBlock(userId: string, input: RemoveBlockInput) {
     await assertManageable(userId, input.serverId, true);
-    await db
-      .delete(serverBlocklist)
-      .where(and(eq(serverBlocklist.id, input.blockId), eq(serverBlocklist.serverId, input.serverId)));
+    await controlServerService.removeBlock({
+      serverId: input.serverId,
+      blockId: input.blockId,
+      actorId: userId,
+      idempotencyKey: crypto.randomUUID(),
+    });
     return { success: true };
   },
 };
-
-

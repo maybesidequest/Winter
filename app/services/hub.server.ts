@@ -1,18 +1,18 @@
-import { db } from "../db.server";
-import { hub, message, authRole, authUserAssignment } from "../../drizzle/schema";
+import { db } from "~/db.server";
+import { hub, authRole, authUserAssignment } from "../../drizzle/schema";
 import { eq, or, and, inArray } from "drizzle-orm";
-import type { CreateHubInput } from "../schemas/hub";
-import type { HubResource } from "../resources/hub";
-import { permissionService } from "./permission.server";
-import { irisClient } from "./iris.server";
-import { controlHubService } from "./control.server";
-
+import type { CreateHubInput, PatchHubConfigInput } from "~/schemas/hub";
+import type { HubResource } from "~/resources/hub";
+import { permissionService } from "~/services/permission.server";
+import { irisClient } from "~/services/iris.server";
+import { controlHubService } from "~/services/control.server";
+import { hubFeaturesService } from "~/services/hubFeatures.server";
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
   getDefaultPermissions,
   type PermissionAction,
-} from "../permissions/config";
+} from "~/permissions/config";
 
 const DEFAULT_HUB_ICON_URL = "https://interchat.tech/images/interchat.png";
 
@@ -46,13 +46,10 @@ function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
 }
 
 export const hubService = {
-  /**
-   * Retrieves all hubs where the user is owner or has an assignment via Iris.
-   * Eliminates old hubModerator references and batch-fetches roles to avoid N+1 queries.
-   */
+  ...hubFeaturesService,
+
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const authorizedHubIds = await irisClient.getAuthorizedHubs(userId);
-
     const conditions = [eq(hub.ownerId, userId)];
     if (authorizedHubIds.length > 0) {
       conditions.push(inArray(hub.id, authorizedHubIds));
@@ -60,7 +57,7 @@ export const hubService = {
 
     const rows = await db
       .select({
-        hub: hub,
+        hub,
         roleId: authRole.id,
         roleName: authRole.name,
         permissions: authRole.permissions,
@@ -68,10 +65,7 @@ export const hubService = {
         assignmentId: authUserAssignment.id,
       })
       .from(hub)
-      .leftJoin(
-        authRole,
-        eq(authRole.hubId, hub.id)
-      )
+      .leftJoin(authRole, eq(authRole.hubId, hub.id))
       .leftJoin(
         authUserAssignment,
         and(
@@ -82,23 +76,15 @@ export const hubService = {
       .where(or(...conditions));
 
     const hubGroups = new Map<string, {
-      hubRecord: typeof hub.$inferSelect,
-      assignments: Array<{
-        roleName: string;
-        permissions: number;
-        position: number;
-      }>
+      hubRecord: typeof hub.$inferSelect;
+      assignments: Array<{ roleName: string; permissions: number; position: number }>;
     }>();
 
     for (const row of rows) {
       const hubId = row.hub.id;
       if (!hubGroups.has(hubId)) {
-        hubGroups.set(hubId, {
-          hubRecord: row.hub,
-          assignments: [],
-        });
+        hubGroups.set(hubId, { hubRecord: row.hub, assignments: [] });
       }
-      
       if (row.assignmentId && row.roleName !== null && row.permissions !== null) {
         hubGroups.get(hubId)!.assignments.push({
           roleName: row.roleName,
@@ -108,7 +94,7 @@ export const hubService = {
       }
     }
 
-    const resources: HubResource[] = Array.from(hubGroups.values()).map(({ hubRecord, assignments }) => {
+    return Array.from(hubGroups.values()).map(({ hubRecord, assignments }) => {
       const isOwner = hubRecord.ownerId === userId;
       let effectiveRole: string;
       let permissions: Record<PermissionAction, boolean>;
@@ -125,7 +111,6 @@ export const hubService = {
           bits |= ass.permissions;
         }
         permissions = bitsToRecord(bits);
-
         const sorted = [...assignments].sort((a, b) => b.position - a.position);
         effectiveRole = sorted[0].roleName;
       }
@@ -168,117 +153,50 @@ export const hubService = {
         version: Number(hubRecord.version ?? 1),
       };
     });
-
-    return resources;
   },
 
-  /**
-   * Creates a new hub for a user.
-   */
-  async createHub(userId: string, input: CreateHubInput): Promise<{ success: boolean; hubId?: string; error?: string }> {
-    const id = crypto.randomUUID();
-
+  async createHub(userId: string, input: CreateHubInput, idempotencyKey?: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
     try {
-      await db.insert(hub).values({
-        id,
+      const res = await controlHubService.createHub({
+        actorId: userId,
         name: input.name,
-        description: input.description || input.shortDescription,
-        language: input.language,
-        region: input.region,
-        ownerId: userId,
-        iconUrl: input.iconUrl?.trim() || DEFAULT_HUB_ICON_URL,
-        bannerUrl: input.bannerUrl?.trim() || null,
+        description: input.description || input.shortDescription || input.name,
         shortDescription: input.shortDescription,
         visibility: input.visibility,
-        welcomeMessage: input.welcomeMessage || null,
-        activityLevel: "LOW",
-        locked: false,
-        nsfw: false,
-        verified: false,
-        partnered: false,
-        featured: false,
-        settings: 0,
-        appealCooldownHours: 168,
-        weeklyMessageCount: 0,
-        rules: [],
+        iconUrl: input.iconUrl?.trim() || DEFAULT_HUB_ICON_URL,
+        bannerUrl: input.bannerUrl?.trim() || undefined,
+        welcomeMessage: input.welcomeMessage || undefined,
+        language: input.language,
+        region: input.region,
+        idempotencyKey: idempotencyKey || crypto.randomUUID(),
       });
-      return { success: true, hubId: id };
-    } catch (error) {
-      const pgErr: any = (error as any)?.cause ?? error;
-      const msg: string = pgErr?.message ?? (error instanceof Error ? error.message : "Failed to create hub.");
-
-      if (/duplicate key|Hub_name_key/i.test(msg)) {
-        return { success: false, error: "A hub with that name already exists." };
-      }
-
-      return { success: false, error: msg };
+      return { success: true, hubId: res.metadata.id };
+    } catch (error: unknown) {
+      console.error("Failed to create hub via control plane", error);
+      return { success: false, error: controlErrorMessage(error, "Failed to create hub.") };
     }
   },
 
-  /**
-   * Updates specific configuration fields of a hub through the Control Plane.
-   */
-  async updateHubConfig(userId: string, input: import("../schemas/hub").PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
+  async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string }> {
     try {
       const updateMask: string[] = [];
       const spec: any = {};
 
-      if (input.name !== undefined) {
-        spec.name = input.name;
-        updateMask.push("name");
-      }
-      if (input.shortDescription !== undefined) {
-        spec.shortDescription = input.shortDescription;
-        updateMask.push("short_description");
-      }
-      if (input.description !== undefined) {
-        spec.description = input.description;
-        updateMask.push("description");
-      }
-      if (input.iconUrl !== undefined) {
-        spec.iconUrl = input.iconUrl ? input.iconUrl.trim() : "";
-        updateMask.push("icon_url");
-      }
-      if (input.bannerUrl !== undefined) {
-        spec.bannerUrl = input.bannerUrl ? input.bannerUrl.trim() : "";
-        updateMask.push("banner_url");
-      }
-      if (input.welcomeMessage !== undefined) {
-        spec.welcomeMessage = input.welcomeMessage ? input.welcomeMessage.trim() : "";
-        updateMask.push("welcome_message");
-      }
-      if (input.language !== undefined) {
-        spec.language = input.language;
-        updateMask.push("language");
-      }
-      if (input.region !== undefined) {
-        spec.region = input.region;
-        updateMask.push("region");
-      }
-      if (input.visibility !== undefined) {
-        spec.visibility = input.visibility;
-        updateMask.push("visibility");
-      }
-      if (input.nsfw !== undefined) {
-        spec.nsfw = input.nsfw;
-        updateMask.push("nsfw");
-      }
-      if (input.locked !== undefined) {
-        spec.locked = input.locked;
-        updateMask.push("locked");
-      }
-      if (input.appealCooldownHours !== undefined) {
-        spec.appealCooldownHours = input.appealCooldownHours;
-        updateMask.push("appeal_cooldown_hours");
-      }
-      if (input.settings !== undefined) {
-        spec.settings = input.settings;
-        updateMask.push("settings");
-      }
+      if (input.name !== undefined) { spec.name = input.name; updateMask.push("name"); }
+      if (input.shortDescription !== undefined) { spec.shortDescription = input.shortDescription; updateMask.push("short_description"); }
+      if (input.description !== undefined) { spec.description = input.description; updateMask.push("description"); }
+      if (input.iconUrl !== undefined) { spec.iconUrl = input.iconUrl ? input.iconUrl.trim() : ""; updateMask.push("icon_url"); }
+      if (input.bannerUrl !== undefined) { spec.bannerUrl = input.bannerUrl ? input.bannerUrl.trim() : ""; updateMask.push("banner_url"); }
+      if (input.welcomeMessage !== undefined) { spec.welcomeMessage = input.welcomeMessage ? input.welcomeMessage.trim() : ""; updateMask.push("welcome_message"); }
+      if (input.language !== undefined) { spec.language = input.language; updateMask.push("language"); }
+      if (input.region !== undefined) { spec.region = input.region; updateMask.push("region"); }
+      if (input.visibility !== undefined) { spec.visibility = input.visibility; updateMask.push("visibility"); }
+      if (input.nsfw !== undefined) { spec.nsfw = input.nsfw; updateMask.push("nsfw"); }
+      if (input.locked !== undefined) { spec.locked = input.locked; updateMask.push("locked"); }
+      if (input.appealCooldownHours !== undefined) { spec.appealCooldownHours = input.appealCooldownHours; updateMask.push("appeal_cooldown_hours"); }
+      if (input.settings !== undefined) { spec.settings = input.settings; updateMask.push("settings"); }
 
-      if (updateMask.length === 0) {
-        return { success: true };
-      }
+      if (updateMask.length === 0) return { success: true };
 
       let expectedVersion = input.version;
       if (!expectedVersion) {
@@ -302,10 +220,6 @@ export const hubService = {
     }
   },
 
-  /**
-   * Deletes a hub and all associated data (cascaded by FK constraints).
-   * Validates that only the actual Hub Owner is authorized.
-   */
   async deleteHub(userId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
       const current = await controlHubService.getHub(hubId, userId);
@@ -323,10 +237,6 @@ export const hubService = {
     }
   },
 
-  /**
-   * Transfers ownership of a hub to another user.
-   * Validates that only the actual Hub Owner is authorized.
-   */
   async transferOwnership(userId: string, hubId: string, newOwnerId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
       const current = await controlHubService.getHub(hubId, userId);
@@ -342,91 +252,6 @@ export const hubService = {
       console.error("Failed to transfer hub ownership", error);
       return { success: false, error: controlErrorMessage(error, "Failed to transfer hub ownership.") };
     }
-  },
-
-
-  async nukeHubMessages(userId: string, hubId: string): Promise<{ success: boolean; error?: string; deletedCount?: number }> {
-    try {
-      const canPerform = await permissionService.canPerform(userId, hubId, "MODERATE_MESSAGES");
-      if (!canPerform) {
-        return { success: false, error: "You do not have permission to nuke messages." };
-      }
-      const result = await db.delete(message).where(eq(message.hubId, hubId));
-      return { success: true, deletedCount: result.rowCount ?? 0 };
-    } catch (error) {
-      console.error("Failed to nuke hub messages", error);
-      return { success: false, error: "Internal server error." };
-    }
-  },
-
-
-  async listRules(userId: string, hubId: string) {
-
-    return controlHubService.listRules(hubId, userId);
-  },
-
-  async createRule(userId: string, input: { hubId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.createRule({ ...input, actorId: userId });
-  },
-
-  async updateRule(userId: string, input: { hubId: string; ruleId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.updateRule({ ...input, actorId: userId });
-  },
-
-  async deleteRule(userId: string, input: { hubId: string; ruleId: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.deleteRule({ ...input, actorId: userId });
-  },
-
-  async reorderRules(userId: string, input: { hubId: string; ruleIds: string[]; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.reorderRules({ ...input, actorId: userId });
-  },
-
-  async listInvites(userId: string, hubId: string) {
-    return controlHubService.listInvites(hubId, userId);
-  },
-
-  async createInvite(userId: string, input: { hubId: string; maxUses?: number; durationSeconds?: number; idempotencyKey: string }) {
-    return controlHubService.createInvite({ ...input, actorId: userId });
-  },
-
-  async revokeInvite(userId: string, input: { hubId: string; inviteCode: string; idempotencyKey: string }) {
-    return controlHubService.revokeInvite({ ...input, actorId: userId });
-  },
-
-  async patchBadges(userId: string, input: { hubId: string; ownerBadge?: string; managerBadge?: string; moderatorBadge?: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.patchBadges({ ...input, actorId: userId });
-  },
-
-  async patchLogConfig(userId: string, input: { hubId: string; channelId: string; eventFlags: number; notificationRoleId?: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.patchLogConfig({ ...input, actorId: userId });
-  },
-
-  async listAnnouncements(userId: string, hubId: string) {
-    return controlHubService.listAnnouncements(hubId, userId);
-  },
-
-  async createAnnouncement(userId: string, input: { hubId: string; content: string; idempotencyKey: string }) {
-    return controlHubService.createAnnouncement({ ...input, actorId: userId });
-  },
-
-  async updateAnnouncement(userId: string, input: { hubId: string; announcementId: string; content: string; idempotencyKey: string }) {
-    return controlHubService.updateAnnouncement({ ...input, actorId: userId });
-  },
-
-  async deleteAnnouncement(userId: string, input: { hubId: string; announcementId: string; idempotencyKey: string }) {
-    return controlHubService.deleteAnnouncement({ ...input, actorId: userId });
-  },
-
-  async listStaff(userId: string, hubId: string) {
-    return controlHubService.listStaff(hubId, userId);
-  },
-
-  async assignStaffRole(userId: string, input: { hubId: string; userId: string; role: string; permissionsBitmask: number; idempotencyKey: string }) {
-    return controlHubService.assignStaffRole({ ...input, actorId: userId });
-  },
-
-  async removeStaffRole(userId: string, input: { hubId: string; userId: string; idempotencyKey: string }) {
-    return controlHubService.removeStaffRole({ ...input, actorId: userId });
   },
 
   async lockdownHub(userId: string, input: { hubId: string; locked: boolean; reason: string; expectedVersion: number; idempotencyKey: string }) {

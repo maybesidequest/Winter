@@ -35,9 +35,10 @@ export const quickConnectInputSchema = z.object({
   hubId: z.string().min(1),
   serverId: z.string().min(1),
   channelId: z.string().min(1),
-  webhookUrl: z.string().url("Must be a valid Discord Webhook URL"),
-  parentId: z.string().optional(),
+  inviteCode: z.string().optional(),
+  customName: z.string().optional(),
 });
 
 export type QuickConnectInput = z.infer<typeof quickConnectInputSchema>;
+
 

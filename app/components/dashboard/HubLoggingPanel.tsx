@@ -118,3 +118,4 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
     </DashboardSectionCard>
   );
 }
+

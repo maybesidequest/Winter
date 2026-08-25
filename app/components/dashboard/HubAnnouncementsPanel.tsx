@@ -174,3 +174,4 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
     </DashboardSectionCard>
   );
 }
+

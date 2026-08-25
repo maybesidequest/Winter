@@ -68,3 +68,121 @@ export const patchHubConfigSchema = z.object({
 });
 
 export type PatchHubConfigInput = z.infer<typeof patchHubConfigSchema>;
+
+export const createHubRuleSchema = z.object({
+  hubId: z.string(),
+  title: z.string().min(1, "Title is required").max(100),
+  description: z.string().min(1, "Description is required").max(1000),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const updateHubRuleSchema = z.object({
+  hubId: z.string(),
+  ruleId: z.string(),
+  title: z.string().min(1).max(100),
+  description: z.string().min(1).max(1000),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const reorderHubRulesSchema = z.object({
+  hubId: z.string(),
+  ruleIds: z.array(z.string()),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const deleteHubRuleSchema = z.object({
+  hubId: z.string(),
+  ruleId: z.string(),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const createHubInviteSchema = z.object({
+  hubId: z.string(),
+  maxUses: z.number().int().min(0).default(0),
+  durationSeconds: z.number().int().min(0).default(0),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const revokeHubInviteSchema = z.object({
+  hubId: z.string(),
+  inviteCode: z.string().min(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const createHubAnnouncementSchema = z.object({
+  hubId: z.string(),
+  content: z.string().min(1, "Content is required").max(2000),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const updateHubAnnouncementSchema = z.object({
+  hubId: z.string(),
+  announcementId: z.string(),
+  content: z.string().min(1, "Content is required").max(2000),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const deleteHubAnnouncementSchema = z.object({
+  hubId: z.string(),
+  announcementId: z.string(),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const patchHubBadgesSchema = z.object({
+  hubId: z.string(),
+  ownerBadge: z.string().max(32).optional().nullable(),
+  managerBadge: z.string().max(32).optional().nullable(),
+  moderatorBadge: z.string().max(32).optional().nullable(),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const patchHubLogConfigSchema = z.object({
+  hubId: z.string(),
+  channelId: z.string().min(1, "Channel ID is required"),
+  eventFlags: z.number().int().min(0).default(0),
+  notificationRoleId: z.string().optional().nullable(),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const assignHubStaffSchema = z.object({
+  hubId: z.string(),
+  userId: z.string().min(1),
+  role: z.string().min(1),
+  permissionsBitmask: z.number().int().default(0),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const removeHubStaffSchema = z.object({
+  hubId: z.string(),
+  userId: z.string().min(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const lockdownHubSchema = z.object({
+  hubId: z.string(),
+  locked: z.boolean(),
+  reason: z.string().max(500).default(""),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const transferHubOwnershipSchema = z.object({
+  hubId: z.string(),
+  newOwnerId: z.string().min(1),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const deleteHubSchema = z.object({
+  hubId: z.string(),
+  confirmationName: z.string().min(1),
+  expectedVersion: z.number().int().default(1),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+

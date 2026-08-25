@@ -52,7 +52,38 @@ export interface HubStaffMember {
 }
 
 export const hubService = {
+  async createHub(input: {
+    name: string;
+    description: string;
+    shortDescription?: string | null;
+    visibility?: "PUBLIC" | "PRIVATE" | "UNLISTED";
+    iconUrl?: string | null;
+    bannerUrl?: string | null;
+    welcomeMessage?: string | null;
+    language?: string | null;
+    region?: string | null;
+    actorId: string;
+    idempotencyKey: string;
+  }): Promise<HubResource> {
+    const clients = getServiceClients();
+    return invokeRpc(clients.hubClient, "CreateHub", {
+      context: makeRequestContext(input.actorId, true, input.idempotencyKey),
+      spec: {
+        name: input.name,
+        description: input.description,
+        shortDescription: input.shortDescription || null,
+        visibility: input.visibility || "PUBLIC",
+        iconUrl: input.iconUrl || null,
+        bannerUrl: input.bannerUrl || null,
+        welcomeMessage: input.welcomeMessage || null,
+        language: input.language || "en",
+        region: input.region || "us",
+      },
+    });
+  },
+
   async getHub(hubId: string, actorId: string): Promise<HubResource> {
+
     const clients = getServiceClients();
     return invokeRpc(clients.hubClient, "GetHub", {
       context: makeRequestContext(actorId),
@@ -385,3 +416,4 @@ export const hubService = {
     });
   },
 };
+

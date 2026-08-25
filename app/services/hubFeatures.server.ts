@@ -1,0 +1,87 @@
+import { controlHubService } from "~/services/control.server";
+
+export const hubFeaturesService = {
+  async listRules(userId: string, hubId: string) {
+    return controlHubService.listRules(hubId, userId);
+  },
+
+  async createRule(userId: string, input: { hubId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.createRule({ ...input, actorId: userId });
+  },
+
+  async updateRule(userId: string, input: { hubId: string; ruleId: string; title: string; description: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.updateRule({ ...input, actorId: userId });
+  },
+
+  async deleteRule(userId: string, input: { hubId: string; ruleId: string; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.deleteRule({ ...input, actorId: userId });
+  },
+
+  async reorderRules(userId: string, input: { hubId: string; ruleIds: string[]; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.reorderRules({ ...input, actorId: userId });
+  },
+
+  async listInvites(userId: string, hubId: string) {
+    return controlHubService.listInvites(hubId, userId);
+  },
+
+  async createInvite(userId: string, input: { hubId: string; maxUses?: number; durationSeconds?: number; idempotencyKey: string }) {
+    return controlHubService.createInvite({ ...input, actorId: userId });
+  },
+
+  async revokeInvite(userId: string, input: { hubId: string; inviteCode: string; idempotencyKey: string }) {
+    return controlHubService.revokeInvite({ ...input, actorId: userId });
+  },
+
+  async patchBadges(userId: string, input: { hubId: string; ownerBadge?: string | null; managerBadge?: string | null; moderatorBadge?: string | null; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.patchBadges({
+      hubId: input.hubId,
+      ownerBadge: input.ownerBadge ?? undefined,
+      managerBadge: input.managerBadge ?? undefined,
+      moderatorBadge: input.moderatorBadge ?? undefined,
+      expectedVersion: input.expectedVersion,
+      idempotencyKey: input.idempotencyKey,
+      actorId: userId,
+    });
+  },
+
+  async patchLogConfig(userId: string, input: { hubId: string; channelId: string; eventFlags: number; notificationRoleId?: string | null; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.patchLogConfig({
+      hubId: input.hubId,
+      channelId: input.channelId,
+      eventFlags: input.eventFlags,
+      notificationRoleId: input.notificationRoleId ?? undefined,
+      expectedVersion: input.expectedVersion,
+      idempotencyKey: input.idempotencyKey,
+      actorId: userId,
+    });
+  },
+
+  async listAnnouncements(userId: string, hubId: string) {
+    return controlHubService.listAnnouncements(hubId, userId);
+  },
+
+  async createAnnouncement(userId: string, input: { hubId: string; content: string; idempotencyKey: string }) {
+    return controlHubService.createAnnouncement({ ...input, actorId: userId });
+  },
+
+  async updateAnnouncement(userId: string, input: { hubId: string; announcementId: string; content: string; idempotencyKey: string }) {
+    return controlHubService.updateAnnouncement({ ...input, actorId: userId });
+  },
+
+  async deleteAnnouncement(userId: string, input: { hubId: string; announcementId: string; idempotencyKey: string }) {
+    return controlHubService.deleteAnnouncement({ ...input, actorId: userId });
+  },
+
+  async listStaff(userId: string, hubId: string) {
+    return controlHubService.listStaff(hubId, userId);
+  },
+
+  async assignStaffRole(userId: string, input: { hubId: string; userId: string; role: string; permissionsBitmask: number; idempotencyKey: string }) {
+    return controlHubService.assignStaffRole({ ...input, actorId: userId });
+  },
+
+  async removeStaffRole(userId: string, input: { hubId: string; userId: string; idempotencyKey: string }) {
+    return controlHubService.removeStaffRole({ ...input, actorId: userId });
+  },
+};

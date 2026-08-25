@@ -1,4 +1,4 @@
-import { db } from "../db.server";
+import { db } from "~/db.server";
 import {
   hub,
   hubActivityMetrics,
@@ -23,20 +23,14 @@ import {
 import type {
   HubDiscoveryQueryInput,
   QuickConnectInput,
-} from "../schemas/hubDiscovery";
+} from "~/schemas/hubDiscovery";
 import type {
   HubPublicResource,
   HubSearchResult,
   HubTagResource,
-} from "../resources/hubDiscovery";
-import { serverService } from "./server.server";
-
-const VALID_WEBHOOK_PREFIXES = [
-  "https://discord.com/api/webhooks/",
-  "https://discordapp.com/api/webhooks/",
-  "https://ptb.discord.com/api/webhooks/",
-  "https://canary.discord.com/api/webhooks/",
-];
+} from "~/resources/hubDiscovery";
+import { serverService } from "~/services/server.server";
+import { controlConnectionService } from "~/services/control.server";
 
 export const hubDiscoveryService = {
   /**
@@ -536,73 +530,23 @@ export const hubDiscoveryService = {
     userId: string,
     input: QuickConnectInput
   ): Promise<{ success: boolean; error?: string }> {
-    // 1. Verify the hub exists, is PUBLIC, and not locked
-    const [hubRecord] = await db
-      .select({
-        id: hub.id,
-        name: hub.name,
-        visibility: hub.visibility,
-        locked: hub.locked,
-      })
-      .from(hub)
-      .where(eq(hub.id, input.hubId))
-      .limit(1);
-
-    if (!hubRecord) {
-      return { success: false, error: "Hub not found." };
-    }
-
-    if (hubRecord.visibility !== "PUBLIC") {
-      return { success: false, error: "This hub is private and requires an invite." };
-    }
-
-    if (hubRecord.locked) {
-      return { success: false, error: "This hub is currently locked by moderation." };
-    }
-
-    // 2. Validate Manage Server permission on the user's server
-    await serverService.get(userId, input.serverId);
-
-    // 3. Validate Webhook URL integrity
-    const isDiscordWebhook = VALID_WEBHOOK_PREFIXES.some((prefix) =>
-      input.webhookUrl.startsWith(prefix)
-    );
-    if (!isDiscordWebhook) {
-      return { success: false, error: "Invalid Discord webhook URL." };
-    }
-
-    // 4. Insert or update connection
-    const connectionId = crypto.randomUUID();
     try {
-      await db.insert(connection).values({
-        id: connectionId,
+      await controlConnectionService.connectChannel({
+        actorId: userId,
         hubId: input.hubId,
-        channelId: input.channelId,
         serverId: input.serverId,
-        webhookUrl: input.webhookUrl,
-        parentId: input.parentId || null,
-        connected: true,
-        pausedByBot: false,
+        channelId: input.channelId,
+        inviteCode: input.inviteCode,
+        customName: input.customName,
+        idempotencyKey: crypto.randomUUID(),
       });
-
-      // Increment hub's connectionCount
-      await db
-        .update(hub)
-        .set({
-          connectionCount: sql`${hub.connectionCount} + 1`,
-          lastActive: sql`NOW()`,
-        })
-        .where(eq(hub.id, input.hubId));
-
       return { success: true };
-    } catch (error) {
-      const pgErr: any = (error as any)?.cause ?? error;
-      const msg: string = pgErr?.message ?? (error instanceof Error ? error.message : "Failed to connect.");
-      if (/duplicate key/i.test(msg)) {
-        return { success: false, error: "This channel or server is already connected to this hub." };
-      }
+    } catch (error: unknown) {
+      console.error("Failed to quick connect via control plane", error);
+      const msg = error instanceof Error ? error.message : "Failed to connect.";
       return { success: false, error: msg };
     }
   },
 };
+
 

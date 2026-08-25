@@ -199,3 +199,4 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
     </DashboardSectionCard>
   );
 }
+
