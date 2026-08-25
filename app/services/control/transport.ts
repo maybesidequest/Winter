@@ -63,12 +63,20 @@ function loadPackageDefinition(): Record<string, new (address: string, creds: gr
 export function getServiceClients(): Required<ServiceRegistry> {
   if (registry.hubClient) return registry as Required<ServiceRegistry>;
 
-  const pkg = loadPackageDefinition();
-  const address = process.env.CONTROL_PLANE_GRPC_ADDRESS || "localhost:50052";
+  const address =
+    process.env.CONTROL_PLANE_GRPC_ADDRESS ||
+    process.env.CONTROL_PLANE_ADDRESS ||
+    (process.env.CONTROL_PLANE_HOST
+      ? `${process.env.CONTROL_PLANE_HOST}:${process.env.CONTROL_PLANE_PORT || "50051"}`
+      : (process.env.NODE_ENV === "production" ? "control-plane:50051" : "127.0.0.1:50051"));
   const creds = credentials();
+  const domain =
+    process.env.CONTROL_PLANE_TLS_DOMAIN ||
+    process.env.CONTROL_PLANE_SERVER_NAME ||
+    "control-plane";
   const options = {
-    "grpc.ssl_target_name_override": process.env.CONTROL_PLANE_TLS_DOMAIN,
-    "grpc.default_authority": process.env.CONTROL_PLANE_TLS_DOMAIN,
+    "grpc.ssl_target_name_override": domain,
+    "grpc.default_authority": domain,
   };
 
   registry.hubClient = new pkg.HubService(address, creds, options);
