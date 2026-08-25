@@ -45,7 +45,11 @@ export default function HubWorkspace() {
   const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions());
   const hub = hubDetail || hubs.find((h) => h.metadata.id === hubId);
   const isLoading = isHubLoading && !hub;
-  const { data: connections = [] } = useQuery(orpc.hub.getConnections.queryOptions({ input: { hubId } }));
+  const connectionsEnabled = import.meta.env.DEV && activeTab === "connections";
+  const { data: connections = [] } = useQuery({
+    ...orpc.hub.getConnections.queryOptions({ input: { hubId } }),
+    enabled: connectionsEnabled,
+  });
 
   const patchMutation = useMutation(
     orpc.hub.patchConfig.mutationOptions({
