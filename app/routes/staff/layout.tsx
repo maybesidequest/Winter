@@ -5,6 +5,9 @@ import { Layout, Menu, ConfigProvider, theme } from "antd";
 import { DashboardOutlined, NodeIndexOutlined, LineChartOutlined } from "@ant-design/icons";
 
 export async function loader({ request }: Route.LoaderArgs) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Response("Not Found", { status: 404 });
+  }
   const user = await requireStaff(request);
   return { user };
 }
