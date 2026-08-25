@@ -19,5 +19,9 @@ describe("Control Plane Descriptor & Client Setup", () => {
     expect(definition).toBeDefined();
     const loaded = grpc.loadPackageDefinition(definition) as any;
     expect(loaded.interchat.control.v1.HubService).toBeDefined();
+    expect(loaded.interchat.control.v1.ServerService).toBeDefined();
+    expect(loaded.interchat.control.v1.ConnectionService).toBeDefined();
+    expect(loaded.interchat.control.v1.UserService).toBeDefined();
+    expect(loaded.interchat.control.v1.ModerationService).toBeDefined();
   });
 });

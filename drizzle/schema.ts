@@ -355,6 +355,7 @@ export const connection = pgTable("Connection", {
 	connected: boolean().default(true).notNull(),
 	pausedByBot: boolean().default(false).notNull(),
 	pauseReason: text(),
+	version: bigint({ mode: "number" }).default(1).notNull(),
 }, (table) => [
 	index("Connection_hubId_idx").using("btree", table.hubId.asc().nullsLast().op("text_ops")),
 	index("Connection_lastActive_idx").using("btree", table.lastActive.asc().nullsLast().op("timestamp_ops")),
@@ -756,6 +757,7 @@ export const serverData = pgTable("ServerData", {
 	autoRequeueOnHangup: boolean().default(false).notNull(),
 	filterNsfw: boolean().default(true).notNull(),
 	lobbyChannelIds: text().array().default([""]).notNull(),
+	version: bigint({ mode: "number" }).default(1).notNull(),
 }, (table) => [
 	index("ServerData_callCount_idx").using("btree", table.callCount.asc().nullsLast().op("int4_ops")),
 	index("ServerData_lastMessageAt_idx").using("btree", table.lastMessageAt.desc().nullsFirst().op("timestamp_ops")),
