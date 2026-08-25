@@ -14,6 +14,12 @@ const ADMINISTRATOR = 1n << 3n;
 
 type DiscordGuild = { id: string; name: string; icon: string | null; owner?: boolean; permissions: string };
 
+function isControlNotFound(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  return code === 5 || code === "NOT_FOUND";
+}
+
 function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {
   callChannelId?: string;
   callPing?: boolean;
@@ -91,7 +97,10 @@ export const serverService = {
         installedServersMap.set(s.metadata.id, s);
       }
     } catch (err) {
-      console.warn("Failed to batch get servers from control plane", err);
+      // An unavailable Control Plane must not be rendered as a fleet of
+      // uninstalled servers. Preserve the failure so the UI can show an
+      // unavailable state instead of inventing configuration.
+      throw err;
     }
 
     return guilds.map((guild) => {
@@ -153,7 +162,8 @@ export const serverService = {
           manageable: true,
         },
       };
-    } catch {
+    } catch (error) {
+      if (!isControlNotFound(error)) throw error;
       return {
         metadata: {
           id: guild.id,
