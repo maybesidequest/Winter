@@ -154,12 +154,12 @@ function toCamelCase(str: string): string {
   return str.replace(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase());
 }
 
-export function deepToSnakeCase<T = any>(obj: any): T {
-  if (obj === null || typeof obj !== "object") return obj;
-  if (Array.isArray(obj)) return obj.map(deepToSnakeCase) as any;
-  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as any;
+export function deepToSnakeCase<T = unknown>(obj: unknown): T {
+  if (obj === null || typeof obj !== "object") return obj as T;
+  if (Array.isArray(obj)) return obj.map(deepToSnakeCase) as unknown as T;
+  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as unknown as T;
 
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     const snakeKey = toSnakeCase(key);
     result[snakeKey] = deepToSnakeCase(value);
@@ -167,12 +167,12 @@ export function deepToSnakeCase<T = any>(obj: any): T {
   return result as T;
 }
 
-export function deepToCamelCase<T = any>(obj: any): T {
-  if (obj === null || typeof obj !== "object") return obj;
-  if (Array.isArray(obj)) return obj.map(deepToCamelCase) as any;
-  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as any;
+export function deepToCamelCase<T = unknown>(obj: unknown): T {
+  if (obj === null || typeof obj !== "object") return obj as T;
+  if (Array.isArray(obj)) return obj.map(deepToCamelCase) as unknown as T;
+  if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as unknown as T;
 
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     const camelKey = toCamelCase(key);
     result[camelKey] = deepToCamelCase(value);
