@@ -53,6 +53,7 @@ function toServer(value: Server__Output): ServerResource {
     status: {
       botInstalled: value.status.botInstalled,
       manageable: value.status.botInstalled,
+      botPermissions: Number(value.status.botPermissions || 0),
     },
     version: value.version,
   };

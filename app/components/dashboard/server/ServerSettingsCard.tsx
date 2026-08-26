@@ -17,10 +17,11 @@ interface ServerSettingsCardProps {
 }
 
 const REQUIRED_PERMISSIONS = [
-  { name: "Manage Webhooks", desc: "Required for cross-server message bridging and Userphone" },
-  { name: "Manage Messages", desc: "Required for automod deletion and moderation panel commands" },
-  { name: "View Channels & Send Messages", desc: "Required for bot responsiveness and command handling" },
-  { name: "Embed Links & Attach Files", desc: "Required for rich card rendering and attachment relay" },
+  { name: "Manage Webhooks", desc: "Required for cross-server message bridging and Userphone", bit: 1 << 29 },
+  { name: "Manage Messages", desc: "Required for automod deletion and moderation panel commands", bit: 1 << 13 },
+  { name: "View Channels", desc: "Required for bot responsiveness and command handling", bit: 1 << 10 },
+  { name: "Send Messages", desc: "Required for bot responsiveness and command handling", bit: 1 << 11 },
+  { name: "Embed Links & Attach Files", desc: "Required for rich card rendering and attachment relay", bit: (1 << 14) | (1 << 15) },
 ];
 
 export function ServerSettingsCard({
@@ -33,6 +34,8 @@ export function ServerSettingsCard({
   const [savingPrefix, setSavingPrefix] = useState(false);
   const prefixIdempotencyKey = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
+  const botPermissions = Number(server.status.botPermissions || 0);
+  const permissionsKnown = isInstalled && botPermissions > 0;
   const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&guild_id=${server.metadata.id}&disable_guild_select=true`;
 
   useEffect(() => {
@@ -192,10 +195,24 @@ export function ServerSettingsCard({
               key={perm.name}
               className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-start gap-3"
             >
-              <CheckCircleOutlined className="text-emerald-400 mt-0.5 flex-shrink-0" />
+              {permissionsKnown ? (
+                (botPermissions & perm.bit) === perm.bit ? (
+                  <CheckCircleOutlined className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <ExclamationCircleOutlined className="text-amber-400 mt-0.5 flex-shrink-0" />
+                )
+              ) : (
+                <ExclamationCircleOutlined className="text-white/40 mt-0.5 flex-shrink-0" />
+              )}
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs font-semibold text-white">{perm.name}</span>
-                <span className="text-[11px] text-white/50">{perm.desc}</span>
+                <span className="text-[11px] text-white/50">
+                  {permissionsKnown
+                    ? (botPermissions & perm.bit) === perm.bit
+                      ? `Verified. ${perm.desc}`
+                      : `Missing. ${perm.desc}`
+                    : "Permission status is not available yet."}
+                </span>
               </div>
             </div>
           ))}
