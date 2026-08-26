@@ -1,5 +1,6 @@
 import { controlHubService } from "~/services/control.server";
 import { hubStaffService } from "~/services/control/hubs/staff";
+import { hubRoleService } from "~/services/control/hubs/roles";
 
 export const hubFeaturesService = {
   async listRules(userId: string, hubId: string) {
@@ -84,5 +85,21 @@ export const hubFeaturesService = {
 
   async removeStaffRole(userId: string, input: { hubId: string; userId: string; idempotencyKey: string }) {
     return hubStaffService.removeStaffRole({ ...input, actorId: userId });
+  },
+
+  async listRoles(userId: string, hubId: string) {
+    return hubRoleService.listRoles(hubId, userId);
+  },
+
+  async createRole(userId: string, input: { hubId: string; name: string; permissionsBitmask: number; position?: number; idempotencyKey: string }) {
+    return hubRoleService.createRole({ ...input, position: input.position ?? 0, actorId: userId });
+  },
+
+  async updateRole(userId: string, input: { hubId: string; roleId: string; name: string; permissionsBitmask: number; position?: number; expectedVersion: number; idempotencyKey: string }) {
+    return hubRoleService.updateRole({ ...input, position: input.position ?? 0, actorId: userId });
+  },
+
+  async deleteRole(userId: string, input: { hubId: string; roleId: string; expectedVersion: number; idempotencyKey: string }) {
+    return hubRoleService.deleteRole({ ...input, actorId: userId });
   },
 };

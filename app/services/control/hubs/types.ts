@@ -49,3 +49,10 @@ export interface HubStaffMember {
   spec: { role: string; permissionsBitmask: number; assignedBy: string };
   status: { active: boolean; effectivePermissions: string[] };
 }
+
+export interface HubRole {
+  metadata: { id: string; hubId: string; createdAt?: string; updatedAt?: string };
+  spec: { name: string; permissionsBitmask: number; position: number };
+  status: { memberCount: number; protected: boolean };
+  version: number;
+}
