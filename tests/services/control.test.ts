@@ -23,6 +23,8 @@ describe("Control Plane Descriptor & Client Setup", () => {
     expect(loaded.interchat.control.v1.ServerService).toBeDefined();
     expect(loaded.interchat.control.v1.ConnectionService).toBeDefined();
     expect(loaded.interchat.control.v1.UserService).toBeDefined();
+    expect(loaded.interchat.control.v1.UserService.service.GetUserActivity).toBeDefined();
+    expect(loaded.interchat.control.v1.UserActivity).toBeDefined();
     expect(loaded.interchat.control.v1.ModerationService).toBeDefined();
   });
 
