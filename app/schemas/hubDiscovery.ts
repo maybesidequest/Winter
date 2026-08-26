@@ -27,6 +27,7 @@ export type HubDiscoveryQueryInput = z.infer<typeof hubDiscoveryQuerySchema>;
 
 export const hubUpvoteInputSchema = z.object({
   hubId: z.string().min(1),
+  idempotencyKey: z.string().min(1),
 });
 
 export type HubUpvoteInput = z.infer<typeof hubUpvoteInputSchema>;
@@ -40,5 +41,4 @@ export const quickConnectInputSchema = z.object({
 });
 
 export type QuickConnectInput = z.infer<typeof quickConnectInputSchema>;
-
 

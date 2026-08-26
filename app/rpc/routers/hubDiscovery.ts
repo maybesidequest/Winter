@@ -30,7 +30,7 @@ export const hubDiscoveryRouter = protectedBase.router({
     .input(hubUpvoteInputSchema)
     .handler(async ({ input, context }) => {
       requireCapability("HUB_UPVOTE");
-      const result = await hubDiscoveryService.upvoteHub(context.user.id, input.hubId);
+      const result = await hubDiscoveryService.upvoteHub(context.user.id, input.hubId, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
       }

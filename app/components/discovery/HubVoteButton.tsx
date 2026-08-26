@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LikeOutlined, LikeFilled } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "~/lib/orpc";
@@ -17,6 +17,7 @@ export function HubVoteButton({
   const [voteCount, setVoteCount] = useState(initialVoteCount);
   const [voted, setVoted] = useState(hasVoted);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
   const queryClient = useQueryClient();
 
   const upvoteMutation = useMutation(
@@ -26,11 +27,11 @@ export function HubVoteButton({
         setVoted(true);
         setErrorMsg(null);
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         // Rollback on error
         setVoteCount((prev) => (prev === undefined ? undefined : Math.max(0, prev - 1)));
         setVoted(hasVoted);
-        setErrorMsg(error.message || "Failed to vote");
+        setErrorMsg(error instanceof Error ? error.message : "Failed to vote");
       },
       onSuccess: (data) => {
         if (data.upvoteCount !== undefined) {
@@ -46,7 +47,7 @@ export function HubVoteButton({
   const handleVote = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (voted || upvoteMutation.isPending) return;
-    upvoteMutation.mutate({ hubId });
+    upvoteMutation.mutate({ hubId, idempotencyKey: idempotencyKeyRef.current });
   };
 
   return (

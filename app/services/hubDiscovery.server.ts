@@ -139,10 +139,11 @@ export const hubDiscoveryService = {
    */
   async upvoteHub(
     userId: string,
-    hubId: string
+    hubId: string,
+    idempotencyKey: string,
   ): Promise<{ success: boolean; error?: string; upvoteCount?: number; nextVoteAvailableAt?: string }> {
     try {
-      const res = await controlHubService.upvoteHub(hubId, userId);
+      const res = await controlHubService.upvoteHub(hubId, userId, idempotencyKey);
       return {
         success: true,
         upvoteCount: res.totalUpvotes,
@@ -150,7 +151,7 @@ export const hubDiscoveryService = {
     } catch (error: unknown) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to submit upvote.",
+        error: "This Hub could not be upvoted right now. Please try again shortly.",
       };
     }
   },

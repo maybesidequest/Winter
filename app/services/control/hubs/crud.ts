@@ -201,10 +201,11 @@ export const hubCrudService = {
     );
   },
 
-  async upvoteHub(hubId: string, actorId: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {
+  async upvoteHub(hubId: string, actorId: string, idempotencyKey: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {
+    if (!idempotencyKey) throw new Error("idempotencyKey is required for HubService.UpvoteHub");
     const clients = getServiceClients();
     const response = await invokeUnary<UpvoteHubRequest, UpvoteHubResponse__Output>(clients.hubClient.UpvoteHub.bind(clients.hubClient), {
-      context: makeRequestContext(actorId),
+      context: makeRequestContext(actorId, true, idempotencyKey),
       hubId,
     });
     return { totalUpvotes: response.totalUpvotes, upvoted: response.upvoted };
