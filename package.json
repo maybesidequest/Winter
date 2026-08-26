@@ -11,7 +11,7 @@
     "validate:phase2": "bun run scripts/validate-phase2-matrix.ts",
     "typecheck": "react-router typegen && tsc",
     "check:control-types": "bun run generate:control-types && git diff --exit-code -- app/generated/control/v1",
-    "generate:control-types": "mkdir -p app/generated/control/v1/google/protobuf app/generated/control/v1/interchat/control/v1 && proto-loader-gen-types --keepCase=false --longs=Number --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js -I ../interchat-protobuf -O app/generated/control/v1 ../interchat-protobuf/control/v1/models.proto ../interchat-protobuf/control/v1/hub_service.proto ../interchat-protobuf/control/v1/server_service.proto ../interchat-protobuf/control/v1/connection_service.proto ../interchat-protobuf/control/v1/user_service.proto ../interchat-protobuf/control/v1/moderation_service.proto"
+    "generate:control-types": "mkdir -p app/generated/control/v1/google/protobuf app/generated/control/v1/interchat/control/v1 && proto-loader-gen-types --keepCase=false --longs=Number --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js -I interchat-protobuf -O app/generated/control/v1 interchat-protobuf/control/v1/models.proto interchat-protobuf/control/v1/hub_service.proto interchat-protobuf/control/v1/server_service.proto interchat-protobuf/control/v1/connection_service.proto interchat-protobuf/control/v1/user_service.proto interchat-protobuf/control/v1/moderation_service.proto"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
