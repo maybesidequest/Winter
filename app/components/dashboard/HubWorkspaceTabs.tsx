@@ -114,7 +114,7 @@ export function HubWorkspaceTabs({
     case "team":
       return (
         <div className="max-w-4xl">
-          <HubTeamPanel hub={hub} canEdit={canEdit} />
+          <HubTeamPanel hub={hub} canEdit={can("MANAGE_MODERATORS")} />
         </div>
       );
     case "announcements":
