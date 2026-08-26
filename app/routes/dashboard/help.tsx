@@ -1,11 +1,11 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Card, Col, Row, Typography } from "antd";
 import { PageHeader, Section } from "~/components/dashboard/WorkspacePrimitives";
-import { SUPPORT_SERVER_URL } from "~/components/marketing/constants";
+import { ADD_INTERCHAT_URL, SUPPORT_SERVER_URL } from "~/components/marketing/constants";
 
 const resources = [
   { title: "Support server", description: "Ask the InterChat team for help or report a dashboard problem.", href: SUPPORT_SERVER_URL, label: "Open support" },
-  { title: "Invite InterChat", description: "Add InterChat to another Discord server you manage.", href: "https://discord.com/oauth2/authorize?client_id=1087963156082468894&scope=bot%20applications.commands&permissions=536870912", label: "Invite the bot" },
+  { title: "Invite InterChat", description: "Add InterChat to another Discord server you manage.", href: ADD_INTERCHAT_URL, label: "Invite the bot" },
   { title: "Vote for InterChat", description: "Support the project and unlock voter perks when your vote is available.", href: "https://top.gg/bot/interchat/vote", label: "Vote on Top.gg" },
 ];
 
