@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
@@ -19,6 +19,9 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const createKeyRef = useRef(crypto.randomUUID());
+  const updateKeyRef = useRef(crypto.randomUUID());
+  const deleteKeysRef = useRef(new Map<string, string>());
 
   const { data: rules = [], isLoading } = useQuery(
     orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } })
@@ -31,6 +34,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         setModalOpen(false);
         setTitle("");
         setDescription("");
+        createKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
         queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
@@ -46,6 +50,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         setEditingRuleId(null);
         setTitle("");
         setDescription("");
+        updateKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
         queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
@@ -64,6 +69,14 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
     })
   );
 
+  const deleteKeyFor = (ruleId: string) => {
+    const existing = deleteKeysRef.current.get(ruleId);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    deleteKeysRef.current.set(ruleId, created);
+    return created;
+  };
+
   const handleSubmit = () => {
     if (!title.trim()) return message.error("Title is required.");
     if (editingRuleId) {
@@ -73,7 +86,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         title: title.trim(),
         description: description.trim(),
         expectedVersion: hub.version,
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: updateKeyRef.current,
       });
     } else {
       createMutation.mutate({
@@ -81,7 +94,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         title: title.trim(),
         description: description.trim(),
         expectedVersion: hub.version,
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: createKeyRef.current,
       });
     }
   };
@@ -100,6 +113,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
               setEditingRuleId(null);
               setTitle("");
               setDescription("");
+              createKeyRef.current = crypto.randomUUID();
               setModalOpen(true);
             }}
           >
@@ -128,6 +142,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
                         setEditingRuleId(item.id);
                         setTitle(item.title);
                         setDescription(item.description);
+                        updateKeyRef.current = crypto.randomUUID();
                         setModalOpen(true);
                       }}
                     />,
@@ -135,12 +150,15 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
                       key="del"
                       title="Delete this rule?"
                       onConfirm={() =>
-                        deleteMutation.mutate({
-                          hubId: hub.metadata.id,
-                          ruleId: item.id,
-                          expectedVersion: hub.version,
-                          idempotencyKey: crypto.randomUUID(),
-                        })
+                        deleteMutation.mutate(
+                          {
+                            hubId: hub.metadata.id,
+                            ruleId: item.id,
+                            expectedVersion: hub.version,
+                            idempotencyKey: deleteKeyFor(item.id),
+                          },
+                          { onSuccess: () => deleteKeysRef.current.delete(item.id) },
+                        )
                       }
                     >
                       <Button type="text" danger icon={<DeleteOutlined />} size="small" />
