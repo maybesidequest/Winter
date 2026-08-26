@@ -231,7 +231,7 @@ export const serverService = {
       channelId: conn.metadata.channelId || "",
       channelName: null,
       hubId: conn.metadata.hubId || "",
-      hubName: conn.spec.customName || `Hub ${conn.metadata.hubId}`,
+      hubName: conn.spec.customName || "Unavailable Hub",
       hubIconUrl: null,
       connected: conn.spec.connected,
       pausedByBot: !conn.status.healthy,
