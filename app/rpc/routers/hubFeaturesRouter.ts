@@ -22,11 +22,32 @@ import {
 } from "~/schemas/hub";
 
 export const hubFeaturesRouter = protectedBase.router({
+  getBadges: protectedBase
+    .input(z.object({ hubId: z.string() }))
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_BADGES");
+      return hubService.getBadges(context.user.id, input.hubId);
+    }),
+
+  getLogConfig: protectedBase
+    .input(z.object({ hubId: z.string() }))
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_LOGGING");
+      return hubService.getLogConfig(context.user.id, input.hubId);
+    }),
+
   listRules: protectedBase
     .input(z.object({ hubId: z.string() }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_RULES");
       return hubService.listRules(context.user.id, input.hubId);
+    }),
+
+  listAudit: protectedBase
+    .input(z.object({ hubId: z.string(), limit: z.number().int().min(1).max(100).optional(), offset: z.number().int().min(0).optional() }))
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_LOGGING");
+      return hubService.listAudit(context.user.id, input);
     }),
 
   createRule: protectedBase

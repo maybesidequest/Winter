@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
@@ -18,12 +18,21 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
   const [ownerBadge, setOwnerBadge] = useState<string>("");
   const [managerBadge, setManagerBadge] = useState<string>("");
   const [moderatorBadge, setModeratorBadge] = useState<string>("");
+  const badgesQuery = useQuery(orpc.hub.getBadges.queryOptions({ input: { hubId: hub.metadata.id } }));
+
+  useEffect(() => {
+    if (!badgesQuery.data) return;
+    setOwnerBadge(badgesQuery.data.ownerBadge || "");
+    setManagerBadge(badgesQuery.data.managerBadge || "");
+    setModeratorBadge(badgesQuery.data.moderatorBadge || "");
+  }, [badgesQuery.data]);
 
   const patchBadgesMutation = useMutation(
     orpc.hub.patchBadges.mutationOptions({
       onSuccess: () => {
         message.success("Badges configuration saved.");
         queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update badges."),
     })
@@ -58,7 +67,8 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
         )
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {badgesQuery.isError && <Text type="danger">Badge settings are temporarily unavailable.</Text>}
         <div>
           <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
             Owner Badge Emoji / String
@@ -96,4 +106,3 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
     </DashboardSectionCard>
   );
 }
-

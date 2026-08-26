@@ -32,6 +32,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         setTitle("");
         setDescription("");
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to add rule."),
     })
@@ -46,6 +47,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         setTitle("");
         setDescription("");
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update rule."),
     })
@@ -56,6 +58,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
       onSuccess: () => {
         message.success("Rule deleted.");
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to delete rule."),
     })
@@ -199,4 +202,3 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
     </DashboardSectionCard>
   );
 }
-

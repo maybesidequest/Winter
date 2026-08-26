@@ -19,12 +19,16 @@ import type { DeleteHubRequest as _interchat_control_v1_DeleteHubRequest, Delete
 import type { DeleteHubRoleRequest as _interchat_control_v1_DeleteHubRoleRequest, DeleteHubRoleRequest__Output as _interchat_control_v1_DeleteHubRoleRequest__Output } from './interchat/control/v1/DeleteHubRoleRequest';
 import type { DeleteHubRuleRequest as _interchat_control_v1_DeleteHubRuleRequest, DeleteHubRuleRequest__Output as _interchat_control_v1_DeleteHubRuleRequest__Output } from './interchat/control/v1/DeleteHubRuleRequest';
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from './interchat/control/v1/EmptyResponse';
+import type { GetHubBadgesRequest as _interchat_control_v1_GetHubBadgesRequest, GetHubBadgesRequest__Output as _interchat_control_v1_GetHubBadgesRequest__Output } from './interchat/control/v1/GetHubBadgesRequest';
+import type { GetHubLogConfigRequest as _interchat_control_v1_GetHubLogConfigRequest, GetHubLogConfigRequest__Output as _interchat_control_v1_GetHubLogConfigRequest__Output } from './interchat/control/v1/GetHubLogConfigRequest';
 import type { GetHubRequest as _interchat_control_v1_GetHubRequest, GetHubRequest__Output as _interchat_control_v1_GetHubRequest__Output } from './interchat/control/v1/GetHubRequest';
 import type { GetPopularTagsRequest as _interchat_control_v1_GetPopularTagsRequest, GetPopularTagsRequest__Output as _interchat_control_v1_GetPopularTagsRequest__Output } from './interchat/control/v1/GetPopularTagsRequest';
 import type { GetPopularTagsResponse as _interchat_control_v1_GetPopularTagsResponse, GetPopularTagsResponse__Output as _interchat_control_v1_GetPopularTagsResponse__Output } from './interchat/control/v1/GetPopularTagsResponse';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from './interchat/control/v1/Hub';
 import type { HubAnnouncement as _interchat_control_v1_HubAnnouncement, HubAnnouncement__Output as _interchat_control_v1_HubAnnouncement__Output } from './interchat/control/v1/HubAnnouncement';
 import type { HubAnnouncementsResponse as _interchat_control_v1_HubAnnouncementsResponse, HubAnnouncementsResponse__Output as _interchat_control_v1_HubAnnouncementsResponse__Output } from './interchat/control/v1/HubAnnouncementsResponse';
+import type { HubAuditEntry as _interchat_control_v1_HubAuditEntry, HubAuditEntry__Output as _interchat_control_v1_HubAuditEntry__Output } from './interchat/control/v1/HubAuditEntry';
+import type { HubAuditResponse as _interchat_control_v1_HubAuditResponse, HubAuditResponse__Output as _interchat_control_v1_HubAuditResponse__Output } from './interchat/control/v1/HubAuditResponse';
 import type { HubBadgeConfig as _interchat_control_v1_HubBadgeConfig, HubBadgeConfig__Output as _interchat_control_v1_HubBadgeConfig__Output } from './interchat/control/v1/HubBadgeConfig';
 import type { HubDirectoryItem as _interchat_control_v1_HubDirectoryItem, HubDirectoryItem__Output as _interchat_control_v1_HubDirectoryItem__Output } from './interchat/control/v1/HubDirectoryItem';
 import type { HubInvite as _interchat_control_v1_HubInvite, HubInvite__Output as _interchat_control_v1_HubInvite__Output } from './interchat/control/v1/HubInvite';
@@ -49,6 +53,7 @@ import type { HubStatus as _interchat_control_v1_HubStatus, HubStatus__Output as
 import type { HubTag as _interchat_control_v1_HubTag, HubTag__Output as _interchat_control_v1_HubTag__Output } from './interchat/control/v1/HubTag';
 import type { Infraction as _interchat_control_v1_Infraction, Infraction__Output as _interchat_control_v1_Infraction__Output } from './interchat/control/v1/Infraction';
 import type { ListHubAnnouncementsRequest as _interchat_control_v1_ListHubAnnouncementsRequest, ListHubAnnouncementsRequest__Output as _interchat_control_v1_ListHubAnnouncementsRequest__Output } from './interchat/control/v1/ListHubAnnouncementsRequest';
+import type { ListHubAuditRequest as _interchat_control_v1_ListHubAuditRequest, ListHubAuditRequest__Output as _interchat_control_v1_ListHubAuditRequest__Output } from './interchat/control/v1/ListHubAuditRequest';
 import type { ListHubInvitesRequest as _interchat_control_v1_ListHubInvitesRequest, ListHubInvitesRequest__Output as _interchat_control_v1_ListHubInvitesRequest__Output } from './interchat/control/v1/ListHubInvitesRequest';
 import type { ListHubRolesRequest as _interchat_control_v1_ListHubRolesRequest, ListHubRolesRequest__Output as _interchat_control_v1_ListHubRolesRequest__Output } from './interchat/control/v1/ListHubRolesRequest';
 import type { ListHubStaffRequest as _interchat_control_v1_ListHubStaffRequest, ListHubStaffRequest__Output as _interchat_control_v1_ListHubStaffRequest__Output } from './interchat/control/v1/ListHubStaffRequest';
@@ -114,6 +119,8 @@ export interface ProtoGrpcType {
         DeleteHubRoleRequest: MessageTypeDefinition<_interchat_control_v1_DeleteHubRoleRequest, _interchat_control_v1_DeleteHubRoleRequest__Output>
         DeleteHubRuleRequest: MessageTypeDefinition<_interchat_control_v1_DeleteHubRuleRequest, _interchat_control_v1_DeleteHubRuleRequest__Output>
         EmptyResponse: MessageTypeDefinition<_interchat_control_v1_EmptyResponse, _interchat_control_v1_EmptyResponse__Output>
+        GetHubBadgesRequest: MessageTypeDefinition<_interchat_control_v1_GetHubBadgesRequest, _interchat_control_v1_GetHubBadgesRequest__Output>
+        GetHubLogConfigRequest: MessageTypeDefinition<_interchat_control_v1_GetHubLogConfigRequest, _interchat_control_v1_GetHubLogConfigRequest__Output>
         GetHubRequest: MessageTypeDefinition<_interchat_control_v1_GetHubRequest, _interchat_control_v1_GetHubRequest__Output>
         GetPopularTagsRequest: MessageTypeDefinition<_interchat_control_v1_GetPopularTagsRequest, _interchat_control_v1_GetPopularTagsRequest__Output>
         GetPopularTagsResponse: MessageTypeDefinition<_interchat_control_v1_GetPopularTagsResponse, _interchat_control_v1_GetPopularTagsResponse__Output>
@@ -121,6 +128,8 @@ export interface ProtoGrpcType {
         HubActivityLevel: EnumTypeDefinition
         HubAnnouncement: MessageTypeDefinition<_interchat_control_v1_HubAnnouncement, _interchat_control_v1_HubAnnouncement__Output>
         HubAnnouncementsResponse: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementsResponse, _interchat_control_v1_HubAnnouncementsResponse__Output>
+        HubAuditEntry: MessageTypeDefinition<_interchat_control_v1_HubAuditEntry, _interchat_control_v1_HubAuditEntry__Output>
+        HubAuditResponse: MessageTypeDefinition<_interchat_control_v1_HubAuditResponse, _interchat_control_v1_HubAuditResponse__Output>
         HubBadgeConfig: MessageTypeDefinition<_interchat_control_v1_HubBadgeConfig, _interchat_control_v1_HubBadgeConfig__Output>
         HubDirectoryItem: MessageTypeDefinition<_interchat_control_v1_HubDirectoryItem, _interchat_control_v1_HubDirectoryItem__Output>
         HubInvite: MessageTypeDefinition<_interchat_control_v1_HubInvite, _interchat_control_v1_HubInvite__Output>
@@ -148,6 +157,7 @@ export interface ProtoGrpcType {
         Infraction: MessageTypeDefinition<_interchat_control_v1_Infraction, _interchat_control_v1_Infraction__Output>
         InfractionStatus: EnumTypeDefinition
         ListHubAnnouncementsRequest: MessageTypeDefinition<_interchat_control_v1_ListHubAnnouncementsRequest, _interchat_control_v1_ListHubAnnouncementsRequest__Output>
+        ListHubAuditRequest: MessageTypeDefinition<_interchat_control_v1_ListHubAuditRequest, _interchat_control_v1_ListHubAuditRequest__Output>
         ListHubInvitesRequest: MessageTypeDefinition<_interchat_control_v1_ListHubInvitesRequest, _interchat_control_v1_ListHubInvitesRequest__Output>
         ListHubRolesRequest: MessageTypeDefinition<_interchat_control_v1_ListHubRolesRequest, _interchat_control_v1_ListHubRolesRequest__Output>
         ListHubStaffRequest: MessageTypeDefinition<_interchat_control_v1_ListHubStaffRequest, _interchat_control_v1_ListHubStaffRequest__Output>

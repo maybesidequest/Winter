@@ -7,6 +7,7 @@ import {
   DownOutlined,
   EditOutlined,
   FileTextOutlined,
+  HistoryOutlined,
   IdcardOutlined,
   LinkOutlined,
   SafetyCertificateOutlined,
@@ -23,10 +24,6 @@ interface HubSidebarTabsProps {
   onNavigate?: () => void;
 }
 
-// Phase 1 exposes only the proven read/General slice. Later capabilities stay
-// hidden until their control-plane cutover and failure states are complete.
-const showUnfinishedFeatures = import.meta.env.DEV;
-
 export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const permissions = hub?.metadata.permissions;
@@ -36,44 +33,46 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
     { path: "general", label: "General", icon: <EditOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
-    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: showUnfinishedFeatures && can("MANAGE_CONNECTIONS") },
+    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: false },
     {
       path: "moderation",
       label: "Moderation",
       icon: <SafetyCertificateOutlined />,
-      visible: showUnfinishedFeatures && can("MANAGE_RULES", "MODERATE_MESSAGES", "MANAGE_BANS", "LOCKDOWN_HUB"),
+      visible: false,
     },
+    { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: can("MANAGE_RULES") },
     {
       path: "logging",
       label: "Logging",
       icon: <FileTextOutlined />,
-      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+      visible: can("VIEW_LOGS", "MANAGE_HUB_SETTINGS"),
     },
     {
       path: "badges",
       label: "Badges",
       icon: <IdcardOutlined />,
-      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+      visible: can("MANAGE_HUB_SETTINGS"),
     },
     {
       path: "invites",
       label: "Invites",
       icon: <LinkOutlined />,
-      visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS"),
+      visible: can("MANAGE_HUB_SETTINGS"),
     },
     {
       path: "team",
       label: "Team",
       icon: <ApartmentOutlined />,
-      visible: showUnfinishedFeatures && can("MANAGE_MODERATORS"),
+      visible: can("MANAGE_MODERATORS"),
     },
     {
       path: "announcements",
       label: "Announcements",
       icon: <BellOutlined />,
-      visible: showUnfinishedFeatures && can("ANNOUNCE"),
+      visible: can("ANNOUNCE"),
     },
-    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: showUnfinishedFeatures && can("MANAGE_HUB_SETTINGS") },
+    { path: "audit", label: "Audit history", icon: <HistoryOutlined />, visible: can("VIEW_LOGS") },
+    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: false },
   ].filter((item) => item.visible !== false);
 
   return (

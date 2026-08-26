@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
@@ -20,12 +20,22 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
   const [logMessages, setLogMessages] = useState<boolean>(true);
   const [logModeration, setLogModeration] = useState<boolean>(true);
   const [logConnections, setLogConnections] = useState<boolean>(true);
+  const logQuery = useQuery(orpc.hub.getLogConfig.queryOptions({ input: { hubId: hub.metadata.id } }));
+  useEffect(() => {
+    if (!logQuery.data) return;
+    setChannelId(logQuery.data.channelId || "");
+    setNotificationRoleId(logQuery.data.notificationRoleId || "");
+    setLogMessages(Boolean(logQuery.data.eventFlags & 1));
+    setLogModeration(Boolean(logQuery.data.eventFlags & 2));
+    setLogConnections(Boolean(logQuery.data.eventFlags & 4));
+  }, [logQuery.data]);
 
   const patchLogMutation = useMutation(
     orpc.hub.patchLogConfig.mutationOptions({
       onSuccess: () => {
         message.success("Logging configuration saved.");
         queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update logging config."),
     })
@@ -66,6 +76,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
       }
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {logQuery.isError && <Text type="danger">Logging settings are temporarily unavailable.</Text>}
         <div>
           <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
             Discord Log Channel ID
@@ -118,4 +129,3 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
     </DashboardSectionCard>
   );
 }
-

@@ -38,6 +38,13 @@ export const SUPPORTED_LOCALES: SupportedLocale[] = [
 ];
 
 export const userService = {
+  async getInbox(userId: string) {
+    return controlUserService.getUserInbox(userId);
+  },
+
+  async acknowledgeInbox(userId: string, itemId: string, idempotencyKey: string) {
+    return controlUserService.acknowledgeInboxItem({ actorId: userId, itemId, idempotencyKey });
+  },
   async getDashboardPreference(userId: string): Promise<Record<string, any> | null> {
     try {
       const val = await redis.get(`user:dashboard_preference:${userId}`);

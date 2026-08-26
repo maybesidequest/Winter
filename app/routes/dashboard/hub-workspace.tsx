@@ -12,12 +12,14 @@ const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
   general: { title: "General", desc: "Manage identity, branding, and description." },
   connections: { title: "Connections", desc: "Manage connected Discord servers and channels." },
   moderation: { title: "Moderation", desc: "Manage safety settings, rules, and access." },
+  rules: { title: "Rules", desc: "Keep the Hub rules clear and current." },
   modules: { title: "Modules", desc: "Choose how messages and attachments move through the hub." },
   logging: { title: "Logging", desc: "Configure log channels and notification roles." },
   badges: { title: "Badges", desc: "Choose which staff badges appear on relayed messages." },
   invites: { title: "Invites", desc: "Create and revoke hub invite codes." },
   team: { title: "Team", desc: "Manage staff roles and permissions." },
   announcements: { title: "Announcements", desc: "Schedule announcements across connected servers." },
+  audit: { title: "Audit history", desc: "Review changes made to this Hub." },
   settings: { title: "Settings", desc: "Manage visibility, localization, ownership, and deletion." },
 };
 
@@ -28,14 +30,14 @@ const LEGACY_VIEWS: Record<string, string> = {
   members: "team",
 };
 
-const PHASE_1_VIEWS = new Set(["overview", "general"]);
+const VISIBLE_HUB_VIEWS = new Set(["overview", "general", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit"]);
 
 export default function HubWorkspace() {
   const params = useParams();
   const hubId = params.hubId || "";
   const requestedView = params.view || "overview";
   const requestedTab = LEGACY_VIEWS[requestedView] || requestedView;
-  const activeTab = PHASE_1_VIEWS.has(requestedTab) || import.meta.env.DEV ? requestedTab : "overview";
+  const activeTab = VISIBLE_HUB_VIEWS.has(requestedTab) || import.meta.env.DEV ? requestedTab : "overview";
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 

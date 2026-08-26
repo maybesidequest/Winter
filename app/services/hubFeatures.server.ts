@@ -3,6 +3,16 @@ import { hubStaffService } from "~/services/control/hubs/staff";
 import { hubRoleService } from "~/services/control/hubs/roles";
 
 export const hubFeaturesService = {
+  async getBadges(userId: string, hubId: string) {
+    return controlHubService.getBadges(hubId, userId);
+  },
+
+  async getLogConfig(userId: string, hubId: string) {
+    return controlHubService.getLogConfig(hubId, userId);
+  },
+  async listAudit(userId: string, input: { hubId: string; limit?: number; offset?: number }) {
+    return controlHubService.listAudit({ ...input, actorId: userId });
+  },
   async listRules(userId: string, hubId: string) {
     return controlHubService.listRules(hubId, userId);
   },

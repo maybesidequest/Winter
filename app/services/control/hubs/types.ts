@@ -34,6 +34,18 @@ export interface HubLogConfig {
   notificationRoleId?: string;
 }
 
+export interface HubAuditEntry {
+  id: string;
+  hubId: string;
+  eventType: string;
+  summary: string;
+  actorId?: string;
+  source?: string;
+  requestId?: string;
+  traceId?: string;
+  createdAt?: string;
+}
+
 export interface HubAnnouncement {
   id: string;
   hubId: string;

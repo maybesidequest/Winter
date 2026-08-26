@@ -3,7 +3,6 @@ import type { HubConnectionResource } from "~/resources/connection";
 import { HubOverview } from "~/components/dashboard/HubOverview";
 import { HubSummary } from "~/components/dashboard/HubSummary";
 import { HubRoutes } from "~/components/dashboard/HubRoutes";
-import { HubSafetyView } from "~/components/dashboard/HubSafetyView";
 import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
 import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
 import { HubBadgesPanel } from "~/components/dashboard/HubBadgesPanel";
@@ -12,6 +11,7 @@ import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPa
 import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
+import { HubAuditPanel } from "~/components/dashboard/HubAuditPanel";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 
 interface HubWorkspaceTabsProps {
@@ -49,6 +49,7 @@ export function HubWorkspaceTabs({
   onDeleteHub,
   onTransferOwnership,
 }: HubWorkspaceTabsProps) {
+  const can = (...actions: string[]) => actions.some((action) => hub.metadata.permissions?.[action as keyof typeof hub.metadata.permissions]);
   switch (activeTab) {
     case "overview":
       return <HubSummary hub={hub} />;
@@ -67,10 +68,13 @@ export function HubWorkspaceTabs({
     case "moderation":
       return (
         <div className="flex flex-col gap-6">
-          <HubSafetyView hub={hub} canEdit={canEdit} saving={isSaving} onSave={onSaveConfig} />
-          <HubRulesPanel hub={hub} canEdit={canEdit} />
+          <HubRulesPanel hub={hub} canEdit={can("MANAGE_RULES")} />
         </div>
       );
+    case "rules":
+      return <HubRulesPanel hub={hub} canEdit={can("MANAGE_RULES")} />;
+    case "audit":
+      return <HubAuditPanel hub={hub} />;
     case "modules":
       return (
         <div className="max-w-4xl">
@@ -92,7 +96,7 @@ export function HubWorkspaceTabs({
     case "logging":
       return (
         <div className="max-w-4xl">
-          <HubLoggingPanel hub={hub} canEdit={canEdit} />
+          <HubLoggingPanel hub={hub} canEdit={can("VIEW_LOGS")} />
         </div>
       );
     case "badges":

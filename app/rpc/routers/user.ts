@@ -1,4 +1,5 @@
 import { base, protectedBase } from "../context";
+import { z } from "zod";
 import { userService } from "../../services/user.server";
 import {
   patchUserPreferencesSchema,
@@ -7,6 +8,14 @@ import {
 } from "../../schemas/user";
 
 export const userRouter = base.router({
+  getInbox: protectedBase.handler(async ({ context }) => userService.getInbox(context.user.id)),
+
+  acknowledgeInbox: protectedBase
+    .input(z.object({ itemId: z.string().min(1), idempotencyKey: z.string().min(1) }))
+    .handler(async ({ input, context }) => {
+      await userService.acknowledgeInbox(context.user.id, input.itemId, input.idempotencyKey);
+      return { success: true };
+    }),
   get: protectedBase.handler(async ({ context }) => {
     return userService.getUserResource(context.user.id);
   }),
