@@ -1,10 +1,12 @@
 import type { UserProfile__Output } from "~/generated/control/v1/interchat/control/v1/UserProfile";
+import type { UserActivity__Output } from "~/generated/control/v1/interchat/control/v1/UserActivity";
 import type { UserPreferences__Output } from "~/generated/control/v1/interchat/control/v1/UserPreferences";
 import type { UserInboxItem__Output } from "~/generated/control/v1/interchat/control/v1/UserInboxItem";
 import type { UserInboxResponse__Output } from "~/generated/control/v1/interchat/control/v1/UserInboxResponse";
 import type { RecordVoteResponse__Output } from "~/generated/control/v1/interchat/control/v1/RecordVoteResponse";
 import type { VoteProvider } from "~/generated/control/v1/interchat/control/v1/VoteProvider";
 import type { GetUserProfileRequest } from "~/generated/control/v1/interchat/control/v1/GetUserProfileRequest";
+import type { GetUserActivityRequest } from "~/generated/control/v1/interchat/control/v1/GetUserActivityRequest";
 import type { GetUserInboxRequest } from "~/generated/control/v1/interchat/control/v1/GetUserInboxRequest";
 import type { PatchUserPreferencesRequest } from "~/generated/control/v1/interchat/control/v1/PatchUserPreferencesRequest";
 import type { AcknowledgeInboxItemRequest } from "~/generated/control/v1/interchat/control/v1/AcknowledgeInboxItemRequest";
@@ -31,6 +33,32 @@ export interface UserPreferences {
   badgeVisibility: boolean;
   streakReminders: boolean;
   voteReminders: boolean;
+  streaksEnabled: boolean;
+}
+
+export interface UserActivityHub {
+  hubId: string;
+  hubName: string;
+  iconUrl?: string;
+  messageCount: number;
+  sharePercent: number;
+}
+
+export interface UserActivity {
+  userId: string;
+  currentStreak: number;
+  longestStreak: number;
+  streakFreezes: number;
+  lifetimeMessages: number;
+  messageRank: number;
+  activeHubCount: number;
+  totalHubMessages: number;
+  topHubs: UserActivityHub[];
+  completedCalls: number;
+  callRank: number;
+  showBadges: boolean;
+  streaksEnabled: boolean;
+  asOf?: string;
 }
 
 export interface UserInboxItem {
@@ -53,8 +81,33 @@ function toProfile(value: UserProfile__Output): UserProfile {
   return { id: value.id, username: value.username, displayName: value.displayName, avatarUrl: value.avatarUrl, streakDays: value.streakDays, totalRelayedMessages: value.totalRelayedMessages, createdAt: timestamp(value.createdAt) };
 }
 
+function toActivity(value: UserActivity__Output): UserActivity {
+  return {
+    userId: value.userId,
+    currentStreak: value.currentStreak,
+    longestStreak: value.longestStreak,
+    streakFreezes: value.streakFreezes,
+    lifetimeMessages: value.lifetimeMessages,
+    messageRank: value.messageRank,
+    activeHubCount: value.activeHubCount,
+    totalHubMessages: value.totalHubMessages,
+    topHubs: value.topHubs.map((hub) => ({
+      hubId: hub.hubId,
+      hubName: hub.hubName,
+      iconUrl: hub.iconUrl,
+      messageCount: hub.messageCount,
+      sharePercent: hub.sharePercent,
+    })),
+    completedCalls: value.completedCalls,
+    callRank: value.callRank,
+    showBadges: value.showBadges,
+    streaksEnabled: value.streaksEnabled,
+    asOf: timestamp(value.asOf),
+  };
+}
+
 function toPreferences(value: UserPreferences__Output): UserPreferences {
-  return { userId: value.userId, language: value.language, replyMention: value.replyMention, badgeVisibility: value.badgeVisibility, streakReminders: value.streakReminders, voteReminders: value.voteReminders };
+  return { userId: value.userId, language: value.language, replyMention: value.replyMention, badgeVisibility: value.badgeVisibility, streakReminders: value.streakReminders, voteReminders: value.voteReminders, streaksEnabled: value.streaksEnabled };
 }
 
 function toInboxItem(value: UserInboxItem__Output): UserInboxItem {
@@ -69,6 +122,25 @@ export const userService = {
       userId,
     });
     return toProfile(response);
+  },
+
+  async getUserActivity(
+    userId: string,
+    actorId: string,
+    options: { year?: number; month?: number; limit?: number } = {},
+  ): Promise<UserActivity> {
+    const clients = getServiceClients();
+    const response = await invokeUnary<GetUserActivityRequest, UserActivity__Output>(
+      clients.userClient.GetUserActivity.bind(clients.userClient),
+      {
+        context: makeRequestContext(actorId),
+        userId,
+        year: options.year || 0,
+        month: options.month || 0,
+        limit: options.limit || 5,
+      },
+    );
+    return toActivity(response);
   },
 
   async getUserPreferences(actorId: string): Promise<UserPreferences> {

@@ -36,6 +36,8 @@ import type { ServerBlock as _interchat_control_v1_ServerBlock, ServerBlock__Out
 import type { ServerMetadata as _interchat_control_v1_ServerMetadata, ServerMetadata__Output as _interchat_control_v1_ServerMetadata__Output } from './interchat/control/v1/ServerMetadata';
 import type { ServerSpec as _interchat_control_v1_ServerSpec, ServerSpec__Output as _interchat_control_v1_ServerSpec__Output } from './interchat/control/v1/ServerSpec';
 import type { ServerStatus as _interchat_control_v1_ServerStatus, ServerStatus__Output as _interchat_control_v1_ServerStatus__Output } from './interchat/control/v1/ServerStatus';
+import type { UserActivity as _interchat_control_v1_UserActivity, UserActivity__Output as _interchat_control_v1_UserActivity__Output } from './interchat/control/v1/UserActivity';
+import type { UserActivityHub as _interchat_control_v1_UserActivityHub, UserActivityHub__Output as _interchat_control_v1_UserActivityHub__Output } from './interchat/control/v1/UserActivityHub';
 import type { UserInboxItem as _interchat_control_v1_UserInboxItem, UserInboxItem__Output as _interchat_control_v1_UserInboxItem__Output } from './interchat/control/v1/UserInboxItem';
 import type { UserPreferences as _interchat_control_v1_UserPreferences, UserPreferences__Output as _interchat_control_v1_UserPreferences__Output } from './interchat/control/v1/UserPreferences';
 import type { UserProfile as _interchat_control_v1_UserProfile, UserProfile__Output as _interchat_control_v1_UserProfile__Output } from './interchat/control/v1/UserProfile';
@@ -95,6 +97,8 @@ export interface ProtoGrpcType {
         ServerMetadata: MessageTypeDefinition<_interchat_control_v1_ServerMetadata, _interchat_control_v1_ServerMetadata__Output>
         ServerSpec: MessageTypeDefinition<_interchat_control_v1_ServerSpec, _interchat_control_v1_ServerSpec__Output>
         ServerStatus: MessageTypeDefinition<_interchat_control_v1_ServerStatus, _interchat_control_v1_ServerStatus__Output>
+        UserActivity: MessageTypeDefinition<_interchat_control_v1_UserActivity, _interchat_control_v1_UserActivity__Output>
+        UserActivityHub: MessageTypeDefinition<_interchat_control_v1_UserActivityHub, _interchat_control_v1_UserActivityHub__Output>
         UserInboxItem: MessageTypeDefinition<_interchat_control_v1_UserInboxItem, _interchat_control_v1_UserInboxItem__Output>
         UserPreferences: MessageTypeDefinition<_interchat_control_v1_UserPreferences, _interchat_control_v1_UserPreferences__Output>
         UserProfile: MessageTypeDefinition<_interchat_control_v1_UserProfile, _interchat_control_v1_UserProfile__Output>

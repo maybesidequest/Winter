@@ -1,6 +1,6 @@
 import { redis } from "~/redis.server";
 import { permissionService } from "~/services/permission.server";
-import { controlUserService, type UserProfile, type UserPreferences } from "~/services/control.server";
+import { controlUserService, type UserProfile, type UserPreferences, type UserActivity } from "~/services/control.server";
 import type {
   UserResource,
   UserCallRecord,
@@ -38,6 +38,10 @@ export const SUPPORTED_LOCALES: SupportedLocale[] = [
 ];
 
 export const userService = {
+  async getActivity(userId: string, options?: { year?: number; month?: number; limit?: number }): Promise<UserActivity> {
+    return controlUserService.getUserActivity(userId, userId, options);
+  },
+
   async getInbox(userId: string) {
     return controlUserService.getUserInbox(userId);
   },

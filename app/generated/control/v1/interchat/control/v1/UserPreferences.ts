@@ -1,4 +1,4 @@
-// Original file: ../interchat-protobuf/control/v1/models.proto
+// Original file: /home/zev/Documents/code/interchat-protobuf/control/v1/models.proto
 
 
 export interface UserPreferences {
@@ -8,6 +8,7 @@ export interface UserPreferences {
   'badgeVisibility'?: (boolean);
   'streakReminders'?: (boolean);
   'voteReminders'?: (boolean);
+  'streaksEnabled'?: (boolean);
 }
 
 export interface UserPreferences__Output {
@@ -17,4 +18,5 @@ export interface UserPreferences__Output {
   'badgeVisibility': (boolean);
   'streakReminders': (boolean);
   'voteReminders': (boolean);
+  'streaksEnabled': (boolean);
 }

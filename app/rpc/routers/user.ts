@@ -10,6 +10,8 @@ import {
 export const userRouter = base.router({
   getProfile: protectedBase.handler(async ({ context }) => userService.getProfile(context.user.id)),
 
+  getActivity: protectedBase.handler(async ({ context }) => userService.getActivity(context.user.id)),
+
   getInbox: protectedBase.handler(async ({ context }) => userService.getInbox(context.user.id)),
 
   acknowledgeInbox: protectedBase

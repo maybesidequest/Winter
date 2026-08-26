@@ -9,6 +9,7 @@ import type { ConnectionMetadata as _interchat_control_v1_ConnectionMetadata, Co
 import type { ConnectionSpec as _interchat_control_v1_ConnectionSpec, ConnectionSpec__Output as _interchat_control_v1_ConnectionSpec__Output } from './interchat/control/v1/ConnectionSpec';
 import type { ConnectionStatus as _interchat_control_v1_ConnectionStatus, ConnectionStatus__Output as _interchat_control_v1_ConnectionStatus__Output } from './interchat/control/v1/ConnectionStatus';
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from './interchat/control/v1/EmptyResponse';
+import type { GetUserActivityRequest as _interchat_control_v1_GetUserActivityRequest, GetUserActivityRequest__Output as _interchat_control_v1_GetUserActivityRequest__Output } from './interchat/control/v1/GetUserActivityRequest';
 import type { GetUserInboxRequest as _interchat_control_v1_GetUserInboxRequest, GetUserInboxRequest__Output as _interchat_control_v1_GetUserInboxRequest__Output } from './interchat/control/v1/GetUserInboxRequest';
 import type { GetUserProfileRequest as _interchat_control_v1_GetUserProfileRequest, GetUserProfileRequest__Output as _interchat_control_v1_GetUserProfileRequest__Output } from './interchat/control/v1/GetUserProfileRequest';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from './interchat/control/v1/Hub';
@@ -43,6 +44,8 @@ import type { ServerMetadata as _interchat_control_v1_ServerMetadata, ServerMeta
 import type { ServerSpec as _interchat_control_v1_ServerSpec, ServerSpec__Output as _interchat_control_v1_ServerSpec__Output } from './interchat/control/v1/ServerSpec';
 import type { ServerStatus as _interchat_control_v1_ServerStatus, ServerStatus__Output as _interchat_control_v1_ServerStatus__Output } from './interchat/control/v1/ServerStatus';
 import type { SyncDiscordIdentityRequest as _interchat_control_v1_SyncDiscordIdentityRequest, SyncDiscordIdentityRequest__Output as _interchat_control_v1_SyncDiscordIdentityRequest__Output } from './interchat/control/v1/SyncDiscordIdentityRequest';
+import type { UserActivity as _interchat_control_v1_UserActivity, UserActivity__Output as _interchat_control_v1_UserActivity__Output } from './interchat/control/v1/UserActivity';
+import type { UserActivityHub as _interchat_control_v1_UserActivityHub, UserActivityHub__Output as _interchat_control_v1_UserActivityHub__Output } from './interchat/control/v1/UserActivityHub';
 import type { UserInboxItem as _interchat_control_v1_UserInboxItem, UserInboxItem__Output as _interchat_control_v1_UserInboxItem__Output } from './interchat/control/v1/UserInboxItem';
 import type { UserInboxResponse as _interchat_control_v1_UserInboxResponse, UserInboxResponse__Output as _interchat_control_v1_UserInboxResponse__Output } from './interchat/control/v1/UserInboxResponse';
 import type { UserPreferences as _interchat_control_v1_UserPreferences, UserPreferences__Output as _interchat_control_v1_UserPreferences__Output } from './interchat/control/v1/UserPreferences';
@@ -71,6 +74,7 @@ export interface ProtoGrpcType {
         ConnectionSpec: MessageTypeDefinition<_interchat_control_v1_ConnectionSpec, _interchat_control_v1_ConnectionSpec__Output>
         ConnectionStatus: MessageTypeDefinition<_interchat_control_v1_ConnectionStatus, _interchat_control_v1_ConnectionStatus__Output>
         EmptyResponse: MessageTypeDefinition<_interchat_control_v1_EmptyResponse, _interchat_control_v1_EmptyResponse__Output>
+        GetUserActivityRequest: MessageTypeDefinition<_interchat_control_v1_GetUserActivityRequest, _interchat_control_v1_GetUserActivityRequest__Output>
         GetUserInboxRequest: MessageTypeDefinition<_interchat_control_v1_GetUserInboxRequest, _interchat_control_v1_GetUserInboxRequest__Output>
         GetUserProfileRequest: MessageTypeDefinition<_interchat_control_v1_GetUserProfileRequest, _interchat_control_v1_GetUserProfileRequest__Output>
         Hub: MessageTypeDefinition<_interchat_control_v1_Hub, _interchat_control_v1_Hub__Output>
@@ -111,6 +115,8 @@ export interface ProtoGrpcType {
         ServerSpec: MessageTypeDefinition<_interchat_control_v1_ServerSpec, _interchat_control_v1_ServerSpec__Output>
         ServerStatus: MessageTypeDefinition<_interchat_control_v1_ServerStatus, _interchat_control_v1_ServerStatus__Output>
         SyncDiscordIdentityRequest: MessageTypeDefinition<_interchat_control_v1_SyncDiscordIdentityRequest, _interchat_control_v1_SyncDiscordIdentityRequest__Output>
+        UserActivity: MessageTypeDefinition<_interchat_control_v1_UserActivity, _interchat_control_v1_UserActivity__Output>
+        UserActivityHub: MessageTypeDefinition<_interchat_control_v1_UserActivityHub, _interchat_control_v1_UserActivityHub__Output>
         UserInboxItem: MessageTypeDefinition<_interchat_control_v1_UserInboxItem, _interchat_control_v1_UserInboxItem__Output>
         UserInboxResponse: MessageTypeDefinition<_interchat_control_v1_UserInboxResponse, _interchat_control_v1_UserInboxResponse__Output>
         UserPreferences: MessageTypeDefinition<_interchat_control_v1_UserPreferences, _interchat_control_v1_UserPreferences__Output>
