@@ -42,6 +42,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
     },
     { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: can("MANAGE_RULES") },
     {
+      path: "modules",
+      label: "Modules",
+      icon: <AppstoreOutlined />,
+      visible: can("MANAGE_HUB_SETTINGS"),
+    },
+    {
       path: "logging",
       label: "Logging",
       icon: <FileTextOutlined />,
