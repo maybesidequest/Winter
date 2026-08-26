@@ -7,7 +7,7 @@ import type {
 } from "~/resources/server";
 import { getDiscordAccessToken } from "~/services/oauthToken.server";
 import type { AddBlockInput, PatchCallConfigInput, RemoveBlockInput } from "~/schemas/server";
-import { controlServerService, controlConnectionService } from "~/services/control.server";
+import { controlServerService, controlConnectionService, controlHubService } from "~/services/control.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
@@ -226,17 +226,27 @@ export const serverService = {
       actorId: userId,
     });
 
-    return connections.map((conn) => ({
-      id: conn.metadata.id,
-      channelId: conn.metadata.channelId || "",
-      channelName: null,
-      hubId: conn.metadata.hubId || "",
-      hubName: conn.spec.customName || "Unavailable Hub",
-      hubIconUrl: null,
-      connected: conn.spec.connected,
-      pausedByBot: !conn.status.healthy,
-      pauseReason: conn.status.statusMessage || null,
-      createdAt: conn.metadata.createdAt || new Date().toISOString(),
+    return Promise.all(connections.map(async (conn) => {
+      let hub: Awaited<ReturnType<typeof controlHubService.getHub>> | undefined;
+      if (conn.metadata.hubId) {
+        try {
+          hub = await controlHubService.getHub(conn.metadata.hubId, userId);
+        } catch {
+          // A private or deleted Hub should not leak its internal ID.
+        }
+      }
+      return {
+        id: conn.metadata.id,
+        channelId: conn.metadata.channelId || "",
+        channelName: null,
+        hubId: conn.metadata.hubId || "",
+        hubName: hub?.metadata.name || conn.spec.customName || "Unavailable Hub",
+        hubIconUrl: hub?.spec.iconUrl || null,
+        connected: conn.spec.connected,
+        pausedByBot: !conn.status.healthy,
+        pauseReason: conn.status.statusMessage || null,
+        createdAt: conn.metadata.createdAt || new Date().toISOString(),
+      };
     }));
   },
 
