@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, InputNumber, List, Modal, Typography, message, Popconfirm, Tag } from "antd";
 import { PlusOutlined, DeleteOutlined, CopyOutlined } from "@ant-design/icons";
@@ -18,6 +18,8 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [maxUses, setMaxUses] = useState<number>(0);
   const [durationSeconds, setDurationSeconds] = useState<number>(86400);
+  const createKeyRef = useRef(crypto.randomUUID());
+  const revokeKeysRef = useRef(new Map<string, string>());
 
   const { data: invites = [], isLoading } = useQuery(
     orpc.hub.listInvites.queryOptions({ input: { hubId: hub.metadata.id } })
@@ -28,6 +30,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
       onSuccess: () => {
         message.success("Invite created successfully.");
         setModalOpen(false);
+        createKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listInvites.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to create invite."),
@@ -49,6 +52,14 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
     message.success("Invite code copied to clipboard!");
   };
 
+  const revokeKeyFor = (inviteCode: string) => {
+    const existing = revokeKeysRef.current.get(inviteCode);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    revokeKeysRef.current.set(inviteCode, created);
+    return created;
+  };
+
   return (
     <DashboardSectionCard
       title={<DashboardSectionTitle>Hub Invites</DashboardSectionTitle>}
@@ -59,7 +70,10 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
             size="small"
             icon={<PlusOutlined />}
             className="dashboard-btn-primary"
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              createKeyRef.current = crypto.randomUUID();
+              setModalOpen(true);
+            }}
           >
             Create Invite
           </Button>
@@ -88,11 +102,14 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
                       key="del"
                       title="Revoke this invite code?"
                       onConfirm={() =>
-                        revokeMutation.mutate({
-                          hubId: hub.metadata.id,
-                          inviteCode: item.code,
-                          idempotencyKey: crypto.randomUUID(),
-                        })
+                        revokeMutation.mutate(
+                          {
+                            hubId: hub.metadata.id,
+                            inviteCode: item.code,
+                            idempotencyKey: revokeKeyFor(item.code),
+                          },
+                          { onSuccess: () => revokeKeysRef.current.delete(item.code) },
+                        )
                       }
                     >
                       <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -128,7 +145,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
             hubId: hub.metadata.id,
             maxUses,
             durationSeconds,
-            idempotencyKey: crypto.randomUUID(),
+            idempotencyKey: createKeyRef.current,
           })
         }
         onCancel={() => setModalOpen(false)}
@@ -165,4 +182,3 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
     </DashboardSectionCard>
   );
 }
-
