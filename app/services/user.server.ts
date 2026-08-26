@@ -76,9 +76,10 @@ export const userService = {
   },
 
   async getUserResource(userId: string): Promise<UserResource> {
-    const [profile, prefs] = await Promise.all([
+    const [profile, prefs, activity] = await Promise.all([
       controlUserService.getUserProfile(userId, userId),
       controlUserService.getUserPreferences(userId),
+      controlUserService.getUserActivity(userId, userId),
     ]);
 
     const isStaff = await permissionService.checkIsStaff(userId).catch(() => false);
@@ -110,16 +111,16 @@ export const userService = {
         isStaff,
         badges: [],
         reputation: 0,
-        messageCount: profile.totalRelayedMessages,
-        callCount: 0,
-        hubJoinCount: 0,
-        currentStreak: profile.streakDays,
-        longestStreak: profile.streakDays,
-        streakFreezes: 0,
+        messageCount: activity.lifetimeMessages,
+        callCount: activity.completedCalls,
+        hubJoinCount: activity.activeHubCount,
+        currentStreak: activity.currentStreak,
+        longestStreak: activity.longestStreak,
+        streakFreezes: activity.streakFreezes,
         lastStreakDate: null,
         lastVoted: null,
         voteCount: 0,
-        hubsCount: 0,
+        hubsCount: activity.activeHubCount,
         serversCount: 0,
         customerId: null,
       },
