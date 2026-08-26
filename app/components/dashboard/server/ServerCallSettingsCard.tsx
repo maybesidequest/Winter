@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Select, message } from "antd";
 import { SaveOutlined, LockOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { dashboardGlassCardStyle, DepthToggle } from "~/components/dashboard/shared";
@@ -6,17 +6,13 @@ import type { DiscordChannelResource, ServerResource } from "~/resources/server"
 import { orpcClient as orpc } from "~/lib/orpc";
 
 type CallSpec = ServerResource["spec"];
+type EditableCallKey = "pingOnMatch" | "autoRequeueOnSkip" | "filterNsfw";
 
 const TOGGLES: Array<{
-  key: keyof Omit<CallSpec, "lobbyChannelIds">;
+  key: EditableCallKey;
   label: string;
   description: string;
 }> = [
-  {
-    key: "hideServerName",
-    label: "Hide server name",
-    description: "Keep this server’s name and invite private from matched communities in calls.",
-  },
   {
     key: "pingOnMatch",
     label: "Ping on match",
@@ -26,11 +22,6 @@ const TOGGLES: Array<{
     key: "autoRequeueOnSkip",
     label: "Requeue after skip",
     description: "Automatically search for another text Call after a participant skips the match.",
-  },
-  {
-    key: "autoRequeueOnHangup",
-    label: "Requeue after hangup",
-    description: "Automatically return to matchmaking queue after the current Call ends.",
   },
   {
     key: "filterNsfw",
@@ -47,13 +38,16 @@ interface ServerCallSettingsCardProps {
 export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsCardProps) {
   const [spec, setSpec] = useState<CallSpec>(server.spec);
   const [saving, setSaving] = useState(false);
+  const [version, setVersion] = useState(server.version ?? 1);
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
 
   useEffect(() => {
     setSpec(server.spec);
+    setVersion(server.version ?? 1);
   }, [server]);
 
-  const updateToggle = (key: keyof Omit<CallSpec, "lobbyChannelIds">, value: boolean) => {
+  const updateToggle = (key: EditableCallKey, value: boolean) => {
     setSpec((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -65,13 +59,21 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
     if (!isInstalled) return;
     setSaving(true);
     try {
-      await orpc.server.patchCallConfig({
+      const result = await orpc.server.patchCallConfig({
         serverId: server.metadata.id,
-        ...spec,
+        pingOnMatch: spec.pingOnMatch,
+        autoRequeueOnSkip: spec.autoRequeueOnSkip,
+        filterNsfw: spec.filterNsfw,
+        lobbyChannelIds: spec.lobbyChannelIds,
+        expectedVersion: version,
+        idempotencyKey: idempotencyKeyRef.current,
       });
+      setVersion(result.server?.version ?? version + 1);
+      idempotencyKeyRef.current = crypto.randomUUID();
       message.success("Call settings saved successfully.");
-    } catch (err: any) {
-      message.error(err?.message || "Failed to save call settings.");
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : "Failed to save call settings.";
+      message.error(detail);
     } finally {
       setSaving(false);
     }
@@ -119,6 +121,7 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
             disabled={!isInstalled}
             value={spec.lobbyChannelIds}
             onChange={updateChannels}
+            maxCount={1}
             placeholder="Select specific text channels (leave empty to allow all)"
             className="w-full custom-glass-select"
             options={channels.map((ch) => ({

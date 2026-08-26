@@ -161,6 +161,7 @@ export const serverService = {
           ...res.status,
           manageable: true,
         },
+        version: res.version,
       };
     } catch (error) {
       if (!isControlNotFound(error)) throw error;
@@ -204,19 +205,23 @@ export const serverService = {
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
     const guild = await assertManageable(userId, input.serverId, true);
     const current = await controlServerService.getServer(input.serverId, userId);
-    await controlServerService.patchServer({
+    const updateMask: string[] = ["call_ping", "call_requeue", "call_nsfw_filter"];
+    const callChannelId = input.lobbyChannelIds[0] || "";
+    updateMask.push("call_channel_id");
+    const updated = await controlServerService.patchServer({
       serverId: input.serverId,
       spec: {
+        callChannelId,
         callPing: input.pingOnMatch,
         callRequeue: input.autoRequeueOnSkip,
         callNsfwFilter: input.filterNsfw,
       },
-      updateMask: ["call_ping", "call_requeue", "call_nsfw_filter"],
-      expectedVersion: current.version || 1,
+      updateMask,
+      expectedVersion: input.expectedVersion || current.version || 1,
       actorId: userId,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: input.idempotencyKey,
     });
-    return { success: true, serverName: guild.name };
+    return { success: true, serverName: guild.name, server: updated };
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
