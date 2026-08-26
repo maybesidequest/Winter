@@ -47,7 +47,9 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
 
   const handleAssign = () => {
     if (!userId.trim()) return message.error("User ID is required.");
-    const bitmask = role === "MANAGER" ? 6 : 2;
+    // Keep the dashboard assignment equivalent to the Bot's built-in role
+    // templates. The Control Plane remains the authority for final validation.
+    const bitmask = role === "MANAGER" ? 3839 : 1535;
     assignMutation.mutate({
       hubId: hub.metadata.id,
       userId: userId.trim(),
@@ -161,4 +163,3 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     </DashboardSectionCard>
   );
 }
-
