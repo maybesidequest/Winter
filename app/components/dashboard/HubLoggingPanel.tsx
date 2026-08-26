@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
@@ -20,6 +20,8 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
   const [logMessages, setLogMessages] = useState<boolean>(true);
   const [logModeration, setLogModeration] = useState<boolean>(true);
   const [logConnections, setLogConnections] = useState<boolean>(true);
+  const saveKeyRef = useRef(crypto.randomUUID());
+  const submittedDraftRef = useRef<string | null>(null);
   const logQuery = useQuery(orpc.hub.getLogConfig.queryOptions({ input: { hubId: hub.metadata.id } }));
   useEffect(() => {
     if (!logQuery.data) return;
@@ -34,6 +36,8 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
     orpc.hub.patchLogConfig.mutationOptions({
       onSuccess: () => {
         message.success("Logging configuration saved.");
+        submittedDraftRef.current = null;
+        saveKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
         queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
@@ -47,14 +51,19 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
     if (logModeration) flags |= 2;
     if (logConnections) flags |= 4;
 
-    patchLogMutation.mutate({
+    const input = {
       hubId: hub.metadata.id,
       channelId: channelId.trim(),
       eventFlags: flags,
       notificationRoleId: notificationRoleId.trim() || undefined,
       expectedVersion: hub.version,
-      idempotencyKey: crypto.randomUUID(),
-    });
+    };
+    const draft = JSON.stringify(input);
+    if (submittedDraftRef.current !== draft) {
+      saveKeyRef.current = crypto.randomUUID();
+      submittedDraftRef.current = draft;
+    }
+    patchLogMutation.mutate({ ...input, idempotencyKey: saveKeyRef.current });
   };
 
   return (
