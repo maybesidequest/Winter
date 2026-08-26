@@ -10,6 +10,7 @@ export default [
     route("dashboard/inbox", "routes/dashboard/inbox.tsx"),
     route("dashboard/profile", "routes/dashboard/profile.tsx"),
     route("dashboard/activity", "routes/dashboard/activity.tsx"),
+    route("dashboard/help", "routes/dashboard/help.tsx"),
     route("dashboard/browse", "routes/dashboard/browse.tsx"),
     route("dashboard/hubs", "routes/dashboard/hubs.tsx"),
     route("dashboard/hubs/:hubId/:view?", "routes/dashboard/hub-workspace.tsx"),
