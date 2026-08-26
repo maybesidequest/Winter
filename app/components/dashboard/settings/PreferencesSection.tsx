@@ -81,6 +81,13 @@ export function PreferencesSection({
         </a>
       ),
     },
+    {
+      id: "streaksEnabled",
+      title: "Personal Streaks",
+      desc: "Count qualifying activity toward streaks, freezes, and milestone badges.",
+      checked: spec.streaksEnabled,
+      onChange: (checked: boolean) => handleToggle("streaksEnabled", checked),
+    },
   ];
 
   return (

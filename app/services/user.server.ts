@@ -99,6 +99,7 @@ export const userService = {
         mentionOnReply: prefs?.replyMention ?? true,
         showNsfwHubs: false,
         voteRemindersEnabled: prefs?.voteReminders ?? true,
+        streaksEnabled: prefs?.streaksEnabled ?? true,
         activityLevel: null,
         theme: dashboardPrefs.theme ?? "system",
         compactMode: dashboardPrefs.compactMode ?? false,
@@ -137,6 +138,7 @@ export const userService = {
           badgeVisibility: input.showBadges,
           replyMention: input.mentionOnReply,
           voteReminders: input.voteRemindersEnabled,
+          streaksEnabled: input.streaksEnabled,
         },
         idempotencyKey: crypto.randomUUID(),
       });
@@ -173,6 +175,7 @@ export const userService = {
       mentionOnReply: res.spec.mentionOnReply,
       showNsfwHubs: res.spec.showNsfwHubs,
       voteRemindersEnabled: res.spec.voteRemindersEnabled,
+      streaksEnabled: res.spec.streaksEnabled,
       showBadges: res.spec.showBadges,
       dashboardPreference: {
         theme: res.spec.theme,
@@ -190,6 +193,7 @@ export const userService = {
       mentionOnReply: input.mentionOnReply,
       showNsfwHubs: input.showNsfwHubs,
       voteRemindersEnabled: input.voteRemindersEnabled,
+      streaksEnabled: input.streaksEnabled,
     });
     if (input.dashboardPreference) {
       await this.patchDashboardPreferences(userId, input.dashboardPreference);

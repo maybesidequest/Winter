@@ -13,6 +13,7 @@ export type UserSpec = {
   mentionOnReply: boolean;
   showNsfwHubs: boolean;
   voteRemindersEnabled: boolean;
+  streaksEnabled: boolean;
   activityLevel: "LOW" | "MEDIUM" | "HIGH" | null;
   theme: "system" | "night" | "paper";
   compactMode: boolean;

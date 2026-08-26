@@ -23,6 +23,7 @@ export const preferencesRouter = base.router({
       mentionOnReply: z.boolean().optional(),
       showNsfwHubs: z.boolean().optional(),
       voteRemindersEnabled: z.boolean().optional(),
+      streaksEnabled: z.boolean().optional(),
       showBadges: z.boolean().optional(),
       dashboardPreference: z.record(z.string(), z.any()).optional(),
     }))

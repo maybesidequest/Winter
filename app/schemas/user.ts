@@ -6,6 +6,7 @@ export const patchUserPreferencesSchema = z.object({
   mentionOnReply: z.boolean().optional(),
   showNsfwHubs: z.boolean().optional(),
   voteRemindersEnabled: z.boolean().optional(),
+  streaksEnabled: z.boolean().optional(),
   activityLevel: z.enum(["LOW", "MEDIUM", "HIGH"]).nullable().optional(),
 });
 
