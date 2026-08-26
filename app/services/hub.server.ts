@@ -4,6 +4,7 @@ import { permissionService } from "~/services/permission.server";
 import { irisClient } from "~/services/iris.server";
 import { controlHubService } from "~/services/control.server";
 import { hubFeaturesService } from "~/services/hubFeatures.server";
+import { isCapabilityEnabled } from "~/services/capabilities.server";
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
@@ -114,7 +115,10 @@ export const hubService = {
         "idempotencyKey",
         "version",
       ]);
-      const unsupportedFields = Object.keys(input).filter((field) => !phase1Fields.has(field));
+      const unsupportedFields = Object.keys(input).filter((field) => {
+        if (field === "settings") return !isCapabilityEnabled("HUB_CONFIG");
+        return !phase1Fields.has(field);
+      });
       if (unsupportedFields.length > 0) {
         return {
           success: false,
