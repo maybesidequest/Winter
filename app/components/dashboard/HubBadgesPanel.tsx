@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
@@ -18,6 +18,8 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
   const [ownerBadge, setOwnerBadge] = useState<string>("");
   const [managerBadge, setManagerBadge] = useState<string>("");
   const [moderatorBadge, setModeratorBadge] = useState<string>("");
+  const saveKeyRef = useRef(crypto.randomUUID());
+  const submittedDraftRef = useRef<string | null>(null);
   const badgesQuery = useQuery(orpc.hub.getBadges.queryOptions({ input: { hubId: hub.metadata.id } }));
 
   useEffect(() => {
@@ -31,6 +33,8 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
     orpc.hub.patchBadges.mutationOptions({
       onSuccess: () => {
         message.success("Badges configuration saved.");
+        submittedDraftRef.current = null;
+        saveKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
         queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
@@ -39,14 +43,19 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
   );
 
   const handleSave = () => {
-    patchBadgesMutation.mutate({
+    const input = {
       hubId: hub.metadata.id,
       ownerBadge: ownerBadge.trim() || undefined,
       managerBadge: managerBadge.trim() || undefined,
       moderatorBadge: moderatorBadge.trim() || undefined,
       expectedVersion: hub.version,
-      idempotencyKey: crypto.randomUUID(),
-    });
+    };
+    const draft = JSON.stringify(input);
+    if (submittedDraftRef.current !== draft) {
+      saveKeyRef.current = crypto.randomUUID();
+      submittedDraftRef.current = draft;
+    }
+    patchBadgesMutation.mutate({ ...input, idempotencyKey: saveKeyRef.current });
   };
 
   return (
