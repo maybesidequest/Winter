@@ -108,7 +108,7 @@ export function HubWorkspaceTabs({
     case "invites":
       return (
         <div className="max-w-4xl">
-          <HubInvitesPanel hub={hub} canEdit={canEdit} />
+          <HubInvitesPanel hub={hub} canEdit={can("MANAGE_INVITES")} />
         </div>
       );
     case "team":
@@ -120,7 +120,7 @@ export function HubWorkspaceTabs({
     case "announcements":
       return (
         <div className="max-w-4xl">
-          <HubAnnouncementsPanel hub={hub} canEdit={canEdit} />
+          <HubAnnouncementsPanel hub={hub} canEdit={can("ANNOUNCE")} />
         </div>
       );
     default:

@@ -6,6 +6,8 @@ export const PERMISSION_ACTIONS = [
   "MANAGE_RULES",
   "VIEW_ANALYTICS",
   "VIEW_LOGS",
+  "MANAGE_LOGS",
+  "MANAGE_INVITES",
   "MANAGE_BANS",
   "MANAGE_GLOBAL_BLACKLISTS",
   "HANDLE_LOBBY_REPORTS",
@@ -32,6 +34,8 @@ export const PERMISSION_BITMASKS: Record<PermissionAction, number> = {
   MANAGE_RULES: 16,              // 1 << 4
   VIEW_ANALYTICS: 32,            // 1 << 5
   VIEW_LOGS: 64,                 // 1 << 6
+  MANAGE_LOGS: 64,               // Control Plane alias for logging access
+  MANAGE_INVITES: 16384,         // 1 << 14
   MANAGE_BANS: 128,              // 1 << 7
   MANAGE_GLOBAL_BLACKLISTS: 256, // 1 << 8
   HANDLE_LOBBY_REPORTS: 512,     // 1 << 9
@@ -52,6 +56,8 @@ export const ALL_PERMISSIONS: Record<PermissionAction, boolean> = {
   MANAGE_RULES: true,
   VIEW_ANALYTICS: true,
   VIEW_LOGS: true,
+  MANAGE_LOGS: true,
+  MANAGE_INVITES: true,
   MANAGE_BANS: true,
   MANAGE_GLOBAL_BLACKLISTS: true,
   HANDLE_LOBBY_REPORTS: true,
@@ -76,6 +82,8 @@ export const ROLE_PERMISSIONS: RolePermissionsConfig = {
     MANAGE_RULES: true,
     VIEW_ANALYTICS: true,
     VIEW_LOGS: true,
+    MANAGE_LOGS: true,
+    MANAGE_INVITES: true,
     MANAGE_BANS: true,
     MANAGE_GLOBAL_BLACKLISTS: true,
     HANDLE_LOBBY_REPORTS: true,
@@ -92,6 +100,8 @@ export const ROLE_PERMISSIONS: RolePermissionsConfig = {
     MANAGE_RULES: true,
     VIEW_ANALYTICS: true,
     VIEW_LOGS: true,
+    MANAGE_LOGS: true,
+    MANAGE_INVITES: false,
     MANAGE_BANS: false,
     MANAGE_GLOBAL_BLACKLISTS: false,
     HANDLE_LOBBY_REPORTS: true,
@@ -108,6 +118,8 @@ export const ROLE_PERMISSIONS: RolePermissionsConfig = {
     MANAGE_RULES: false,
     VIEW_ANALYTICS: false,
     VIEW_LOGS: true,
+    MANAGE_LOGS: true,
+    MANAGE_INVITES: false,
     MANAGE_BANS: false,
     MANAGE_GLOBAL_BLACKLISTS: false,
     HANDLE_LOBBY_REPORTS: false,

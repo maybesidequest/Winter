@@ -63,7 +63,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
       path: "invites",
       label: "Invites",
       icon: <LinkOutlined />,
-      visible: can("MANAGE_HUB_SETTINGS"),
+      visible: can("MANAGE_INVITES"),
     },
     {
       path: "team",
