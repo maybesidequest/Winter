@@ -16,6 +16,9 @@ import {
   patchHubLogConfigSchema,
   assignHubStaffSchema,
   removeHubStaffSchema,
+  createHubRoleSchema,
+  updateHubRoleSchema,
+  deleteHubRoleSchema,
 } from "~/schemas/hub";
 
 export const hubFeaturesRouter = protectedBase.router({
@@ -139,6 +142,35 @@ export const hubFeaturesRouter = protectedBase.router({
     .handler(async ({ input, context }) => {
       requireCapability("HUB_TEAM");
       await hubService.removeStaffRole(context.user.id, input);
+      return { success: true };
+    }),
+
+  listRoles: protectedBase
+    .input(z.object({ hubId: z.string() }))
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
+      return hubService.listRoles(context.user.id, input.hubId);
+    }),
+
+  createRole: protectedBase
+    .input(createHubRoleSchema)
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
+      return hubService.createRole(context.user.id, input);
+    }),
+
+  updateRole: protectedBase
+    .input(updateHubRoleSchema)
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
+      return hubService.updateRole(context.user.id, input);
+    }),
+
+  deleteRole: protectedBase
+    .input(deleteHubRoleSchema)
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_TEAM");
+      await hubService.deleteRole(context.user.id, input);
       return { success: true };
     }),
 });

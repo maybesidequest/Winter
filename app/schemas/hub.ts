@@ -164,6 +164,26 @@ export const removeHubStaffSchema = z.object({
   idempotencyKey: z.string().default(() => crypto.randomUUID()),
 });
 
+export const createHubRoleSchema = z.object({
+  hubId: z.string(),
+  name: z.string().trim().min(1).max(64),
+  permissionsBitmask: z.number().int().nonnegative(),
+  position: z.number().int().default(0),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
+export const updateHubRoleSchema = createHubRoleSchema.extend({
+  roleId: z.string().min(1),
+  expectedVersion: z.number().int().positive(),
+});
+
+export const deleteHubRoleSchema = z.object({
+  hubId: z.string(),
+  roleId: z.string().min(1),
+  expectedVersion: z.number().int().positive(),
+  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+});
+
 export const lockdownHubSchema = z.object({
   hubId: z.string(),
   locked: z.boolean(),
@@ -185,4 +205,3 @@ export const deleteHubSchema = z.object({
   expectedVersion: z.number().int().default(1),
   idempotencyKey: z.string().default(() => crypto.randomUUID()),
 });
-
