@@ -9,6 +9,7 @@ import type { ServerServiceClient } from "~/generated/control/v1/interchat/contr
 import type { UserServiceClient } from "~/generated/control/v1/interchat/control/v1/UserService";
 import type { ModerationServiceClient } from "~/generated/control/v1/interchat/control/v1/ModerationService";
 import type { RequestContext as GeneratedRequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
+import type { ActorType as GeneratedActorType } from "~/generated/control/v1/interchat/control/v1/ActorType";
 
 type ServiceConstructor<T extends grpc.Client> = new (
   address: string,
@@ -184,7 +185,8 @@ export function deepToCamelCase<T = unknown>(obj: unknown): T {
 export function makeRequestContext(
   actorId: string,
   mutation = false,
-  idempotencyKey = ""
+  idempotencyKey = "",
+  actorType: GeneratedActorType = "ACTOR_TYPE_HUMAN",
 ): RequestContext {
   if (mutation && !idempotencyKey) {
     throw new Error("Idempotency key is required for mutations.");
@@ -196,7 +198,7 @@ export function makeRequestContext(
     requestId: reqId,
     actorId: actorId,
     servicePrincipal: "interchat-winter",
-    actorType: "ACTOR_TYPE_HUMAN",
+    actorType,
     idempotencyKey: idemKey,
     traceId: trId,
     source: "WINTER",

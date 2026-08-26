@@ -124,7 +124,7 @@ export const userService = {
   }): Promise<UserProfile> {
     const clients = getServiceClients();
     const response = await invokeUnary<SyncDiscordIdentityRequest, UserProfile__Output>(clients.userClient.SyncDiscordIdentity.bind(clients.userClient), {
-      context: makeRequestContext(input.discordUserId),
+      context: makeRequestContext(input.discordUserId, true, crypto.randomUUID(), "ACTOR_TYPE_SERVICE"),
       discordUserId: input.discordUserId,
       username: input.username,
       displayName: input.displayName,
