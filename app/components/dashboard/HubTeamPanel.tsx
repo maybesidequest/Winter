@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, InputNumber, List, Modal, Select, Tag, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
@@ -23,6 +23,11 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
   const [editingRole, setEditingRole] = useState<(typeof roles)[number] | null>(null);
   const [editingRoleName, setEditingRoleName] = useState("");
   const [editingRolePermissions, setEditingRolePermissions] = useState(0);
+  const assignKeyRef = useRef(crypto.randomUUID());
+  const createRoleKeyRef = useRef(crypto.randomUUID());
+  const updateRoleKeyRef = useRef(crypto.randomUUID());
+  const deleteRoleKeysRef = useRef(new Map<string, string>());
+  const removeStaffKeysRef = useRef(new Map<string, string>());
 
   const { data: staff = [], isLoading } = useQuery(
     orpc.hub.listStaff.queryOptions({ input: { hubId: hub.metadata.id } })
@@ -37,6 +42,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
         message.success("Staff member assigned.");
         setModalOpen(false);
         setUserId("");
+        assignKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listStaff.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to assign staff role."),
@@ -48,6 +54,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       onSuccess: () => {
         message.success("Role created.");
         setRoleName("");
+        createRoleKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to create role."),
@@ -69,6 +76,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       onSuccess: () => {
         message.success("Role updated.");
         setEditingRole(null);
+        updateRoleKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update role."),
@@ -85,6 +93,14 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     })
   );
 
+  const keyFor = (keys: Map<string, string>, resourceId: string) => {
+    const existing = keys.get(resourceId);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    keys.set(resourceId, created);
+    return created;
+  };
+
   const handleAssign = () => {
     if (!userId.trim()) return message.error("User ID is required.");
     // Keep the dashboard assignment equivalent to the Bot's built-in role
@@ -96,7 +112,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       userId: userId.trim(),
       role,
       permissionsBitmask: selected.spec.permissionsBitmask,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: assignKeyRef.current,
     });
   };
 
@@ -110,7 +126,10 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
             size="small"
             icon={<PlusOutlined />}
             className="dashboard-btn-primary"
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              assignKeyRef.current = crypto.randomUUID();
+              setModalOpen(true);
+            }}
           >
             Assign Staff
           </Button>
@@ -122,7 +141,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
           <Input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="New role name" />
           <InputNumber min={0} value={rolePermissions} onChange={(value) => setRolePermissions(value ?? 0)} />
           <Button
-            onClick={() => createRoleMutation.mutate({ hubId: hub.metadata.id, name: roleName, permissionsBitmask: rolePermissions, position: 0, idempotencyKey: crypto.randomUUID() })}
+            onClick={() => createRoleMutation.mutate({ hubId: hub.metadata.id, name: roleName, permissionsBitmask: rolePermissions, position: 0, idempotencyKey: createRoleKeyRef.current })}
             loading={createRoleMutation.isPending}
           >
             Create role
@@ -144,6 +163,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                   setEditingRole(item);
                   setEditingRoleName(item.spec.name);
                   setEditingRolePermissions(item.spec.permissionsBitmask);
+                  updateRoleKeyRef.current = crypto.randomUUID();
                 }}
               >
                 Edit
@@ -151,7 +171,12 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
               <Popconfirm
                 key="delete-role"
                 title="Delete this role?"
-                onConfirm={() => deleteRoleMutation.mutate({ hubId: hub.metadata.id, roleId: item.metadata.id, expectedVersion: item.version, idempotencyKey: crypto.randomUUID() })}
+                onConfirm={() =>
+                  deleteRoleMutation.mutate(
+                    { hubId: hub.metadata.id, roleId: item.metadata.id, expectedVersion: item.version, idempotencyKey: keyFor(deleteRoleKeysRef.current, item.metadata.id) },
+                    { onSuccess: () => deleteRoleKeysRef.current.delete(item.metadata.id) },
+                  )
+                }
               >
                 <Button type="text" danger size="small">Delete</Button>
               </Popconfirm>,
@@ -176,7 +201,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
             permissionsBitmask: editingRolePermissions,
             position: editingRole.spec.position,
             expectedVersion: editingRole.version,
-            idempotencyKey: crypto.randomUUID(),
+            idempotencyKey: updateRoleKeyRef.current,
           });
         }}
       >
@@ -197,11 +222,14 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                       key="del"
                       title="Remove this staff member?"
                       onConfirm={() =>
-                        removeMutation.mutate({
-                          hubId: hub.metadata.id,
-                          userId: item.metadata.userId,
-                          idempotencyKey: crypto.randomUUID(),
-                        })
+                        removeMutation.mutate(
+                          {
+                            hubId: hub.metadata.id,
+                            userId: item.metadata.userId,
+                            idempotencyKey: keyFor(removeStaffKeysRef.current, item.metadata.userId),
+                          },
+                          { onSuccess: () => removeStaffKeysRef.current.delete(item.metadata.userId) },
+                        )
                       }
                     >
                       <Button type="text" danger icon={<DeleteOutlined />} size="small" />
