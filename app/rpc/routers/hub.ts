@@ -33,7 +33,7 @@ export const hubRouter = base.router({
   createHub: protectedBase
     .input(createHubSchema)
     .handler(async ({ input, context }) => {
-      const result = await hubService.createHub(context.user.id, input);
+      const result = await hubService.createHub(context.user.id, input, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
       }

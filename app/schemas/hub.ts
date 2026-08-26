@@ -44,6 +44,8 @@ export const createHubSchema = z.object({
   welcomeMessage: z.string().optional(),
   iconUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
+  // Generated once at the mutation boundary and reused if the request is retried.
+  idempotencyKey: z.string().min(1).optional(),
 });
 
 export type CreateHubInput = z.infer<typeof createHubSchema>;

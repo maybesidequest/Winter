@@ -24,6 +24,7 @@ export function CreateHubWizard({ mode, open = false, onCancel, isFirstHub, onCr
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<HubFormValues>({ ...INITIAL_FORM });
   const handledHubIdRef = useRef<string | null>(null);
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   const createHubMutation = useMutation(
     orpc.hub.createHub.mutationOptions({
@@ -52,6 +53,7 @@ export function CreateHubWizard({ mode, open = false, onCancel, isFirstHub, onCr
     setFormData({ ...INITIAL_FORM });
     setFieldErrors({});
     handledHubIdRef.current = null;
+    idempotencyKeyRef.current = crypto.randomUUID();
   }, [isOpen]);
 
   useEffect(() => {
@@ -96,7 +98,7 @@ export function CreateHubWizard({ mode, open = false, onCancel, isFirstHub, onCr
       return;
     }
     setFieldErrors({});
-    createHubMutation.mutate(parsed.data as any);
+    createHubMutation.mutate({ ...parsed.data, idempotencyKey: idempotencyKeyRef.current });
   };
 
   const shell = (
