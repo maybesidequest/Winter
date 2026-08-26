@@ -16,6 +16,10 @@ const DEFAULT_HUB_ICON_URL = "https://interchat.tech/images/interchat.png";
 function controlErrorMessage(error: unknown, fallback: string): string {
   const rpcError = error as { code?: number; details?: string; message?: string };
   switch (rpcError.code) {
+    case 5:
+      // The Hub may have been deleted or may be private to this actor.  Do not
+      // relay Control Plane details here: they can contain the internal Hub ID.
+      return "This Hub is no longer available.";
     case 3:
       return rpcError.details || "The submitted values are invalid.";
     case 6:
