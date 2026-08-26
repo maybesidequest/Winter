@@ -1,9 +1,10 @@
-import { Select } from "antd";
+import { Select, message } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
 import { DepthToggle } from "~/components/dashboard/shared";
 import type { UserResource, SupportedLocale } from "~/resources/user";
 import { orpc } from "~/lib/orpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PatchUserPreferencesInput } from "~/schemas/user";
 
 interface PreferencesSectionProps {
   userResource?: UserResource;
@@ -22,6 +23,7 @@ export function PreferencesSection({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: orpc.user.get.queryOptions().queryKey });
       },
+      onError: (error) => message.error(error.message || "Preferences could not be saved."),
     })
   );
 
@@ -37,7 +39,7 @@ export function PreferencesSection({
 
   const { spec } = userResource;
 
-  const handleToggle = (key: keyof typeof spec, value: any) => {
+  const handleToggle = (key: keyof PatchUserPreferencesInput, value: string | boolean) => {
     mutation.mutate({ [key]: value });
   };
 
@@ -117,9 +119,10 @@ export function PreferencesSection({
           </p>
         </div>
         <div className="w-full sm:w-48">
-          <Select
-            value={spec.locale || "en"}
-            onChange={(val) => handleToggle("locale", val)}
+            <Select
+              value={spec.locale || "en"}
+              onChange={(val) => handleToggle("locale", val)}
+              disabled={mutation.isPending}
             className="w-full"
             popupClassName="dashboard-dropdown-panel"
             options={locales.map((loc) => ({
@@ -155,6 +158,7 @@ export function PreferencesSection({
               <DepthToggle
                 checked={row.checked}
                 onChange={row.onChange}
+                disabled={mutation.isPending}
                 aria-label={row.title}
               />
             </div>
