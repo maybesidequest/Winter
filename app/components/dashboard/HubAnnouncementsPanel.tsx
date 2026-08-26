@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, EditOutlined, SendOutlined } from "@ant-design/icons";
@@ -18,6 +18,9 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [content, setContent] = useState("");
+  const createKeyRef = useRef(crypto.randomUUID());
+  const updateKeyRef = useRef(crypto.randomUUID());
+  const deleteKeysRef = useRef(new Map<string, string>());
 
   const { data: announcements = [], isLoading } = useQuery(
     orpc.hub.listAnnouncements.queryOptions({ input: { hubId: hub.metadata.id } })
@@ -29,6 +32,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         message.success("Announcement created and broadcasted.");
         setModalOpen(false);
         setContent("");
+        createKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listAnnouncements.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to create announcement."),
@@ -42,6 +46,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         setModalOpen(false);
         setEditingId(null);
         setContent("");
+        updateKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listAnnouncements.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update announcement."),
@@ -58,6 +63,14 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
     })
   );
 
+  const deleteKeyFor = (announcementId: string) => {
+    const existing = deleteKeysRef.current.get(announcementId);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    deleteKeysRef.current.set(announcementId, created);
+    return created;
+  };
+
   const handleSubmit = () => {
     if (!content.trim()) return message.error("Content cannot be empty.");
     if (editingId) {
@@ -65,13 +78,13 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         hubId: hub.metadata.id,
         announcementId: editingId,
         content: content.trim(),
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: updateKeyRef.current,
       });
     } else {
       createMutation.mutate({
         hubId: hub.metadata.id,
         content: content.trim(),
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: createKeyRef.current,
       });
     }
   };
@@ -89,6 +102,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
             onClick={() => {
               setEditingId(null);
               setContent("");
+              createKeyRef.current = crypto.randomUUID();
               setModalOpen(true);
             }}
           >
@@ -116,6 +130,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
                       onClick={() => {
                         setEditingId(item.id);
                         setContent(item.content);
+                        updateKeyRef.current = crypto.randomUUID();
                         setModalOpen(true);
                       }}
                     />,
@@ -123,11 +138,14 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
                       key="del"
                       title="Delete this announcement?"
                       onConfirm={() =>
-                        deleteMutation.mutate({
-                          hubId: hub.metadata.id,
-                          announcementId: item.id,
-                          idempotencyKey: crypto.randomUUID(),
-                        })
+                        deleteMutation.mutate(
+                          {
+                            hubId: hub.metadata.id,
+                            announcementId: item.id,
+                            idempotencyKey: deleteKeyFor(item.id),
+                          },
+                          { onSuccess: () => deleteKeysRef.current.delete(item.id) },
+                        )
                       }
                     >
                       <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -174,4 +192,3 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
     </DashboardSectionCard>
   );
 }
-
