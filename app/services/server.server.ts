@@ -277,7 +277,7 @@ export const serverService = {
       targetType,
       reason: input.reason || "",
       actorId: userId,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: input.idempotencyKey,
     });
     return { success: true, id: res.id };
   },
@@ -288,7 +288,7 @@ export const serverService = {
       serverId: input.serverId,
       blockId: input.blockId,
       actorId: userId,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: input.idempotencyKey,
     });
     return { success: true };
   },

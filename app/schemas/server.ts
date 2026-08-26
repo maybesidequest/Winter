@@ -15,10 +15,12 @@ export const addBlockSchema = serverIdSchema.extend({
   targetType: z.enum(["user", "server"]),
   targetId: z.string().min(17).max(21).regex(/^\d+$/, "Target ID must be numeric snowflake"),
   reason: z.string().max(500).optional(),
+  idempotencyKey: z.string().min(1),
 });
 export type AddBlockInput = z.infer<typeof addBlockSchema>;
 
 export const removeBlockSchema = serverIdSchema.extend({
   blockId: z.string().min(1),
+  idempotencyKey: z.string().min(1),
 });
 export type RemoveBlockInput = z.infer<typeof removeBlockSchema>;

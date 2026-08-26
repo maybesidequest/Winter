@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Modal, Form, Input, Radio, message, Popconfirm } from "antd";
 import {
   SafetyCertificateOutlined,
@@ -22,6 +22,8 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
+  const addIdempotencyKey = useRef(crypto.randomUUID());
+  const removeIdempotencyKeys = useRef(new Map<string, string>());
   const isInstalled = server.status.botInstalled;
 
   const handleAddBlock = async () => {
@@ -34,18 +36,20 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
         targetType: values.targetType,
         targetId: values.targetId.trim(),
         reason: values.reason?.trim() || undefined,
+        idempotencyKey: addIdempotencyKey.current,
       });
 
       message.success(`Blocked ${values.targetType} ${values.targetId} successfully.`);
       setIsAddModalOpen(false);
       form.resetFields();
+      addIdempotencyKey.current = crypto.randomUUID();
 
       // Refresh list locally
       const updated = await orpc.server.blocklist({ serverId: server.metadata.id });
       setBlocks(updated);
-    } catch (err: any) {
-      if (err?.errorFields) return;
-      message.error(err?.message || "Failed to add block.");
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errorFields" in err) return;
+      message.error(err instanceof Error ? err.message : "Failed to add block.");
     } finally {
       setSubmitting(false);
     }
@@ -53,14 +57,18 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
 
   const handleRemoveBlock = async (blockId: string) => {
     try {
+      const idempotencyKey = removeIdempotencyKeys.current.get(blockId) || crypto.randomUUID();
+      removeIdempotencyKeys.current.set(blockId, idempotencyKey);
       await orpc.server.removeBlock({
         serverId: server.metadata.id,
         blockId,
+        idempotencyKey,
       });
       message.success("Entity unblocked successfully.");
       setBlocks((prev) => prev.filter((b) => b.id !== blockId));
-    } catch (err: any) {
-      message.error(err?.message || "Failed to remove block.");
+      removeIdempotencyKeys.current.delete(blockId);
+    } catch (err: unknown) {
+      message.error(err instanceof Error ? err.message : "Failed to remove block.");
     }
   };
 
