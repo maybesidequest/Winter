@@ -8,6 +8,7 @@ const build = (await import('./build/server/index.js')) as ServerBuild;
 const handleRequest = createRequestHandler(build, process.env.NODE_ENV || "production");
 
 Bun.serve({
+  hostname: "0.0.0.0",
   port: process.env.PORT || 4000,
   async fetch(req) {
     const url = new URL(req.url);
