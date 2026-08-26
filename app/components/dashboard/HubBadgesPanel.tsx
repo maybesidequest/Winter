@@ -69,6 +69,7 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
             icon={<SaveOutlined />}
             className="dashboard-btn-primary"
             loading={patchBadgesMutation.isPending}
+            disabled={badgesQuery.isLoading || badgesQuery.isError}
             onClick={handleSave}
           >
             Save Badges
@@ -77,16 +78,18 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
       }
     >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {badgesQuery.isError && <Text type="danger">Badge settings are temporarily unavailable.</Text>}
+          {badgesQuery.isLoading && <Text type="secondary">Loading badge settings…</Text>}
+          {badgesQuery.isError && <Text type="danger">Badge settings are temporarily unavailable. Try again before saving.</Text>}
         <div>
           <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
             Owner Badge Emoji / String
           </Text>
-          <Input
-            value={ownerBadge}
-            onChange={(e) => setOwnerBadge(e.target.value)}
-            placeholder="e.g. 👑 or <:crown:12345>"
-            disabled={!canEdit}
+            <Input
+              value={ownerBadge}
+              onChange={(e) => setOwnerBadge(e.target.value)}
+              placeholder="e.g. 👑 or <:crown:12345>"
+              maxLength={100}
+            disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>
         <div>
@@ -96,8 +99,9 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
           <Input
             value={managerBadge}
             onChange={(e) => setManagerBadge(e.target.value)}
-            placeholder="e.g. 🛡️ or <:shield:12345>"
-            disabled={!canEdit}
+              placeholder="e.g. 🛡️ or <:shield:12345>"
+              maxLength={100}
+            disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>
         <div>
@@ -107,8 +111,9 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
           <Input
             value={moderatorBadge}
             onChange={(e) => setModeratorBadge(e.target.value)}
-            placeholder="e.g. ⚔️ or <:sword:12345>"
-            disabled={!canEdit}
+              placeholder="e.g. ⚔️ or <:sword:12345>"
+              maxLength={100}
+            disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>
       </div>

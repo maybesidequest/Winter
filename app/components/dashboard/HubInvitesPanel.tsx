@@ -21,7 +21,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
   const createKeyRef = useRef(crypto.randomUUID());
   const revokeKeysRef = useRef(new Map<string, string>());
 
-  const { data: invites = [], isLoading } = useQuery(
+  const { data: invites = [], isLoading, isError } = useQuery(
     orpc.hub.listInvites.queryOptions({ input: { hubId: hub.metadata.id } })
   );
 
@@ -70,6 +70,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
             size="small"
             icon={<PlusOutlined />}
             className="dashboard-btn-primary"
+            disabled={isLoading || isError}
             onClick={() => {
               createKeyRef.current = crypto.randomUUID();
               setModalOpen(true);
@@ -80,6 +81,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
         )
       }
     >
+      {isError && <Text type="danger">Invites are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}
         dataSource={invites}

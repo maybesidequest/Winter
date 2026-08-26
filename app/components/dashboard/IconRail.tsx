@@ -156,8 +156,8 @@ export function IconRail({
 
       {/* 3. Bottom Global Actions */}
       <div className="w-full flex flex-col items-center gap-1 flex-shrink-0">
-        {/* Create/Explore are Phase 2 surfaces; keep them out of production. */}
-        {import.meta.env.DEV && <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+        {/* Create and Explore are supported normal-user workflows. */}
+        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <Tooltip
             placement="right"
             mouseEnterDelay={0.05}
@@ -178,10 +178,10 @@ export function IconRail({
               <PlusOutlined className="text-lg font-bold" />
             </button>
           </Tooltip>
-        </div>}
+        </div>
 
         {/* Explore / Browse */}
-        {import.meta.env.DEV && <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <span
             className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
               isBrowseActive
@@ -212,7 +212,7 @@ export function IconRail({
               <CompassOutlined className="text-xl" />
             </Link>
           </Tooltip>
-        </div>}
+        </div>
 
       </div>
     </aside>

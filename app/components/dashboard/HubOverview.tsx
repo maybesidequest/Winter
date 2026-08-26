@@ -20,6 +20,10 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
   const [description, setDescription] = useState(hub.spec.description || "");
   const [welcomeMessage, setWelcomeMessage] = useState(hub.spec.welcomeMessage || "");
   const [visibility, setVisibility] = useState(hub.spec.visibility);
+  const [language, setLanguage] = useState(hub.spec.language || "");
+  const [region, setRegion] = useState(hub.spec.region || "");
+  const [nsfw, setNsfw] = useState(hub.spec.nsfw);
+  const [appealCooldownHours, setAppealCooldownHours] = useState(hub.spec.appealCooldownHours ?? 168);
 
   useEffect(() => {
     setName(hub.metadata.name);
@@ -29,6 +33,10 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
     setDescription(hub.spec.description || "");
     setWelcomeMessage(hub.spec.welcomeMessage || "");
     setVisibility(hub.spec.visibility);
+    setLanguage(hub.spec.language || "");
+    setRegion(hub.spec.region || "");
+    setNsfw(hub.spec.nsfw);
+    setAppealCooldownHours(hub.spec.appealCooldownHours ?? 168);
   }, [hub]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,6 +50,10 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
         description: description.trim() || null,
         welcomeMessage: welcomeMessage.trim() || null,
         visibility,
+        language: language.trim() || null,
+        region: region.trim() || null,
+        nsfw,
+        appealCooldownHours: Number(appealCooldownHours),
         version: hub.version,
       });
     }
@@ -103,6 +115,59 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
               onChange={(e) => setBannerUrl(e.target.value)}
             />
             <span className="text-[11px] text-white/40">Wide background banner for explore pages.</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-white/90" htmlFor="hub-language">Primary language</label>
+            <input
+              id="hub-language"
+              type="text"
+              className="dashboard-input text-xs"
+              value={language}
+              maxLength={32}
+              disabled={!canEdit}
+              onChange={(e) => setLanguage(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-white/90" htmlFor="hub-region">Primary region</label>
+            <input
+              id="hub-region"
+              type="text"
+              className="dashboard-input text-xs"
+              value={region}
+              maxLength={32}
+              disabled={!canEdit}
+              onChange={(e) => setRegion(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-center gap-3 text-xs font-bold text-white/90">
+            <input
+              type="checkbox"
+              checked={nsfw}
+              disabled={!canEdit}
+              onChange={(e) => setNsfw(e.target.checked)}
+            />
+            Age-restricted Hub (18+)
+          </label>
+          <div className="flex items-center gap-3">
+            <label className="text-xs font-bold text-white/90" htmlFor="hub-appeal-cooldown">Appeal cooldown</label>
+            <input
+              id="hub-appeal-cooldown"
+              type="number"
+              min={0}
+              max={8760}
+              className="dashboard-input text-xs w-28"
+              value={appealCooldownHours}
+              disabled={!canEdit}
+              onChange={(e) => setAppealCooldownHours(Number(e.target.value))}
+            />
+            <span className="text-xs text-white/50">hours</span>
           </div>
         </div>
 

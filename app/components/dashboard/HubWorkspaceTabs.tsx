@@ -78,7 +78,7 @@ export function HubWorkspaceTabs({
     case "modules":
       return (
         <div className="max-w-4xl">
-          <HubSettingsPanel settings={hub.spec.settings} canEdit={canEdit} onToggleFlag={onToggleModuleFlag} />
+          <HubSettingsPanel settings={hub.spec.settings} canEdit={canEdit} isSaving={isSaving} onToggleFlag={onToggleModuleFlag} />
         </div>
       );
     case "settings":

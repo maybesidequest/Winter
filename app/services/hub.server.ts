@@ -103,7 +103,7 @@ export const hubService = {
 
   async updateHubConfig(userId: string, input: PatchHubConfigInput): Promise<{ success: boolean; hub?: HubResource; error?: string; errorCode?: HubUpdateErrorCode }> {
     try {
-      const phase1Fields = new Set([
+      const supportedFields = new Set([
         "name",
         "shortDescription",
         "description",
@@ -111,13 +111,18 @@ export const hubService = {
         "bannerUrl",
         "welcomeMessage",
         "visibility",
+        "language",
+        "region",
+        "nsfw",
+        "appealCooldownHours",
+        "settings",
         "hubId",
         "idempotencyKey",
         "version",
       ]);
       const unsupportedFields = Object.keys(input).filter((field) => {
         if (field === "settings") return !isCapabilityEnabled("HUB_CONFIG");
-        return !phase1Fields.has(field);
+        return !supportedFields.has(field);
       });
       if (unsupportedFields.length > 0) {
         return {

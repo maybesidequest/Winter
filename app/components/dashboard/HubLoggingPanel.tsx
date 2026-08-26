@@ -77,6 +77,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
             icon={<SaveOutlined />}
             className="dashboard-btn-primary"
             loading={patchLogMutation.isPending}
+            disabled={logQuery.isLoading || logQuery.isError}
             onClick={handleSave}
           >
             Save Logging
@@ -85,7 +86,8 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
       }
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {logQuery.isError && <Text type="danger">Logging settings are temporarily unavailable.</Text>}
+        {logQuery.isLoading && <Text type="secondary">Loading logging settings…</Text>}
+        {logQuery.isError && <Text type="danger">Logging settings are temporarily unavailable. Try again before saving.</Text>}
         <div>
           <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
             Discord Log Channel ID
@@ -94,7 +96,8 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
             value={channelId}
             onChange={(e) => setChannelId(e.target.value)}
             placeholder="e.g. 123456789012345678"
-            disabled={!canEdit}
+            maxLength={32}
+            disabled={!canEdit || logQuery.isLoading || logQuery.isError}
           />
         </div>
         <div>
@@ -105,7 +108,8 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
             value={notificationRoleId}
             onChange={(e) => setNotificationRoleId(e.target.value)}
             placeholder="e.g. 987654321098765432"
-            disabled={!canEdit}
+            maxLength={32}
+            disabled={!canEdit || logQuery.isLoading || logQuery.isError}
           />
         </div>
 
@@ -115,7 +119,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
               <Text style={{ color: "rgba(255,255,255,0.85)", display: "block" }}>Log Message Events</Text>
               <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Deletions, edits, and cross-posts</Text>
             </div>
-            <DepthToggle checked={logMessages} onChange={setLogMessages} disabled={!canEdit} />
+            <DepthToggle checked={logMessages} onChange={setLogMessages} disabled={!canEdit || logQuery.isLoading || logQuery.isError} />
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -123,7 +127,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
               <Text style={{ color: "rgba(255,255,255,0.85)", display: "block" }}>Log Moderation Actions</Text>
               <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Warns, mutes, kicks, bans, and appeals</Text>
             </div>
-            <DepthToggle checked={logModeration} onChange={setLogModeration} disabled={!canEdit} />
+            <DepthToggle checked={logModeration} onChange={setLogModeration} disabled={!canEdit || logQuery.isLoading || logQuery.isError} />
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -131,7 +135,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
               <Text style={{ color: "rgba(255,255,255,0.85)", display: "block" }}>Log Connection Events</Text>
               <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Server joins, leaves, and channel pauses</Text>
             </div>
-            <DepthToggle checked={logConnections} onChange={setLogConnections} disabled={!canEdit} />
+            <DepthToggle checked={logConnections} onChange={setLogConnections} disabled={!canEdit || logQuery.isLoading || logQuery.isError} />
           </div>
         </div>
       </div>

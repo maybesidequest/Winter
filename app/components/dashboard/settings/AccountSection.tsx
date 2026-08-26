@@ -118,7 +118,7 @@ export function AccountSection({ userResource, isLoading }: AccountSectionProps)
       </div>
 
       <p className="text-xs text-white/45">
-        Activity totals and call history will appear here when their authoritative Control Plane resources are released.
+        View your current activity totals on the <a className="text-violet-300 hover:text-violet-200" href="/dashboard/activity">activity page</a>.
       </p>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Input, InputNumber, List, Modal, Select, Tag, Typography, message, Popconfirm } from "antd";
+import { Alert, Button, Input, InputNumber, List, Modal, Select, Tag, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
 import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
@@ -29,10 +29,10 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
   const deleteRoleKeysRef = useRef(new Map<string, string>());
   const removeStaffKeysRef = useRef(new Map<string, string>());
 
-  const { data: staff = [], isLoading } = useQuery(
+  const { data: staff = [], isLoading: staffLoading, isError: staffError } = useQuery(
     orpc.hub.listStaff.queryOptions({ input: { hubId: hub.metadata.id } })
   );
-  const { data: roles = [] } = useQuery(
+  const { data: roles = [], isLoading: rolesLoading, isError: rolesError } = useQuery(
     orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }),
   );
 
@@ -120,7 +120,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     <DashboardSectionCard
       title={<DashboardSectionTitle>Hub Staff & Roles</DashboardSectionTitle>}
       extra={
-        canEdit && (
+        canEdit && !staffError && !rolesError && !rolesLoading && (
           <Button
             type="primary"
             size="small"
@@ -138,17 +138,28 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     >
       {canEdit && (
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <Input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="New role name" />
-          <InputNumber min={0} value={rolePermissions} onChange={(value) => setRolePermissions(value ?? 0)} />
+          <Input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="New role name" disabled={rolesLoading || rolesError} />
+          <InputNumber min={0} value={rolePermissions} onChange={(value) => setRolePermissions(value ?? 0)} disabled={rolesLoading || rolesError} />
           <Button
-            onClick={() => createRoleMutation.mutate({ hubId: hub.metadata.id, name: roleName, permissionsBitmask: rolePermissions, position: 0, idempotencyKey: createRoleKeyRef.current })}
+            onClick={() => createRoleMutation.mutate({ hubId: hub.metadata.id, name: roleName.trim(), permissionsBitmask: rolePermissions, position: 0, idempotencyKey: createRoleKeyRef.current })}
             loading={createRoleMutation.isPending}
+            disabled={rolesLoading || rolesError || !roleName.trim()}
           >
             Create role
           </Button>
         </div>
       )}
+      {(staffError || rolesError) && (
+        <Alert
+          type="error"
+          showIcon
+          message="Team settings are temporarily unavailable."
+          description="Refresh this page before making staff or role changes."
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <List
+        loading={rolesLoading}
         size="small"
         dataSource={roles}
         locale={{ emptyText: "No roles available." }}
@@ -209,14 +220,14 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
         <InputNumber min={0} value={editingRolePermissions} onChange={(value) => setEditingRolePermissions(value ?? 0)} style={{ marginTop: 12, width: "100%" }} />
       </Modal>
       <List
-        loading={isLoading}
+        loading={staffLoading}
         dataSource={staff}
         locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.4)" }}>No staff roles assigned.</Text> }}
         renderItem={(item) => (
           <List.Item
             style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
             actions={
-              canEdit
+              canEdit && !staffError && !rolesError
                 ? [
                     <Popconfirm
                       key="del"
@@ -284,8 +295,10 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
               Role Tier
             </Text>
             <Select
-              value={role || roles[0]?.spec.name}
+              value={role || undefined}
               onChange={setRole}
+              placeholder="Select a Hub role"
+              disabled={rolesLoading || rolesError || roles.length === 0}
               style={{ width: "100%" }}
               options={[
                 ...roles.map((item) => ({ label: item.spec.name, value: item.spec.name })),

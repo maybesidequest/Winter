@@ -24,7 +24,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
   const deleteKeysRef = useRef(new Map<string, string>());
   const reorderKeyRef = useRef(crypto.randomUUID());
 
-  const { data: rules = [], isLoading } = useQuery(
+  const { data: rules = [], isLoading, isError } = useQuery(
     orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } })
   );
 
@@ -135,6 +135,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
             size="small"
             icon={<PlusOutlined />}
             className="dashboard-btn-primary"
+            disabled={isLoading || isError}
             onClick={() => {
               setEditingRuleId(null);
               setTitle("");
@@ -148,6 +149,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         )
       }
     >
+      {isError && <Text type="danger">Rules are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}
         dataSource={rules}

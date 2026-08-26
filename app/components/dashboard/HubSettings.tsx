@@ -19,7 +19,6 @@ interface HubSettingsProps {
   onSave: (changes: Partial<PatchHubConfigInput>) => void;
   onDeleteHub?: () => void;
   onTransferOwnership?: (newOwnerId: string) => void;
-  onNukeMessages?: () => void;
 }
 
 export function HubSettings({
@@ -30,7 +29,6 @@ export function HubSettings({
   onSave,
   onDeleteHub,
   onTransferOwnership,
-  onNukeMessages,
 }: HubSettingsProps) {
   const [visibility, setVisibility] = useState<HubVisibilityType>(hub.spec.visibility);
   const [language, setLanguage] = useState(hub.spec.language || "English");
@@ -168,26 +166,6 @@ export function HubSettings({
           <div className="flex items-center gap-2.5 pb-3 border-b border-red-500/20">
             <WarningOutlined className="text-red-400 text-base" />
             <h3 className="text-base font-bold text-red-300 font-['Sora'] m-0">Danger Zone</h3>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 border-b border-red-500/10">
-            <div>
-              <strong className="text-xs font-bold text-white block">Purge Message History</strong>
-              <small className="text-[11px] text-white/50 block">Permanently delete stored relay message logs for this Hub.</small>
-            </div>
-            {onNukeMessages && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("Are you sure you want to nuke all stored messages in this Hub?")) {
-                    onNukeMessages();
-                  }
-                }}
-                className="dashboard-btn-danger px-4 py-1.5 text-xs font-bold flex-shrink-0"
-              >
-                Purge History
-              </button>
-            )}
           </div>
 
           {isOwner && onDeleteHub && (

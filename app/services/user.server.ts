@@ -132,14 +132,20 @@ export const userService = {
     input: PatchUserPreferencesInput
   ): Promise<{ success: boolean }> {
     try {
+      // The protobuf preference fields are scalar values, so an omitted field
+      // is indistinguishable from `false` once it reaches the Python service.
+      // Read the canonical record first and send a complete snapshot to keep a
+      // single-toggle dashboard edit from resetting the other preferences.
+      const current = await controlUserService.getUserPreferences(userId);
       await controlUserService.patchUserPreferences({
         actorId: userId,
         preferences: {
-          language: input.locale,
-          badgeVisibility: input.showBadges,
-          replyMention: input.mentionOnReply,
-          voteReminders: input.voteRemindersEnabled,
-          streaksEnabled: input.streaksEnabled,
+          language: input.locale ?? current.language,
+          badgeVisibility: input.showBadges ?? current.badgeVisibility,
+          replyMention: input.mentionOnReply ?? current.replyMention,
+          streakReminders: current.streakReminders,
+          voteReminders: input.voteRemindersEnabled ?? current.voteReminders,
+          streaksEnabled: input.streaksEnabled ?? current.streaksEnabled,
         },
         idempotencyKey: crypto.randomUUID(),
       });

@@ -1,6 +1,6 @@
 import { PlusOutlined, TeamOutlined, ArrowRightOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { orpc } from "~/lib/orpc";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
@@ -9,9 +9,19 @@ import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 
 export default function HubsPage() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: hubs = [], isLoading, isError } = useQuery(orpc.hub.getUserHubs.queryOptions());
+  const filteredHubs = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    if (!query) return hubs;
+    return hubs.filter((hub) =>
+      [hub.metadata.name, hub.spec.shortDescription, hub.spec.description]
+        .filter(Boolean)
+        .some((value) => value!.toLocaleLowerCase().includes(query)),
+    );
+  }, [hubs, search]);
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
@@ -42,6 +52,19 @@ export default function HubsPage() {
         className="rounded-2xl border overflow-hidden flex flex-col"
         style={dashboardGlassCardStyle}
       >
+        {!isLoading && hubs.length > 0 && (
+          <div className="p-4 border-b border-white/[0.06]">
+            <label htmlFor="hub-search" className="sr-only">Search your Hubs</label>
+            <input
+              id="hub-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search your Hubs"
+              className="dashboard-input text-xs w-full sm:max-w-sm"
+            />
+          </div>
+        )}
         {isLoading ? (
           <div className="flex flex-col divide-y divide-white/[0.06]">
             {[1, 2, 3].map((i) => (
@@ -58,9 +81,9 @@ export default function HubsPage() {
               </div>
             ))}
           </div>
-        ) : hubs.length > 0 ? (
+        ) : filteredHubs.length > 0 ? (
           <div className="flex flex-col divide-y divide-white/[0.06]">
-            {hubs.map((hub) => (
+            {filteredHubs.map((hub) => (
               <div
                 key={hub.metadata.id}
                 className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
@@ -133,9 +156,11 @@ export default function HubsPage() {
             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white/40">
               <TeamOutlined />
             </div>
-            <h3 className="text-base font-bold text-white font-['Sora']">No accessible Hubs</h3>
+            <h3 className="text-base font-bold text-white font-['Sora']">
+              {hubs.length > 0 ? "No matching Hubs" : "No accessible Hubs"}
+            </h3>
             <p className="text-xs text-white/50 max-w-sm">
-              Ask a Hub owner to add you to their team.
+              {hubs.length > 0 ? "Try a different search term." : "Ask a Hub owner to add you to their team."}
             </p>
           </div>
         )}

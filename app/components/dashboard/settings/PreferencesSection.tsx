@@ -59,13 +59,6 @@ export function PreferencesSection({
       onChange: (checked: boolean) => handleToggle("mentionOnReply", checked),
     },
     {
-      id: "showNsfwHubs",
-      title: "Show NSFW / 18+ Hubs",
-      desc: "Include age-restricted NSFW communities in hub listings and public search discovery.",
-      checked: spec.showNsfwHubs,
-      onChange: (checked: boolean) => handleToggle("showNsfwHubs", checked),
-    },
-    {
       id: "voteRemindersEnabled",
       title: "Vote Reminders",
       desc: "Receive friendly reminder notifications when your 12-hour Top.gg bot vote is ready.",

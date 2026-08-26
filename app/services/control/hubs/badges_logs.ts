@@ -35,9 +35,9 @@ export const hubBadgesLogsService = {
     const response = await invokeUnary<PatchHubBadgesRequest, ProtoHubBadgeConfig>(clients.hubClient.PatchBadges.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
-      ownerBadge: input.ownerBadge,
-      managerBadge: input.managerBadge,
-      moderatorBadge: input.moderatorBadge,
+      ownerBadge: input.ownerBadge ?? "",
+      managerBadge: input.managerBadge ?? "",
+      moderatorBadge: input.moderatorBadge ?? "",
       expectedVersion: input.expectedVersion,
     });
     return {

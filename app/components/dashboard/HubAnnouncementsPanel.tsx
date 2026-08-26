@@ -22,14 +22,14 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
   const updateKeyRef = useRef(crypto.randomUUID());
   const deleteKeysRef = useRef(new Map<string, string>());
 
-  const { data: announcements = [], isLoading } = useQuery(
+  const { data: announcements = [], isLoading, isError } = useQuery(
     orpc.hub.listAnnouncements.queryOptions({ input: { hubId: hub.metadata.id } })
   );
 
   const createMutation = useMutation(
     orpc.hub.createAnnouncement.mutationOptions({
       onSuccess: () => {
-        message.success("Announcement created and broadcasted.");
+        message.success("Announcement queued for delivery.");
         setModalOpen(false);
         setContent("");
         createKeyRef.current = crypto.randomUUID();
@@ -99,6 +99,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
             size="small"
             icon={<PlusOutlined />}
             className="dashboard-btn-primary"
+            disabled={isLoading || isError}
             onClick={() => {
               setEditingId(null);
               setContent("");
@@ -111,6 +112,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         )
       }
     >
+      {isError && <Text type="danger">Announcements are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}
         dataSource={announcements}
