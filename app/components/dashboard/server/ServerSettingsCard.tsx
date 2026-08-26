@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   SettingOutlined,
   CopyOutlined,
@@ -9,6 +9,7 @@ import {
 import { message } from "antd";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { ServerResource } from "~/resources/server";
+import { orpcClient as orpc } from "~/lib/orpc";
 
 interface ServerSettingsCardProps {
   server: ServerResource;
@@ -27,14 +28,48 @@ export function ServerSettingsCard({
   botClientId = "798748015435055134",
 }: ServerSettingsCardProps) {
   const [copied, setCopied] = useState(false);
+  const [prefix, setPrefix] = useState(server.spec.prefix || "!");
+  const [version, setVersion] = useState(server.version ?? 1);
+  const [savingPrefix, setSavingPrefix] = useState(false);
+  const prefixIdempotencyKey = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
   const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&guild_id=${server.metadata.id}&disable_guild_select=true`;
+
+  useEffect(() => {
+    setPrefix(server.spec.prefix || "!");
+    setVersion(server.version ?? 1);
+  }, [server]);
 
   const copyServerId = () => {
     navigator.clipboard.writeText(server.metadata.id);
     setCopied(true);
     message.success("Server ID copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const savePrefix = async () => {
+    const nextPrefix = prefix.trim();
+    if (!nextPrefix || nextPrefix.length > 10) {
+      message.error("Prefix must be between 1 and 10 characters.");
+      return;
+    }
+    setSavingPrefix(true);
+    try {
+      const result = await orpc.server.patchPrefix({
+        serverId: server.metadata.id,
+        prefix: nextPrefix,
+        expectedVersion: version,
+        idempotencyKey: prefixIdempotencyKey.current,
+      });
+      setPrefix(result.server?.spec.prefix || nextPrefix);
+      setVersion(result.server?.version ?? version + 1);
+      prefixIdempotencyKey.current = crypto.randomUUID();
+      message.success("Command prefix saved.");
+    } catch (err: unknown) {
+      message.error(err instanceof Error ? err.message : "Unable to save the command prefix.");
+    } finally {
+      setSavingPrefix(false);
+    }
   };
 
   return (
@@ -80,15 +115,28 @@ export function ServerSettingsCard({
               Command Prefix
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1 rounded-xl">
-                {server.spec.prefix || "!"}
-              </span>
+              <input
+                aria-label="Command prefix"
+                value={prefix}
+                maxLength={10}
+                disabled={!isInstalled || savingPrefix}
+                onChange={(event) => setPrefix(event.target.value)}
+                className="w-28 text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1 rounded-xl"
+              />
+              <button
+                type="button"
+                onClick={savePrefix}
+                disabled={!isInstalled || savingPrefix || prefix.trim() === (server.spec.prefix || "!")}
+                className="dashboard-btn-primary px-3 py-2 text-xs"
+              >
+                {savingPrefix ? "Saving…" : "Save"}
+              </button>
               <span className="text-xs text-white/50">
                 (or slash commands <code>/</code>)
               </span>
             </div>
             <p className="text-xs text-white/60 mt-1">
-              Prefix commands can be customized in Discord using the <code>/prefix &lt;new_prefix&gt;</code> command.
+              Choose the prefix used for text commands in this server.
             </p>
           </div>
         </div>
@@ -156,4 +204,3 @@ export function ServerSettingsCard({
     </div>
   );
 }
-

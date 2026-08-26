@@ -6,7 +6,7 @@ import type {
   ServerResource,
 } from "~/resources/server";
 import { getDiscordAccessToken } from "~/services/oauthToken.server";
-import type { AddBlockInput, PatchCallConfigInput, RemoveBlockInput } from "~/schemas/server";
+import type { AddBlockInput, PatchCallConfigInput, PatchPrefixInput, RemoveBlockInput } from "~/schemas/server";
 import { controlServerService, controlConnectionService, controlHubService } from "~/services/control.server";
 
 const MANAGE_GUILD = 1n << 5n;
@@ -218,6 +218,19 @@ export const serverService = {
       },
       updateMask,
       expectedVersion: input.expectedVersion || current.version || 1,
+      actorId: userId,
+      idempotencyKey: input.idempotencyKey,
+    });
+    return { success: true, serverName: guild.name, server: updated };
+  },
+
+  async updatePrefix(userId: string, input: PatchPrefixInput) {
+    const guild = await assertManageable(userId, input.serverId, true);
+    const updated = await controlServerService.patchServer({
+      serverId: input.serverId,
+      spec: { prefix: input.prefix },
+      updateMask: ["prefix"],
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });

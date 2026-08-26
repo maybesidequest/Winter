@@ -4,6 +4,7 @@ import { requireCapability } from "~/rpc/capabilityGuard";
 import {
   addBlockSchema,
   patchCallConfigSchema,
+  patchPrefixSchema,
   removeBlockSchema,
   serverIdSchema,
 } from "~/schemas/server";
@@ -30,6 +31,12 @@ export const serverRouter = base.router({
     .handler(({ input, context }) => {
       requireCapability("SERVER_CONFIG");
       return serverService.updateCallConfig(context.user.id, input);
+  }),
+  patchPrefix: protectedBase
+    .input(patchPrefixSchema)
+    .handler(({ input, context }) => {
+      requireCapability("SERVER_CONFIG");
+      return serverService.updatePrefix(context.user.id, input);
     }),
   bridges: protectedBase
     .input(serverIdSchema)

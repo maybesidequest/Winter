@@ -11,6 +11,13 @@ export const patchCallConfigSchema = serverIdSchema.extend({
 });
 export type PatchCallConfigInput = z.infer<typeof patchCallConfigSchema>;
 
+export const patchPrefixSchema = serverIdSchema.extend({
+  prefix: z.string().trim().min(1, "Prefix cannot be empty.").max(10, "Prefix cannot exceed 10 characters."),
+  expectedVersion: z.number().int().positive(),
+  idempotencyKey: z.string().min(1),
+});
+export type PatchPrefixInput = z.infer<typeof patchPrefixSchema>;
+
 export const addBlockSchema = serverIdSchema.extend({
   targetType: z.enum(["user", "server"]),
   targetId: z.string().min(17).max(21).regex(/^\d+$/, "Target ID must be numeric snowflake"),
