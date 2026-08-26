@@ -13,6 +13,45 @@ import { HubConnectModal } from "~/components/discovery/HubConnectModal";
 import { HubDetailsDrawer } from "~/components/discovery/HubDetailsDrawer";
 import type { HubPublicResource } from "~/resources/hubDiscovery";
 import type { HubDiscoverySort } from "~/schemas/hubDiscovery";
+import type { HubResource } from "~/resources/hub";
+
+function mergeHubDetails(summary: HubPublicResource, detail: HubResource): HubPublicResource {
+  // Search results are intentionally a small public projection.  When a user
+  // opens the drawer, replace it with the authoritative Hub resource so rules,
+  // branding, and counters are not fabricated or left stale.
+  return {
+    ...summary,
+    metadata: {
+      ...summary.metadata,
+      name: detail.metadata.name,
+      createdAt: detail.metadata.createdAt,
+      updatedAt: detail.metadata.updatedAt,
+    },
+    spec: {
+      ...summary.spec,
+      description: detail.spec.description,
+      shortDescription: detail.spec.shortDescription,
+      visibility: detail.spec.visibility,
+      language: detail.spec.language,
+      region: detail.spec.region,
+      iconUrl: detail.spec.iconUrl,
+      bannerUrl: detail.spec.bannerUrl,
+      nsfw: detail.spec.nsfw,
+      rules: detail.spec.rules,
+    },
+    status: {
+      ...summary.status,
+      verified: detail.status.verified,
+      partnered: detail.status.partnered,
+      featured: detail.status.featured,
+      connectionCount: detail.status.connectionCount,
+      weeklyMessageCount: detail.status.weeklyMessageCount,
+      averageRating: detail.status.averageRating,
+      reviewCount: detail.status.reviewCount,
+      upvoteCount: detail.status.upvoteCount,
+    },
+  };
+}
 
 export async function loader() {
   return null;
@@ -67,6 +106,15 @@ export default function BrowseRoute() {
   const { data: popularTags = [] } = useQuery(
     orpc.hubDiscovery.getPopularTags.queryOptions()
   );
+
+  const { data: inspectedHubDetail } = useQuery({
+    ...orpc.hub.getHub.queryOptions({ input: { hubId: inspectingHub?.metadata.id || "" } }),
+    enabled: inspectingHub !== null,
+  });
+
+  const inspectedHub = inspectingHub && inspectedHubDetail
+    ? mergeHubDetails(inspectingHub, inspectedHubDetail)
+    : inspectingHub;
 
   const hubs = searchResult?.items || [];
   const pagination = searchResult?.pagination;
@@ -177,7 +225,7 @@ export default function BrowseRoute() {
       />
 
       <HubDetailsDrawer
-        hub={inspectingHub}
+        hub={inspectedHub}
         open={!!inspectingHub}
         onClose={() => setInspectingHub(null)}
         onConnect={(h) => {
