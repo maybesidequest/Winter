@@ -42,6 +42,10 @@ export const userService = {
     return controlUserService.getUserInbox(userId);
   },
 
+  async getProfile(userId: string) {
+    return controlUserService.getUserProfile(userId, userId);
+  },
+
   async acknowledgeInbox(userId: string, itemId: string, idempotencyKey: string) {
     return controlUserService.acknowledgeInboxItem({ actorId: userId, itemId, idempotencyKey });
   },
@@ -68,16 +72,10 @@ export const userService = {
   },
 
   async getUserResource(userId: string): Promise<UserResource> {
-    let profile: UserProfile | null = null;
-    let prefs: UserPreferences | null = null;
-    try {
-      [profile, prefs] = await Promise.all([
-        controlUserService.getUserProfile(userId, userId).catch(() => null),
-        controlUserService.getUserPreferences(userId).catch(() => null),
-      ]);
-    } catch {
-      // fallback to defaults
-    }
+    const [profile, prefs] = await Promise.all([
+      controlUserService.getUserProfile(userId, userId),
+      controlUserService.getUserPreferences(userId),
+    ]);
 
     const isStaff = await permissionService.checkIsStaff(userId).catch(() => false);
     const dashboardPrefs = (await this.getDashboardPreference(userId)) || {};
@@ -88,7 +86,7 @@ export const userService = {
         name: profile?.displayName || profile?.username || null,
         image: profile?.avatarUrl || null,
         email: null,
-        createdAt: profile?.createdAt || new Date().toISOString(),
+        createdAt: profile.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       spec: {
@@ -107,11 +105,11 @@ export const userService = {
         isStaff,
         badges: [],
         reputation: 0,
-        messageCount: profile?.totalRelayedMessages ?? 0,
+        messageCount: profile.totalRelayedMessages,
         callCount: 0,
         hubJoinCount: 0,
-        currentStreak: profile?.streakDays ?? 0,
-        longestStreak: profile?.streakDays ?? 0,
+        currentStreak: profile.streakDays,
+        longestStreak: profile.streakDays,
         streakFreezes: 0,
         lastStreakDate: null,
         lastVoted: null,
