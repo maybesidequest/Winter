@@ -1,10 +1,11 @@
 import {
+  BarChartOutlined,
   CloudServerOutlined,
   CompassOutlined,
   DownOutlined,
   HomeOutlined,
-  BarChartOutlined,
   QuestionCircleOutlined,
+  SafetyCertificateOutlined,
   UpOutlined
 } from "@ant-design/icons";
 import { useState } from "react";
@@ -74,6 +75,17 @@ export function GeneralSidebarTabs({
       >
         <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5"><QuestionCircleOutlined /></span>
         <span>Help & resources</span>
+      </NavLink>}
+
+      {enabled("MODERATION") && <NavLink
+        to="/dashboard/appeals"
+        onClick={onNavigate}
+        className={({ isActive }) => `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
+          ? "active bg-[#211f35] text-white font-bold border border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+          : "text-white/80 hover:text-white hover:bg-white/[0.04] border border-transparent"}`}
+      >
+        <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5"><SafetyCertificateOutlined /></span>
+        <span>Appeals</span>
       </NavLink>}
 
       {/* Community & Hubs */}
