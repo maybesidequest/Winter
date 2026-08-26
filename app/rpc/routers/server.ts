@@ -7,6 +7,8 @@ import {
   patchPrefixSchema,
   removeBlockSchema,
   serverIdSchema,
+  toggleBridgeSchema,
+  bridgeActionSchema,
 } from "~/schemas/server";
 
 export const serverRouter = base.router({
@@ -61,5 +63,23 @@ export const serverRouter = base.router({
     .handler(({ input, context }) => {
       requireCapability("SERVER_BLOCKLIST");
       return serverService.removeBlock(context.user.id, input);
+    }),
+  toggleBridge: protectedBase
+    .input(toggleBridgeSchema)
+    .handler(({ input, context }) => {
+      requireCapability("CONNECTIONS");
+      return serverService.toggleBridge(context.user.id, input);
+    }),
+  repairBridge: protectedBase
+    .input(bridgeActionSchema)
+    .handler(({ input, context }) => {
+      requireCapability("CONNECTIONS");
+      return serverService.repairBridge(context.user.id, input);
+    }),
+  disconnectBridge: protectedBase
+    .input(bridgeActionSchema)
+    .handler(({ input, context }) => {
+      requireCapability("CONNECTIONS");
+      return serverService.disconnectBridge(context.user.id, input);
     }),
 });

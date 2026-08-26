@@ -264,8 +264,51 @@ export const serverService = {
         pausedByBot: !conn.status.healthy,
         pauseReason: conn.status.statusMessage || null,
         createdAt: conn.metadata.createdAt || new Date().toISOString(),
+        version: conn.version,
+        webhookProvisioned: conn.status.webhookProvisioned,
       };
     }));
+  },
+
+  async toggleBridge(userId: string, input: { serverId: string; connectionId: string; enabled: boolean; expectedVersion: number; idempotencyKey: string }) {
+    await assertManageable(userId, input.serverId, true);
+    const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
+      .find((connection) => connection.metadata.id === input.connectionId);
+    if (!current) throw new Error("Connection not found on this server.");
+    const connection = await controlConnectionService.toggleConnection({
+      connectionId: input.connectionId,
+      enabled: input.enabled,
+      expectedVersion: input.expectedVersion,
+      actorId: userId,
+      idempotencyKey: input.idempotencyKey,
+    });
+    return { success: true, connection };
+  },
+
+  async repairBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+    await assertManageable(userId, input.serverId, true);
+    const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
+      .find((connection) => connection.metadata.id === input.connectionId);
+    if (!current) throw new Error("Connection not found on this server.");
+    const connection = await controlConnectionService.repairConnectionWebhooks({
+      connectionId: input.connectionId,
+      actorId: userId,
+      idempotencyKey: input.idempotencyKey,
+    });
+    return { success: true, connection };
+  },
+
+  async disconnectBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+    await assertManageable(userId, input.serverId, true);
+    const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
+      .find((connection) => connection.metadata.id === input.connectionId);
+    if (!current) throw new Error("Connection not found on this server.");
+    await controlConnectionService.disconnectChannel({
+      connectionId: input.connectionId,
+      actorId: userId,
+      idempotencyKey: input.idempotencyKey,
+    });
+    return { success: true };
   },
 
 

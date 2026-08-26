@@ -31,3 +31,15 @@ export const removeBlockSchema = serverIdSchema.extend({
   idempotencyKey: z.string().min(1),
 });
 export type RemoveBlockInput = z.infer<typeof removeBlockSchema>;
+
+export const toggleBridgeSchema = serverIdSchema.extend({
+  connectionId: z.string().min(1),
+  enabled: z.boolean(),
+  expectedVersion: z.number().int().positive(),
+  idempotencyKey: z.string().min(1),
+});
+
+export const bridgeActionSchema = serverIdSchema.extend({
+  connectionId: z.string().min(1),
+  idempotencyKey: z.string().min(1),
+});

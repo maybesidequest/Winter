@@ -5,9 +5,13 @@ import {
   InfoCircleOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router";
+import { Link, useRevalidator } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import { Popconfirm, message } from "antd";
+import { useRef } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { ServerBridgeResource, ServerResource } from "~/resources/server";
+import { orpc } from "~/lib/orpc";
 
 interface ServerBridgesCardProps {
   server: ServerResource;
@@ -15,6 +19,49 @@ interface ServerBridgesCardProps {
 }
 
 export function ServerBridgesCard({ server, bridges }: ServerBridgesCardProps) {
+  const revalidator = useRevalidator();
+  const actionKeysRef = useRef(new Map<string, string>());
+  const keyFor = (action: string, bridgeId: string) => {
+    const key = `${action}:${bridgeId}`;
+    const existing = actionKeysRef.current.get(key);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    actionKeysRef.current.set(key, created);
+    return created;
+  };
+
+  const toggleMutation = useMutation(
+    orpc.server.toggleBridge.mutationOptions({
+      onSuccess: (_result, variables) => {
+        actionKeysRef.current.delete(`toggle:${variables.connectionId}`);
+        message.success(variables.enabled ? "Bridge resumed." : "Bridge paused.");
+        revalidator.revalidate();
+      },
+      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to update this bridge."),
+    }),
+  );
+  const repairMutation = useMutation(
+    orpc.server.repairBridge.mutationOptions({
+      onSuccess: (_result, variables) => {
+        actionKeysRef.current.delete(`repair:${variables.connectionId}`);
+        message.success("Bridge webhooks repaired.");
+        revalidator.revalidate();
+      },
+      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to repair this bridge."),
+    }),
+  );
+  const disconnectMutation = useMutation(
+    orpc.server.disconnectBridge.mutationOptions({
+      onSuccess: (_result, variables) => {
+        actionKeysRef.current.delete(`disconnect:${variables.connectionId}`);
+        message.success("Bridge disconnected.");
+        revalidator.revalidate();
+      },
+      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge."),
+    }),
+  );
+  const actionPending = toggleMutation.isPending || repairMutation.isPending || disconnectMutation.isPending;
+
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Information Header */}
@@ -134,13 +181,72 @@ export function ServerBridgesCard({ server, bridges }: ServerBridgesCardProps) {
 
                 <div className="flex items-center justify-between pt-3 border-t border-white/[0.06] text-xs text-white/50">
                   <span>Connected on {new Date(bridge.createdAt).toLocaleDateString()}</span>
-                  <Link
-                    to={`/dashboard/hubs/${bridge.hubId}`}
-                    className="text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 transition-colors"
-                  >
-                    <span>View Hub</span>
-                    <ArrowRightOutlined className="text-[10px]" />
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={actionPending}
+                      className="text-amber-300 hover:text-amber-200 font-semibold disabled:opacity-50"
+                      onClick={() =>
+                        toggleMutation.mutate(
+                          {
+                            serverId: server.metadata.id,
+                            connectionId: bridge.id,
+                            enabled: isPaused,
+                            expectedVersion: bridge.version,
+                            idempotencyKey: keyFor("toggle", bridge.id),
+                          },
+                          { onSuccess: () => actionKeysRef.current.delete(`toggle:${bridge.id}`) },
+                        )
+                      }
+                    >
+                      {isPaused ? "Resume" : "Pause"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actionPending}
+                      className="text-sky-300 hover:text-sky-200 font-semibold disabled:opacity-50"
+                      onClick={() =>
+                        repairMutation.mutate(
+                          {
+                            serverId: server.metadata.id,
+                            connectionId: bridge.id,
+                            idempotencyKey: keyFor("repair", bridge.id),
+                          },
+                          { onSuccess: () => actionKeysRef.current.delete(`repair:${bridge.id}`) },
+                        )
+                      }
+                    >
+                      Repair
+                    </button>
+                    <Popconfirm
+                      title="Disconnect this bridge?"
+                      description="Messages will stop routing between this channel and the Hub."
+                      okText="Disconnect"
+                      cancelText="Cancel"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() =>
+                        disconnectMutation.mutate(
+                          {
+                            serverId: server.metadata.id,
+                            connectionId: bridge.id,
+                            idempotencyKey: keyFor("disconnect", bridge.id),
+                          },
+                          { onSuccess: () => actionKeysRef.current.delete(`disconnect:${bridge.id}`) },
+                        )
+                      }
+                    >
+                      <button type="button" disabled={actionPending} className="text-red-300 hover:text-red-200 font-semibold disabled:opacity-50">
+                        Disconnect
+                      </button>
+                    </Popconfirm>
+                    <Link
+                      to={`/dashboard/hubs/${bridge.hubId}`}
+                      className="text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 transition-colors"
+                    >
+                      <span>View Hub</span>
+                      <ArrowRightOutlined className="text-[10px]" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             );

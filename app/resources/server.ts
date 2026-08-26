@@ -33,6 +33,8 @@ export type ServerBridgeResource = {
   pausedByBot: boolean;
   pauseReason: string | null;
   createdAt: string;
+  version: number;
+  webhookProvisioned: boolean;
 };
 
 export type ServerBlockResource = {
