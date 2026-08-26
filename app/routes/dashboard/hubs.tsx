@@ -1,18 +1,23 @@
 import { PlusOutlined, TeamOutlined, ArrowRightOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate, useOutletContext } from "react-router";
 import { orpc } from "~/lib/orpc";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 
 export default function HubsPage() {
+  const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: hubs = [], isLoading, isError } = useQuery(orpc.hub.getUserHubs.queryOptions());
+  const { data: hubs = [], isLoading, isError } = useQuery({
+    ...orpc.hub.getUserHubs.queryOptions(),
+    enabled: capabilities.HUB_LIST || import.meta.env.DEV,
+  });
+  if (!capabilities.HUB_LIST && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
   const filteredHubs = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     if (!query) return hubs;

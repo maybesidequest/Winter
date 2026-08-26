@@ -1,4 +1,4 @@
-// Original file: /home/zev/Documents/code/interchat-protobuf/control/v1/models.proto
+// Original file: ../interchat-protobuf/control/v1/models.proto
 
 import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _google_protobuf_Timestamp__Output } from '../../../google/protobuf/Timestamp';
 

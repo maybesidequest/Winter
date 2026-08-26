@@ -15,6 +15,7 @@ interface MiddleSidebarProps {
   onToggleInstanceType: (type: "servers" | "hubs") => void;
   onOpenSettings: () => void;
   onNavigate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
 export function MiddleSidebar({
@@ -26,6 +27,7 @@ export function MiddleSidebar({
   onToggleInstanceType,
   onOpenSettings,
   onNavigate,
+  capabilities,
 }: MiddleSidebarProps) {
   const location = useLocation();
   const params = useParams();
@@ -155,6 +157,7 @@ export function MiddleSidebar({
           hubs={hubs}
           isLoading={isLoading}
           onNavigate={onNavigate}
+          capabilities={capabilities}
         />
       </div>
 

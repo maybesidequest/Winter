@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CheckOutlined, PictureOutlined } from "@ant-design/icons";
-import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { DashboardReadOnlyNotice, dashboardGlassCardStyle, DepthToggle } from "~/components/dashboard/shared";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 
@@ -61,6 +61,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl w-full">
+      {!canEdit && <DashboardReadOnlyNotice />}
       {/* Profile & Branding Editor */}
       <form onSubmit={handleSubmit} className="rounded-2xl p-6 border flex flex-col gap-5" style={dashboardGlassCardStyle}>
         {error && (
@@ -147,12 +148,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="flex items-center gap-3 text-xs font-bold text-white/90">
-            <input
-              type="checkbox"
-              checked={nsfw}
-              disabled={!canEdit}
-              onChange={(e) => setNsfw(e.target.checked)}
-            />
+            <DepthToggle checked={nsfw} disabled={!canEdit} onChange={setNsfw} aria-label="Age-restricted Hub" />
             Age-restricted Hub (18+)
           </label>
           <div className="flex items-center gap-3">

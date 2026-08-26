@@ -7,12 +7,14 @@ import type { HubResource } from "~/resources/hub";
 type DashboardContext = {
   servers?: ServerResource[];
   hubs?: HubResource[];
+  capabilities?: Record<string, boolean>;
 };
 
 export function DashboardHome() {
   const context = useOutletContext<DashboardContext>();
   const servers = context?.servers ?? [];
   const hubs = context?.hubs ?? [];
+  const activityEnabled = context?.capabilities?.USER_ACTIVITY ?? import.meta.env.DEV;
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto">
@@ -50,7 +52,7 @@ export function DashboardHome() {
         </Link>
       </div>
 
-      <section className="dashboard-card p-6 rounded-2xl border border-white/[0.08]">
+      {activityEnabled && <section className="dashboard-card p-6 rounded-2xl border border-white/[0.08]">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-white">Activity</h2>
@@ -58,7 +60,7 @@ export function DashboardHome() {
           </div>
           <Link to="/dashboard/activity" className="dashboard-btn-secondary px-3 py-1.5 text-xs font-bold">View activity</Link>
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

@@ -17,6 +17,7 @@ interface GeneralSidebarTabsProps {
   hubs?: HubResource[];
   isLoading?: boolean;
   onNavigate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
 export function GeneralSidebarTabs({
@@ -24,6 +25,7 @@ export function GeneralSidebarTabs({
   hubs = [],
   isLoading = false,
   onNavigate,
+  capabilities,
 }: GeneralSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     community: false,
@@ -31,6 +33,7 @@ export function GeneralSidebarTabs({
   });
 
   const toggle = (key: string) => setCollapsed((p) => ({ ...p, [key]: !p[key] }));
+  const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
   return (
     <div className="flex flex-col gap-3.5 py-1">
@@ -51,7 +54,7 @@ export function GeneralSidebarTabs({
         <span>Home</span>
       </NavLink>
 
-      <NavLink
+      {enabled("USER_ACTIVITY") && <NavLink
         to="/dashboard/activity"
         onClick={onNavigate}
         className={({ isActive }) => `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
@@ -60,9 +63,9 @@ export function GeneralSidebarTabs({
       >
         <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5"><BarChartOutlined /></span>
         <span>Your activity</span>
-      </NavLink>
+      </NavLink>}
 
-      <NavLink
+      {enabled("USER_HELP") && <NavLink
         to="/dashboard/help"
         onClick={onNavigate}
         className={({ isActive }) => `group flex items-center gap-3.5 px-3.5 py-2 rounded-xl text-[14px] font-semibold transition-all duration-150 ${isActive
@@ -71,7 +74,7 @@ export function GeneralSidebarTabs({
       >
         <span className="text-[17px] text-[#827d9c] group-hover:text-white group-[.active]:text-white transition-colors duration-150 flex items-center justify-center w-5"><QuestionCircleOutlined /></span>
         <span>Help & resources</span>
-      </NavLink>
+      </NavLink>}
 
       {/* Community & Hubs */}
       <div className="flex flex-col gap-1">
@@ -86,7 +89,7 @@ export function GeneralSidebarTabs({
 
         {!collapsed.community && (
           <nav className="flex flex-col gap-1">
-            <NavLink
+            {enabled("HUB_DISCOVERY") && <NavLink
               to="/dashboard/browse"
               onClick={onNavigate}
               className={({ isActive }) =>
@@ -100,7 +103,7 @@ export function GeneralSidebarTabs({
                 <CompassOutlined />
               </span>
               <span>Explore Directory</span>
-            </NavLink>
+            </NavLink>}
 
             {isLoading ? (
               <div className="flex flex-col gap-1.5 px-3.5 py-1 animate-pulse">
@@ -112,7 +115,7 @@ export function GeneralSidebarTabs({
                 ))}
               </div>
             ) : (
-              hubs.slice(0, 3).map((h) => (
+              enabled("HUB_LIST") ? hubs.slice(0, 3).map((h) => (
                 <NavLink
                   key={h.metadata.id}
                   to={`/dashboard/hubs/${h.metadata.id}/overview`}
@@ -133,7 +136,7 @@ export function GeneralSidebarTabs({
                   </div>
                   <span className="truncate">{h.metadata.name}</span>
                 </NavLink>
-              ))
+              )) : null
             )}
           </nav>
         )}

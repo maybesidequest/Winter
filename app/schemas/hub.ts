@@ -145,7 +145,9 @@ export const patchHubBadgesSchema = z.object({
 
 export const patchHubLogConfigSchema = z.object({
   hubId: z.string(),
-  channelId: z.string().min(1, "Channel ID is required"),
+  // An empty channel clears logging. The Control Plane validates whether a
+  // non-empty channel belongs to this Hub and is usable.
+  channelId: z.string().max(32),
   eventFlags: z.number().int().min(0).default(0),
   notificationRoleId: z.string().optional().nullable(),
   expectedVersion: z.number().int().default(1),

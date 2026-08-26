@@ -1,5 +1,6 @@
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate, useOutletContext } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import { orpc } from "~/lib/orpc";
@@ -32,14 +33,37 @@ const LEGACY_VIEWS: Record<string, string> = {
 
 const VISIBLE_HUB_VIEWS = new Set(["overview", "general", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit"]);
 
+const VIEW_CAPABILITIES: Record<string, string> = {
+  general: "HUB_CONFIG",
+  modules: "HUB_CONFIG",
+  rules: "HUB_RULES",
+  logging: "HUB_LOGGING",
+  badges: "HUB_BADGES",
+  invites: "HUB_INVITES",
+  team: "HUB_TEAM",
+  announcements: "HUB_ANNOUNCEMENTS",
+  audit: "HUB_AUDIT",
+};
+
+type DashboardContext = {
+  capabilities?: Record<string, boolean>;
+};
+
 export default function HubWorkspace() {
   const params = useParams();
+  const { capabilities = {} } = useOutletContext<DashboardContext>();
   const hubId = params.hubId || "";
   const requestedView = params.view || "overview";
   const requestedTab = LEGACY_VIEWS[requestedView] || requestedView;
-  const activeTab = VISIBLE_HUB_VIEWS.has(requestedTab) || import.meta.env.DEV ? requestedTab : "overview";
+  const requestedCapability = VIEW_CAPABILITIES[requestedTab];
+  const viewEnabled = !requestedCapability || capabilities[requestedCapability] || import.meta.env.DEV;
+  // Navigation is not an authorization boundary.  Direct URLs must follow
+  // the same production capability snapshot as the sidebar, otherwise a
+  // hidden feature can still render (and issue its RPCs) when pasted in.
+  const activeTab = (VISIBLE_HUB_VIEWS.has(requestedTab) && viewEnabled) || import.meta.env.DEV ? requestedTab : "overview";
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const patchAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
     orpc.hub.getHub.queryOptions({ input: { hubId } })
@@ -55,8 +79,17 @@ export default function HubWorkspace() {
 
   const patchMutation = useMutation(
     orpc.hub.patchConfig.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (result) => {
+        patchAttemptRef.current = null;
         message.success("Hub configuration saved successfully.");
+        // Render the exact resource returned by the Control Plane immediately;
+        // the follow-up invalidation reconciles other cached projections.
+        if (result.hub) {
+          queryClient.setQueryData(
+            orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey,
+            result.hub,
+          );
+        }
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
       },
@@ -102,6 +135,19 @@ export default function HubWorkspace() {
       onError: (err) => message.error(err.message || "Failed to transfer ownership."),
     })
   );
+
+  const patchConfig = (changes: Record<string, unknown>) => {
+    const fingerprint = JSON.stringify({ hubId, version: hub?.version, changes });
+    if (!patchAttemptRef.current || patchAttemptRef.current.fingerprint !== fingerprint) {
+      patchAttemptRef.current = { fingerprint, key: crypto.randomUUID() };
+    }
+    patchMutation.mutate({
+      hubId,
+      idempotencyKey: patchAttemptRef.current.key,
+      version: hub?.version,
+      ...changes,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -157,12 +203,12 @@ export default function HubWorkspace() {
         isSaving={patchMutation.isPending}
         saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}
         isRoutePending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
-        onSaveConfig={(changes) => patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), version: hub.version, ...changes })}
+        onSaveConfig={(changes) => patchConfig(changes)}
         onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected })}
         onDisconnectRoute={(conn) => disconnectRouteMutation.mutate({ hubId, connectionId: conn.metadata.id })}
         onToggleModuleFlag={(flag, enabled) => {
           const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
-          patchMutation.mutate({ hubId, idempotencyKey: crypto.randomUUID(), settings: updatedSettings, version: hub.version });
+          patchConfig({ settings: updatedSettings });
         }}
         onDeleteHub={() => deleteHubMutation.mutate({ hubId, confirmationName: hub.metadata.name, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}
         onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}

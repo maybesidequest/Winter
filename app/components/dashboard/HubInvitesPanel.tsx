@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, InputNumber, List, Modal, Typography, message, Popconfirm, Tag } from "antd";
 import { PlusOutlined, DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
 
 const { Text } = Typography;
@@ -81,6 +81,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
         )
       }
     >
+      {!canEdit && <DashboardReadOnlyNotice message="Only staff with invite-management access can create or revoke invites." />}
       {isError && <Text type="danger">Invites are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}

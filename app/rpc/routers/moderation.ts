@@ -3,10 +3,27 @@ import { base, protectedBase } from "../context";
 import { hubStaffService } from "../../services/hubStaff.server";
 import { z } from "zod";
 import { requireCapability } from "~/rpc/capabilityGuard";
+import { moderationService } from "~/services/control/moderation";
 
 const hubRoleSchema = z.enum(["MANAGER", "MODERATOR"]);
 
 export const moderationRouter = base.router({
+  listMyAppealableInfractions: protectedBase.handler(async ({ context }) => {
+    requireCapability("MODERATION");
+    return moderationService.listMyAppealableInfractions(context.user.id);
+  }),
+
+  submitAppeal: protectedBase
+    .input(z.object({
+      hubId: z.string().min(1),
+      infractionId: z.string().min(1),
+      reason: z.string().trim().min(5).max(2_000),
+      idempotencyKey: z.string().min(1),
+    }))
+    .handler(async ({ input, context }) => {
+      requireCapability("MODERATION");
+      return moderationService.submitAppeal({ ...input, actorId: context.user.id });
+    }),
   // ------------------------------------------------------------------ //
   // Hub staff management                                                 //
   // ------------------------------------------------------------------ //

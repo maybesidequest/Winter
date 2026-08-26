@@ -28,6 +28,7 @@ interface IconRailProps {
   hubs?: HubResource[];
   isLoading?: boolean;
   onOpenCreate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
 export function IconRail({
@@ -36,12 +37,14 @@ export function IconRail({
   hubs = [],
   isLoading = false,
   onOpenCreate,
+  capabilities,
 }: IconRailProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const isHomeActive = location.pathname === "/dashboard";
   const isBrowseActive = location.pathname.startsWith("/dashboard/browse");
+  const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
   const instances =
     instanceType === "servers"
@@ -157,7 +160,7 @@ export function IconRail({
       {/* 3. Bottom Global Actions */}
       <div className="w-full flex flex-col items-center gap-1 flex-shrink-0">
         {/* Create and Explore are supported normal-user workflows. */}
-        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+        {enabled("HUB_LIFECYCLE") && <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <Tooltip
             placement="right"
             mouseEnterDelay={0.05}
@@ -178,10 +181,10 @@ export function IconRail({
               <PlusOutlined className="text-lg font-bold" />
             </button>
           </Tooltip>
-        </div>
+        </div>}
 
         {/* Explore / Browse */}
-        <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
+        {enabled("HUB_DISCOVERY") && <div className="relative flex items-center justify-center w-full py-1.5 group cursor-pointer">
           <span
             className={`absolute left-0 w-1 rounded-r-full transition-all duration-150 ${
               isBrowseActive
@@ -212,7 +215,7 @@ export function IconRail({
               <CompassOutlined className="text-xl" />
             </Link>
           </Tooltip>
-        </div>
+        </div>}
 
       </div>
     </aside>

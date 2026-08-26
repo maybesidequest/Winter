@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
 import type { HubResource } from "~/resources/hub";
 
 const { Text } = Typography;
@@ -85,6 +85,7 @@ export function HubLoggingPanel({ hub, canEdit }: HubLoggingPanelProps) {
         )
       }
     >
+      {!canEdit && <DashboardReadOnlyNotice message="Only staff with logging-management access can change destinations or event types." />}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {logQuery.isLoading && <Text type="secondary">Loading logging settings…</Text>}
         {logQuery.isError && <Text type="danger">Logging settings are temporarily unavailable. Try again before saving.</Text>}

@@ -14,9 +14,10 @@ import { BotConfigSection } from "./settings/BotConfigSection";
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, capabilities }: SettingsModalProps) {
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>("account");
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const { data: userResource, isLoading: userLoading } = useQuery({
     ...orpc.user.get.queryOptions(),
-    enabled: isOpen,
+    enabled: isOpen && (capabilities?.USER_PROFILE ?? import.meta.env.DEV),
   });
 
   const { data: locales = [] } = useQuery({
@@ -79,6 +80,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <SettingsMiniSidebar
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}
+          capabilities={capabilities}
         />
 
         {/* Right Content Pane */}

@@ -10,15 +10,19 @@ import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { requireUser } from "~/services/auth.server";
+import { CONTROL_CAPABILITIES, isCapabilityEnabled } from "~/services/capabilities.server";
 import "~/styles/dashboard.css";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await requireUser(request);
-  return { user };
+  const capabilities = Object.fromEntries(
+    Object.entries(CONTROL_CAPABILITIES).map(([name]) => [name, isCapabilityEnabled(name as keyof typeof CONTROL_CAPABILITIES)]),
+  );
+  return { user, capabilities };
 }
 
 export default function DashboardLayout() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, capabilities } = useLoaderData<typeof loader>();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -31,8 +35,15 @@ export default function DashboardLayout() {
     orpc.server.list.queryOptions({ staleTime: 60_000 })
   );
 
+  // Keep disabled capabilities quiet in production.  The sidebar uses the
+  // same snapshot, so there is no reason to issue a request that the RPC will
+  // deliberately reject.  Development keeps the existing opt-in preview.
+  const hubListEnabled = capabilities.HUB_LIST || import.meta.env.DEV;
   const { data: hubs = [], isLoading: hubsLoading } = useQuery(
-    orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 })
+    {
+      ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
+      enabled: hubListEnabled,
+    }
   );
 
   const isLoading = instanceType === "servers" ? serversLoading : hubsLoading;
@@ -96,6 +107,7 @@ export default function DashboardLayout() {
             hubs={hubs}
             isLoading={isLoading}
             onOpenCreate={() => setIsCreateHubOpen(true)}
+            capabilities={capabilities}
           />
           <MiddleSidebar
             instanceType={instanceType}
@@ -105,6 +117,7 @@ export default function DashboardLayout() {
             user={user}
             onToggleInstanceType={setInstanceType}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            capabilities={capabilities}
           />
         </div>
 
@@ -128,6 +141,7 @@ export default function DashboardLayout() {
                   setMobileMenuOpen(false);
                   setIsCreateHubOpen(true);
                 }}
+                capabilities={capabilities}
               />
               <div className="flex-1 bg-[#13141f]">
                 <MiddleSidebar
@@ -142,6 +156,7 @@ export default function DashboardLayout() {
                     setIsSettingsOpen(true);
                   }}
                   onNavigate={() => setMobileMenuOpen(false)}
+                  capabilities={capabilities}
                 />
               </div>
             </div>
@@ -155,13 +170,14 @@ export default function DashboardLayout() {
             background: "radial-gradient(ellipse at top center, #151329 0%, #0b0c14 70%)",
           }}
         >
-          <Outlet context={{ user, servers, hubs, isLoading }} />
+          <Outlet context={{ user, servers, hubs, isLoading, capabilities }} />
         </main>
 
         {/* Global Settings Modal */}
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
+          capabilities={capabilities}
         />
 
         {/* Create Hub Wizard Modal */}
@@ -181,5 +197,3 @@ export default function DashboardLayout() {
     </ConfigProvider>
   );
 }
-
-

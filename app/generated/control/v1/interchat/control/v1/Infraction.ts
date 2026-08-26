@@ -14,6 +14,7 @@ export interface Infraction {
   'status'?: (_interchat_control_v1_InfractionStatus);
   'expiresAt'?: (_google_protobuf_Timestamp | null);
   'createdAt'?: (_google_protobuf_Timestamp | null);
+  'hubName'?: (string);
 }
 
 export interface Infraction__Output {
@@ -26,4 +27,5 @@ export interface Infraction__Output {
   'status': (_interchat_control_v1_InfractionStatus__Output);
   'expiresAt': (_google_protobuf_Timestamp__Output | null);
   'createdAt': (_google_protobuf_Timestamp__Output | null);
+  'hubName': (string);
 }

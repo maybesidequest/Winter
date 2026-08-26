@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, EditOutlined, SendOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
 
 const { Paragraph, Text } = Typography;
@@ -112,6 +112,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         )
       }
     >
+      {!canEdit && <DashboardReadOnlyNotice message="Only staff with announcement access can publish changes." />}
       {isError && <Text type="danger">Announcements are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}

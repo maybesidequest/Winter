@@ -5,6 +5,7 @@ import type { ApplySanctionRequest } from "~/generated/control/v1/interchat/cont
 import type { RevokeSanctionRequest } from "~/generated/control/v1/interchat/control/v1/RevokeSanctionRequest";
 import type { GetInfractionsRequest } from "~/generated/control/v1/interchat/control/v1/GetInfractionsRequest";
 import type { SubmitAppealRequest } from "~/generated/control/v1/interchat/control/v1/SubmitAppealRequest";
+import type { ListMyAppealableInfractionsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyAppealableInfractionsRequest";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
 
 export interface Infraction {
@@ -17,6 +18,7 @@ export interface Infraction {
   status: "INFRACTION_STATUS_ACTIVE" | "INFRACTION_STATUS_EXPIRED" | "INFRACTION_STATUS_REVOKED";
   expiresAt?: string;
   createdAt?: string;
+  hubName?: string;
 }
 
 export interface Appeal {
@@ -45,6 +47,7 @@ function toInfraction(value: Infraction__Output): Infraction {
     status: value.status as Infraction["status"],
     expiresAt: timestamp(value.expiresAt),
     createdAt: timestamp(value.createdAt),
+    hubName: value.hubName || undefined,
   };
 }
 
@@ -114,6 +117,15 @@ export const moderationService = {
       }
     );
     return (res as InfractionsResponse__Output).infractions.map(toInfraction);
+  },
+
+  async listMyAppealableInfractions(actorId: string): Promise<Infraction[]> {
+    const clients = getServiceClients();
+    const response = await invokeUnary<ListMyAppealableInfractionsRequest, InfractionsResponse__Output>(
+      clients.moderationClient.ListMyAppealableInfractions.bind(clients.moderationClient),
+      { context: makeRequestContext(actorId) },
+    );
+    return response.infractions.map(toInfraction);
   },
 
   async submitAppeal(input: {

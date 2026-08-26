@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Typography, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
 
 const { Text } = Typography;
@@ -77,6 +77,7 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
         )
       }
     >
+      {!canEdit && <DashboardReadOnlyNotice message="Only Hub managers can change staff badges." />}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {badgesQuery.isLoading && <Text type="secondary">Loading badge settings…</Text>}
           {badgesQuery.isError && <Text type="danger">Badge settings are temporarily unavailable. Try again before saving.</Text>}
@@ -88,7 +89,7 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
               value={ownerBadge}
               onChange={(e) => setOwnerBadge(e.target.value)}
               placeholder="e.g. 👑 or <:crown:12345>"
-              maxLength={100}
+              maxLength={32}
             disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>
@@ -100,7 +101,7 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
             value={managerBadge}
             onChange={(e) => setManagerBadge(e.target.value)}
               placeholder="e.g. 🛡️ or <:shield:12345>"
-              maxLength={100}
+              maxLength={32}
             disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>
@@ -112,7 +113,7 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
             value={moderatorBadge}
             onChange={(e) => setModeratorBadge(e.target.value)}
               placeholder="e.g. ⚔️ or <:sword:12345>"
-              maxLength={100}
+              maxLength={32}
             disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
           />
         </div>

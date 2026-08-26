@@ -11,11 +11,13 @@ import {
   deleteHubSchema,
 } from "~/schemas/hub";
 import { hubFeaturesRouter } from "./hubFeaturesRouter";
+import { requireCapability } from "~/rpc/capabilityGuard";
 
 export const hubRouter = base.router({
   ...hubFeaturesRouter,
 
   getUserHubs: protectedBase.handler(async ({ context }) => {
+    requireCapability("HUB_LIST");
     return hubService.getUserHubs(context.user.id);
   }),
 
@@ -33,6 +35,7 @@ export const hubRouter = base.router({
   createHub: protectedBase
     .input(createHubSchema)
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_LIFECYCLE");
       const result = await hubService.createHub(context.user.id, input, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
@@ -43,6 +46,7 @@ export const hubRouter = base.router({
   patchConfig: protectedBase
     .input(patchHubConfigSchema)
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_CONFIG");
       const result = await hubService.updateHubConfig(context.user.id, input);
       if (!result.success) {
         throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error });
@@ -53,6 +57,7 @@ export const hubRouter = base.router({
   getConnections: protectedBase
     .input(z.object({ hubId: z.string() }))
     .handler(async ({ input, context }) => {
+      requireCapability("CONNECTIONS");
       return connectionService.getHubConnections(input.hubId, context.user.id);
     }),
 
@@ -64,6 +69,7 @@ export const hubRouter = base.router({
       hubId: z.string(),
     }))
     .handler(async ({ input, context }) => {
+      requireCapability("CONNECTIONS");
       const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
@@ -77,6 +83,7 @@ export const hubRouter = base.router({
       hubId: z.string(),
     }))
     .handler(async ({ input, context }) => {
+      requireCapability("CONNECTIONS");
       const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
@@ -93,6 +100,7 @@ export const hubRouter = base.router({
       customName: z.string().optional(),
     }))
     .handler(async ({ input, context }) => {
+      requireCapability("CONNECTIONS");
       const result = await connectionService.createConnection(
         context.user.id,
         input.hubId,
@@ -110,6 +118,7 @@ export const hubRouter = base.router({
   deleteHub: protectedBase
     .input(deleteHubSchema)
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_LIFECYCLE");
       const result = await hubService.deleteHub(context.user.id, input.hubId, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("FORBIDDEN", { message: result.error });
@@ -120,6 +129,7 @@ export const hubRouter = base.router({
   transferOwnership: protectedBase
     .input(transferHubOwnershipSchema)
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_LIFECYCLE");
       const result = await hubService.transferOwnership(context.user.id, input.hubId, input.newOwnerId, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("FORBIDDEN", { message: result.error });
@@ -130,6 +140,7 @@ export const hubRouter = base.router({
   lockdownHub: protectedBase
     .input(lockdownHubSchema)
     .handler(async ({ input, context }) => {
+      requireCapability("HUB_LIFECYCLE");
       return hubService.lockdownHub(context.user.id, input);
     }),
 });

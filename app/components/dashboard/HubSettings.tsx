@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   SettingOutlined,
   GlobalOutlined,
@@ -34,6 +34,12 @@ export function HubSettings({
   const [language, setLanguage] = useState(hub.spec.language || "English");
   const [region, setRegion] = useState(hub.spec.region || "Global");
   const [transferTarget, setTransferTarget] = useState("");
+
+  useEffect(() => {
+    setVisibility(hub.spec.visibility);
+    setLanguage(hub.spec.language || "English");
+    setRegion(hub.spec.region || "Global");
+  }, [hub]);
 
   const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();

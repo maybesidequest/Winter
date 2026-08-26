@@ -1,14 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Card, Col, Empty, List, Row, Select, Skeleton, Statistic, Typography } from "antd";
 import { useState } from "react";
+import { Navigate, useOutletContext } from "react-router";
 import { PageHeader, Section } from "~/components/dashboard/WorkspacePrimitives";
 import { orpc } from "~/lib/orpc";
 
 export default function DashboardActivity() {
+  const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
   const now = new Date();
   const [year, setYear] = useState(now.getUTCFullYear());
   const [month, setMonth] = useState(now.getUTCMonth() + 1);
-  const activity = useQuery(orpc.user.getActivity.queryOptions({ input: { year, month, limit: 5 } }));
+  const activity = useQuery({
+    ...orpc.user.getActivity.queryOptions({ input: { year, month, limit: 5 } }),
+    enabled: capabilities.USER_ACTIVITY || import.meta.env.DEV,
+  });
+  if (!capabilities.USER_ACTIVITY && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
 
   if (activity.isLoading) {
     return <><PageHeader eyebrow="Activity" title="Your activity" description="A clear view of your InterChat participation." /><Skeleton active /></>;

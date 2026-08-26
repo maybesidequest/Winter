@@ -1,0 +1,23 @@
+// Original file: ../interchat-protobuf/control/v1/models.proto
+
+export const LeaderboardKind = {
+  LEADERBOARD_KIND_UNSPECIFIED: 'LEADERBOARD_KIND_UNSPECIFIED',
+  LEADERBOARD_KIND_MESSAGES: 'LEADERBOARD_KIND_MESSAGES',
+  LEADERBOARD_KIND_CALLS: 'LEADERBOARD_KIND_CALLS',
+  LEADERBOARD_KIND_VOTES: 'LEADERBOARD_KIND_VOTES',
+  LEADERBOARD_KIND_STREAKS: 'LEADERBOARD_KIND_STREAKS',
+} as const;
+
+export type LeaderboardKind =
+  | 'LEADERBOARD_KIND_UNSPECIFIED'
+  | 0
+  | 'LEADERBOARD_KIND_MESSAGES'
+  | 1
+  | 'LEADERBOARD_KIND_CALLS'
+  | 2
+  | 'LEADERBOARD_KIND_VOTES'
+  | 3
+  | 'LEADERBOARD_KIND_STREAKS'
+  | 4
+
+export type LeaderboardKind__Output = typeof LeaderboardKind[keyof typeof LeaderboardKind]

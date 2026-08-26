@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useLoaderData, useParams, Link } from "react-router";
+import { useLoaderData, useOutletContext, useParams, Link } from "react-router";
 import type { Route } from "./+types/server-workspace";
 import {
   CloudServerOutlined,
@@ -16,6 +16,7 @@ import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCall
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
 import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
+import { isCapabilityEnabled } from "~/services/capabilities.server";
 import type {
   DiscordChannelResource,
   ServerBlockResource,
@@ -31,14 +32,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const server = await serverService.get(user.id, serverId);
-  const allowExperimentalViews = process.env.NODE_ENV !== "production";
-  const [channels, bridges, blocks] = allowExperimentalViews
-    ? await Promise.all([
-        server.status.botInstalled ? serverService.channels(user.id, serverId) : Promise.resolve([]),
-        server.status.botInstalled ? serverService.bridges(user.id, serverId) : Promise.resolve([]),
-        server.status.botInstalled ? serverService.blocklist(user.id, serverId) : Promise.resolve([]),
-      ])
-    : [[], [], []];
+  const [channels, bridges, blocks] = await Promise.all([
+    server.status.botInstalled && isCapabilityEnabled("CONNECTIONS")
+      ? serverService.channels(user.id, serverId)
+      : Promise.resolve([]),
+    server.status.botInstalled && isCapabilityEnabled("CONNECTIONS")
+      ? serverService.bridges(user.id, serverId)
+      : Promise.resolve([]),
+    server.status.botInstalled && isCapabilityEnabled("SERVER_BLOCKLIST")
+      ? serverService.blocklist(user.id, serverId)
+      : Promise.resolve([]),
+  ]);
 
   return {
     server,
@@ -48,11 +52,26 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   };
 }
 
+const VISIBLE_SERVER_VIEWS = new Set(["overview", "bridges", "safety", "settings"]);
+const VIEW_CAPABILITIES: Record<string, string> = {
+  bridges: "CONNECTIONS",
+  safety: "SERVER_BLOCKLIST",
+  settings: "SERVER_CONFIG",
+};
+const LEGACY_VIEWS: Record<string, string> = { blocklist: "safety" };
+
+type DashboardContext = {
+  capabilities?: Record<string, boolean>;
+};
+
 export default function ServerWorkspace() {
   const { server, channels, bridges, blocks } = useLoaderData<typeof loader>();
+  const { capabilities = {} } = useOutletContext<DashboardContext>();
   const params = useParams();
-  const requestedView = params.view || "overview";
-  const view = import.meta.env.DEV ? requestedView : "overview";
+  const requestedView = LEGACY_VIEWS[params.view || "overview"] || params.view || "overview";
+  const requestedCapability = VIEW_CAPABILITIES[requestedView];
+  const viewEnabled = !requestedCapability || capabilities[requestedCapability] === true;
+  const view = VISIBLE_SERVER_VIEWS.has(requestedView) && viewEnabled ? requestedView : "overview";
 
   const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
     overview: {

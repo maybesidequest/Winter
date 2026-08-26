@@ -1,6 +1,6 @@
 import { redis } from "~/redis.server";
 import { permissionService } from "~/services/permission.server";
-import { controlUserService, type UserProfile, type UserPreferences, type UserActivity } from "~/services/control.server";
+import { controlUserService, type UserProfile, type UserPreferences, type UserActivity, type UserLeaderboard } from "~/services/control.server";
 import type {
   UserResource,
   UserCallRecord,
@@ -40,6 +40,19 @@ export const SUPPORTED_LOCALES: SupportedLocale[] = [
 export const userService = {
   async getActivity(userId: string, options?: { year?: number; month?: number; limit?: number }): Promise<UserActivity> {
     return controlUserService.getUserActivity(userId, userId, options);
+  },
+
+  async getLeaderboard(
+    userId: string,
+    kind: "LEADERBOARD_KIND_MESSAGES" | "LEADERBOARD_KIND_CALLS" | "LEADERBOARD_KIND_VOTES" | "LEADERBOARD_KIND_STREAKS",
+    limit = 20,
+    offset = 0,
+  ): Promise<UserLeaderboard> {
+    return controlUserService.getLeaderboard({ actorId: userId, kind, limit, offset });
+  },
+
+  async submitFeedback(userId: string, category: string, message: string, idempotencyKey: string) {
+    return controlUserService.submitFeedback({ actorId: userId, category, message, idempotencyKey });
   },
 
   async getInbox(userId: string) {

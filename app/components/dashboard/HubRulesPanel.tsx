@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
 import { PlusOutlined, DeleteOutlined, EditOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
 
 const { Paragraph, Text } = Typography;
@@ -149,6 +149,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
         )
       }
     >
+      {!canEdit && <DashboardReadOnlyNotice message="Only staff with rule-management access can edit these rules." />}
       {isError && <Text type="danger">Rules are temporarily unavailable. Try again before making changes.</Text>}
       <List
         loading={isLoading}

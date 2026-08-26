@@ -1,4 +1,4 @@
-// Original file: /home/zev/Documents/code/interchat-protobuf/control/v1/models.proto
+// Original file: ../interchat-protobuf/control/v1/models.proto
 
 
 export interface UserPreferences {

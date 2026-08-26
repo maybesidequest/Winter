@@ -22,17 +22,19 @@ interface HubSidebarTabsProps {
   hubId: string;
   hub?: HubResource;
   onNavigate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
-export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) {
+export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const permissions = hub?.metadata.permissions;
   const can = (...actions: (keyof NonNullable<typeof permissions>)[]) =>
     !permissions || actions.some((action) => permissions[action]);
+  const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "general", label: "General", icon: <EditOutlined />, visible: can("MANAGE_HUB_SETTINGS") },
+    { path: "general", label: "General", icon: <EditOutlined />, visible: enabled("HUB_CONFIG") && can("MANAGE_HUB_SETTINGS") },
     { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: false },
     {
       path: "moderation",
@@ -40,44 +42,44 @@ export function HubSidebarTabs({ hubId, hub, onNavigate }: HubSidebarTabsProps) 
       icon: <SafetyCertificateOutlined />,
       visible: false,
     },
-    { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: can("MANAGE_RULES") },
+    { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && can("MANAGE_RULES") },
     {
       path: "modules",
       label: "Modules",
       icon: <AppstoreOutlined />,
-      visible: can("MANAGE_HUB_SETTINGS"),
+      visible: enabled("HUB_CONFIG") && can("MANAGE_HUB_SETTINGS"),
     },
     {
       path: "logging",
       label: "Logging",
       icon: <FileTextOutlined />,
-      visible: can("VIEW_LOGS", "MANAGE_HUB_SETTINGS"),
+      visible: enabled("HUB_LOGGING") && can("MANAGE_LOGS", "MANAGE_HUB_SETTINGS"),
     },
     {
       path: "badges",
       label: "Badges",
       icon: <IdcardOutlined />,
-      visible: can("MANAGE_HUB_SETTINGS"),
+      visible: enabled("HUB_BADGES") && can("MANAGE_HUB_SETTINGS"),
     },
     {
       path: "invites",
       label: "Invites",
       icon: <LinkOutlined />,
-      visible: can("MANAGE_INVITES"),
+      visible: enabled("HUB_INVITES") && can("MANAGE_INVITES"),
     },
     {
       path: "team",
       label: "Team",
       icon: <ApartmentOutlined />,
-      visible: can("MANAGE_MODERATORS"),
+      visible: enabled("HUB_TEAM") && can("MANAGE_MODERATORS"),
     },
     {
       path: "announcements",
       label: "Announcements",
       icon: <BellOutlined />,
-      visible: can("ANNOUNCE"),
+      visible: enabled("HUB_ANNOUNCEMENTS") && can("ANNOUNCE"),
     },
-    { path: "audit", label: "Audit history", icon: <HistoryOutlined />, visible: can("VIEW_LOGS") },
+    { path: "audit", label: "Audit history", icon: <HistoryOutlined />, visible: enabled("HUB_AUDIT") && can("VIEW_LOGS") },
     { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: false },
   ].filter((item) => item.visible !== false);
 

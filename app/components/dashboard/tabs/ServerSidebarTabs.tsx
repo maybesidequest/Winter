@@ -15,10 +15,12 @@ interface ServerSidebarTabsProps {
   serverId: string;
   server?: ServerResource;
   onNavigate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
-export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSidebarTabsProps) {
+export function ServerSidebarTabs({ serverId, server, onNavigate, capabilities }: ServerSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
   const serverItems = [
     {
@@ -30,7 +32,7 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
       path: "bridges",
       label: "Hubs",
       icon: <ApartmentOutlined />,
-      visible: import.meta.env.DEV,
+      visible: enabled("CONNECTIONS"),
     },
     {
       path: "calls",
@@ -42,13 +44,13 @@ export function ServerSidebarTabs({ serverId, server, onNavigate }: ServerSideba
       path: "safety",
       label: "Blocklist",
       icon: <SafetyCertificateOutlined />,
-      visible: import.meta.env.DEV,
+      visible: enabled("SERVER_CONFIG"),
     },
     {
       path: "settings",
       label: "Settings",
       icon: <SettingOutlined />,
-      visible: import.meta.env.DEV,
+      visible: enabled("SERVER_CONFIG"),
     },
   ].filter((item) => item.visible !== false);
 

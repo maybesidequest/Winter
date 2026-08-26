@@ -12,6 +12,7 @@ import type { ConnectionStatus as _interchat_control_v1_ConnectionStatus, Connec
 import type { ConnectionsResponse as _interchat_control_v1_ConnectionsResponse, ConnectionsResponse__Output as _interchat_control_v1_ConnectionsResponse__Output } from './interchat/control/v1/ConnectionsResponse';
 import type { DisconnectChannelRequest as _interchat_control_v1_DisconnectChannelRequest, DisconnectChannelRequest__Output as _interchat_control_v1_DisconnectChannelRequest__Output } from './interchat/control/v1/DisconnectChannelRequest';
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from './interchat/control/v1/EmptyResponse';
+import type { FeedbackReceipt as _interchat_control_v1_FeedbackReceipt, FeedbackReceipt__Output as _interchat_control_v1_FeedbackReceipt__Output } from './interchat/control/v1/FeedbackReceipt';
 import type { GetConnectionsRequest as _interchat_control_v1_GetConnectionsRequest, GetConnectionsRequest__Output as _interchat_control_v1_GetConnectionsRequest__Output } from './interchat/control/v1/GetConnectionsRequest';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from './interchat/control/v1/Hub';
 import type { HubAnnouncement as _interchat_control_v1_HubAnnouncement, HubAnnouncement__Output as _interchat_control_v1_HubAnnouncement__Output } from './interchat/control/v1/HubAnnouncement';
@@ -34,6 +35,7 @@ import type { HubStaffMemberStatus as _interchat_control_v1_HubStaffMemberStatus
 import type { HubStatus as _interchat_control_v1_HubStatus, HubStatus__Output as _interchat_control_v1_HubStatus__Output } from './interchat/control/v1/HubStatus';
 import type { HubTag as _interchat_control_v1_HubTag, HubTag__Output as _interchat_control_v1_HubTag__Output } from './interchat/control/v1/HubTag';
 import type { Infraction as _interchat_control_v1_Infraction, Infraction__Output as _interchat_control_v1_Infraction__Output } from './interchat/control/v1/Infraction';
+import type { LeaderboardEntry as _interchat_control_v1_LeaderboardEntry, LeaderboardEntry__Output as _interchat_control_v1_LeaderboardEntry__Output } from './interchat/control/v1/LeaderboardEntry';
 import type { ManagedHubSummary as _interchat_control_v1_ManagedHubSummary, ManagedHubSummary__Output as _interchat_control_v1_ManagedHubSummary__Output } from './interchat/control/v1/ManagedHubSummary';
 import type { RepairConnectionWebhooksRequest as _interchat_control_v1_RepairConnectionWebhooksRequest, RepairConnectionWebhooksRequest__Output as _interchat_control_v1_RepairConnectionWebhooksRequest__Output } from './interchat/control/v1/RepairConnectionWebhooksRequest';
 import type { RequestContext as _interchat_control_v1_RequestContext, RequestContext__Output as _interchat_control_v1_RequestContext__Output } from './interchat/control/v1/RequestContext';
@@ -43,7 +45,10 @@ import type { ServerMetadata as _interchat_control_v1_ServerMetadata, ServerMeta
 import type { ServerSpec as _interchat_control_v1_ServerSpec, ServerSpec__Output as _interchat_control_v1_ServerSpec__Output } from './interchat/control/v1/ServerSpec';
 import type { ServerStatus as _interchat_control_v1_ServerStatus, ServerStatus__Output as _interchat_control_v1_ServerStatus__Output } from './interchat/control/v1/ServerStatus';
 import type { ToggleConnectionRequest as _interchat_control_v1_ToggleConnectionRequest, ToggleConnectionRequest__Output as _interchat_control_v1_ToggleConnectionRequest__Output } from './interchat/control/v1/ToggleConnectionRequest';
+import type { UserActivity as _interchat_control_v1_UserActivity, UserActivity__Output as _interchat_control_v1_UserActivity__Output } from './interchat/control/v1/UserActivity';
+import type { UserActivityHub as _interchat_control_v1_UserActivityHub, UserActivityHub__Output as _interchat_control_v1_UserActivityHub__Output } from './interchat/control/v1/UserActivityHub';
 import type { UserInboxItem as _interchat_control_v1_UserInboxItem, UserInboxItem__Output as _interchat_control_v1_UserInboxItem__Output } from './interchat/control/v1/UserInboxItem';
+import type { UserLeaderboard as _interchat_control_v1_UserLeaderboard, UserLeaderboard__Output as _interchat_control_v1_UserLeaderboard__Output } from './interchat/control/v1/UserLeaderboard';
 import type { UserPreferences as _interchat_control_v1_UserPreferences, UserPreferences__Output as _interchat_control_v1_UserPreferences__Output } from './interchat/control/v1/UserPreferences';
 import type { UserProfile as _interchat_control_v1_UserProfile, UserProfile__Output as _interchat_control_v1_UserProfile__Output } from './interchat/control/v1/UserProfile';
 
@@ -72,6 +77,7 @@ export interface ProtoGrpcType {
         ConnectionsResponse: MessageTypeDefinition<_interchat_control_v1_ConnectionsResponse, _interchat_control_v1_ConnectionsResponse__Output>
         DisconnectChannelRequest: MessageTypeDefinition<_interchat_control_v1_DisconnectChannelRequest, _interchat_control_v1_DisconnectChannelRequest__Output>
         EmptyResponse: MessageTypeDefinition<_interchat_control_v1_EmptyResponse, _interchat_control_v1_EmptyResponse__Output>
+        FeedbackReceipt: MessageTypeDefinition<_interchat_control_v1_FeedbackReceipt, _interchat_control_v1_FeedbackReceipt__Output>
         GetConnectionsRequest: MessageTypeDefinition<_interchat_control_v1_GetConnectionsRequest, _interchat_control_v1_GetConnectionsRequest__Output>
         Hub: MessageTypeDefinition<_interchat_control_v1_Hub, _interchat_control_v1_Hub__Output>
         HubActivityLevel: EnumTypeDefinition
@@ -98,6 +104,8 @@ export interface ProtoGrpcType {
         HubVisibility: EnumTypeDefinition
         Infraction: MessageTypeDefinition<_interchat_control_v1_Infraction, _interchat_control_v1_Infraction__Output>
         InfractionStatus: EnumTypeDefinition
+        LeaderboardEntry: MessageTypeDefinition<_interchat_control_v1_LeaderboardEntry, _interchat_control_v1_LeaderboardEntry__Output>
+        LeaderboardKind: EnumTypeDefinition
         ManagedHubSummary: MessageTypeDefinition<_interchat_control_v1_ManagedHubSummary, _interchat_control_v1_ManagedHubSummary__Output>
         NsfwFilter: EnumTypeDefinition
         RepairConnectionWebhooksRequest: MessageTypeDefinition<_interchat_control_v1_RepairConnectionWebhooksRequest, _interchat_control_v1_RepairConnectionWebhooksRequest__Output>
@@ -109,7 +117,10 @@ export interface ProtoGrpcType {
         ServerSpec: MessageTypeDefinition<_interchat_control_v1_ServerSpec, _interchat_control_v1_ServerSpec__Output>
         ServerStatus: MessageTypeDefinition<_interchat_control_v1_ServerStatus, _interchat_control_v1_ServerStatus__Output>
         ToggleConnectionRequest: MessageTypeDefinition<_interchat_control_v1_ToggleConnectionRequest, _interchat_control_v1_ToggleConnectionRequest__Output>
+        UserActivity: MessageTypeDefinition<_interchat_control_v1_UserActivity, _interchat_control_v1_UserActivity__Output>
+        UserActivityHub: MessageTypeDefinition<_interchat_control_v1_UserActivityHub, _interchat_control_v1_UserActivityHub__Output>
         UserInboxItem: MessageTypeDefinition<_interchat_control_v1_UserInboxItem, _interchat_control_v1_UserInboxItem__Output>
+        UserLeaderboard: MessageTypeDefinition<_interchat_control_v1_UserLeaderboard, _interchat_control_v1_UserLeaderboard__Output>
         UserPreferences: MessageTypeDefinition<_interchat_control_v1_UserPreferences, _interchat_control_v1_UserPreferences__Output>
         UserProfile: MessageTypeDefinition<_interchat_control_v1_UserProfile, _interchat_control_v1_UserProfile__Output>
         VoteProvider: EnumTypeDefinition

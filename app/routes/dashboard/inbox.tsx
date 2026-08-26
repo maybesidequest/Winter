@@ -1,14 +1,19 @@
 import { CheckOutlined, InboxOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Empty, List, Spin, Typography, message } from "antd";
+import { Navigate, useOutletContext } from "react-router";
 import { orpc } from "~/lib/orpc";
 import { PageHeader } from "~/components/dashboard/WorkspacePrimitives";
 
 const { Text } = Typography;
 
 export default function InboxPage() {
+  const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
   const queryClient = useQueryClient();
-  const inbox = useQuery(orpc.user.getInbox.queryOptions());
+  const inbox = useQuery({
+    ...orpc.user.getInbox.queryOptions(),
+    enabled: capabilities.USER_INBOX || import.meta.env.DEV,
+  });
   const acknowledge = useMutation(orpc.user.acknowledgeInbox.mutationOptions({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: orpc.user.getInbox.queryOptions().queryKey });
@@ -16,6 +21,7 @@ export default function InboxPage() {
     },
     onError: () => message.error("The notification could not be updated. Try again.")
   }));
+  if (!capabilities.USER_INBOX && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
 
   return <>
     <PageHeader eyebrow="Inbox" title="Your InterChat notifications" description="Official updates and system notifications from InterChat." />

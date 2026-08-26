@@ -4,6 +4,9 @@ import type { UserPreferences__Output } from "~/generated/control/v1/interchat/c
 import type { UserInboxItem__Output } from "~/generated/control/v1/interchat/control/v1/UserInboxItem";
 import type { UserInboxResponse__Output } from "~/generated/control/v1/interchat/control/v1/UserInboxResponse";
 import type { RecordVoteResponse__Output } from "~/generated/control/v1/interchat/control/v1/RecordVoteResponse";
+import type { UserLeaderboard__Output } from "~/generated/control/v1/interchat/control/v1/UserLeaderboard";
+import type { FeedbackReceipt__Output } from "~/generated/control/v1/interchat/control/v1/FeedbackReceipt";
+import type { LeaderboardKind } from "~/generated/control/v1/interchat/control/v1/LeaderboardKind";
 import type { VoteProvider } from "~/generated/control/v1/interchat/control/v1/VoteProvider";
 import type { GetUserProfileRequest } from "~/generated/control/v1/interchat/control/v1/GetUserProfileRequest";
 import type { GetUserActivityRequest } from "~/generated/control/v1/interchat/control/v1/GetUserActivityRequest";
@@ -12,6 +15,8 @@ import type { PatchUserPreferencesRequest } from "~/generated/control/v1/interch
 import type { AcknowledgeInboxItemRequest } from "~/generated/control/v1/interchat/control/v1/AcknowledgeInboxItemRequest";
 import type { SyncDiscordIdentityRequest } from "~/generated/control/v1/interchat/control/v1/SyncDiscordIdentityRequest";
 import type { RecordVoteRequest } from "~/generated/control/v1/interchat/control/v1/RecordVoteRequest";
+import type { GetLeaderboardRequest } from "~/generated/control/v1/interchat/control/v1/GetLeaderboardRequest";
+import type { SubmitFeedbackRequest } from "~/generated/control/v1/interchat/control/v1/SubmitFeedbackRequest";
 import type { RequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
 import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
@@ -70,6 +75,21 @@ export interface UserInboxItem {
   actionUrl?: string;
   read: boolean;
   createdAt?: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  value: number;
+}
+
+export interface UserLeaderboard {
+  kind: LeaderboardKind;
+  entries: LeaderboardEntry[];
+  totalCount: number;
+  asOf?: string;
 }
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string | undefined {
@@ -141,6 +161,54 @@ export const userService = {
       },
     );
     return toActivity(response);
+  },
+
+  async getLeaderboard(input: {
+    actorId: string;
+    kind: LeaderboardKind;
+    limit?: number;
+    offset?: number;
+  }): Promise<UserLeaderboard> {
+    const clients = getServiceClients();
+    const response = await invokeUnary<GetLeaderboardRequest, UserLeaderboard__Output>(
+      clients.userClient.GetLeaderboard.bind(clients.userClient),
+      {
+        context: makeRequestContext(input.actorId),
+        kind: input.kind,
+        limit: input.limit || 20,
+        offset: input.offset || 0,
+      },
+    );
+    return {
+      kind: response.kind,
+      entries: response.entries.map((entry) => ({
+        rank: entry.rank,
+        userId: entry.userId,
+        displayName: entry.displayName || "InterChat user",
+        avatarUrl: entry.avatarUrl || undefined,
+        value: entry.value,
+      })),
+      totalCount: response.totalCount,
+      asOf: timestamp(response.asOf),
+    };
+  },
+
+  async submitFeedback(input: {
+    actorId: string;
+    category: string;
+    message: string;
+    idempotencyKey: string;
+  }): Promise<{ id: string; category: string; submittedAt?: string }> {
+    const clients = getServiceClients();
+    const response = await invokeUnary<SubmitFeedbackRequest, FeedbackReceipt__Output>(
+      clients.userClient.SubmitFeedback.bind(clients.userClient),
+      {
+        context: makeRequestContext(input.actorId, true, input.idempotencyKey),
+        category: input.category,
+        message: input.message,
+      },
+    );
+    return { id: response.id, category: response.category, submittedAt: timestamp(response.submittedAt) };
   },
 
   async getUserPreferences(actorId: string): Promise<UserPreferences> {

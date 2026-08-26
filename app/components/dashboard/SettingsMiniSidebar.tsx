@@ -15,12 +15,15 @@ export type SettingsCategory =
 interface SettingsMiniSidebarProps {
   activeCategory: SettingsCategory;
   onSelectCategory: (category: SettingsCategory) => void;
+  capabilities?: Record<string, boolean>;
 }
 
 export function SettingsMiniSidebar({
   activeCategory,
   onSelectCategory,
+  capabilities,
 }: SettingsMiniSidebarProps) {
+  const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
   const items: Array<{
     id: SettingsCategory;
     label: string;
@@ -28,8 +31,8 @@ export function SettingsMiniSidebar({
     disabled?: boolean;
     badge?: string;
   }> = [
-      { id: "account", label: "My Account", icon: <UserOutlined /> },
-      { id: "preferences", label: "Preferences", icon: <BellOutlined /> },
+      ...(enabled("USER_PROFILE") ? [{ id: "account" as const, label: "My Account", icon: <UserOutlined /> }] : []),
+      ...(enabled("USER_PREFERENCES") ? [{ id: "preferences" as const, label: "Preferences", icon: <BellOutlined /> }] : []),
       { id: "appearance", label: "Appearance", icon: <BgColorsOutlined /> },
       ...(import.meta.env.DEV
         ? [{ id: "bot_config" as const, label: "Bot & Staff", icon: <RobotOutlined /> }]

@@ -1,6 +1,6 @@
 import { Typography } from "antd";
-import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
-import { HubSettingsFlags, hasSettingsFlag } from "../../schemas/hub";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
+import { HubSettingsFlags, hasSettingsFlag } from "~/schemas/hub";
 import type { DashboardHubConfig } from "./types";
 
 const { Text } = Typography;
@@ -28,6 +28,7 @@ export function HubSettingsPanel({ settings, canEdit, isSaving = false, onToggle
 
   return (
     <DashboardSectionCard title={<DashboardSectionTitle>Modules</DashboardSectionTitle>}>
+      {!canEdit && <DashboardReadOnlyNotice message="Only Hub managers can change message and attachment modules." />}
       {SETTINGS_TOGGLES.map(({ flag, label, desc }) => (
         <div
           key={flag}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { Navigate, useOutletContext, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CompassOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
@@ -58,11 +58,13 @@ export async function loader() {
 }
 
 export default function BrowseRoute() {
+  const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State modals
   const [connectingHub, setConnectingHub] = useState<HubPublicResource | null>(null);
   const [inspectingHub, setInspectingHub] = useState<HubPublicResource | null>(null);
+  if (!capabilities.HUB_DISCOVERY && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
 
   // Parse URL search parameters
   const search = searchParams.get("q") || "";
@@ -87,24 +89,27 @@ export default function BrowseRoute() {
 
   // Queries
   const { data: searchResult, isLoading, isError } = useQuery(
-    orpc.hubDiscovery.search.queryOptions({
-      input: {
-        search: search || undefined,
-        sort,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
-        nsfw,
-        page,
-        limit: 18,
-      },
-    })
+    {
+      ...orpc.hubDiscovery.search.queryOptions({
+        input: {
+          search: search || undefined,
+          sort,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          nsfw,
+          page,
+          limit: 18,
+        },
+      }),
+      enabled: capabilities.HUB_DISCOVERY || import.meta.env.DEV,
+    }
   );
 
   const { data: featuredHubs = [] } = useQuery(
-    orpc.hubDiscovery.getFeatured.queryOptions()
+    { ...orpc.hubDiscovery.getFeatured.queryOptions(), enabled: capabilities.HUB_DISCOVERY || import.meta.env.DEV }
   );
 
   const { data: popularTags = [] } = useQuery(
-    orpc.hubDiscovery.getPopularTags.queryOptions()
+    { ...orpc.hubDiscovery.getPopularTags.queryOptions(), enabled: capabilities.HUB_DISCOVERY || import.meta.env.DEV }
   );
 
   const { data: inspectedHubDetail } = useQuery({

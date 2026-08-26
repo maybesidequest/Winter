@@ -16,6 +16,7 @@ interface SidebarTabsProps {
   hubs?: HubResource[];
   isLoading?: boolean;
   onNavigate?: () => void;
+  capabilities?: Record<string, boolean>;
 }
 
 export function SidebarTabs({
@@ -24,13 +25,14 @@ export function SidebarTabs({
   hubs = [],
   isLoading = false,
   onNavigate,
+  capabilities,
 }: SidebarTabsProps) {
   if (context.type === "hub") {
-    return <HubSidebarTabs hubId={context.id} hub={context.hub} onNavigate={onNavigate} />;
+    return <HubSidebarTabs hubId={context.id} hub={context.hub} onNavigate={onNavigate} capabilities={capabilities} />;
   }
 
   if (context.type === "server") {
-    return <ServerSidebarTabs serverId={context.id} server={context.server} onNavigate={onNavigate} />;
+    return <ServerSidebarTabs serverId={context.id} server={context.server} onNavigate={onNavigate} capabilities={capabilities} />;
   }
 
   return (
@@ -39,6 +41,7 @@ export function SidebarTabs({
       hubs={hubs}
       isLoading={isLoading}
       onNavigate={onNavigate}
+      capabilities={capabilities}
     />
   );
 }

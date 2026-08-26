@@ -1,10 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Card, Col, Empty, Row, Skeleton, Statistic, Typography } from "antd";
+import { Navigate, useOutletContext } from "react-router";
 import { PageHeader, Section } from "~/components/dashboard/WorkspacePrimitives";
 import { orpc } from "~/lib/orpc";
 
 export default function DashboardProfile() {
-  const profile = useQuery(orpc.user.getProfile.queryOptions());
+  const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
+  const profile = useQuery({
+    ...orpc.user.getProfile.queryOptions(),
+    enabled: capabilities.USER_PROFILE || import.meta.env.DEV,
+  });
+  if (!capabilities.USER_PROFILE && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
 
   if (profile.isLoading) {
     return <><PageHeader eyebrow="Profile" title="Your profile" description="Your InterChat identity and public activity." /><Skeleton active /></>;
