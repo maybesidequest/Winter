@@ -51,10 +51,13 @@ export function DashboardHome() {
       </div>
 
       <section className="dashboard-card p-6 rounded-2xl border border-white/[0.08]">
-        <h2 className="text-base font-bold text-white">Activity</h2>
-        <p className="mt-2 text-sm text-white/55">
-          Activity history is not available yet. Your Hub and Server changes will still be saved and audited.
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-white">Activity</h2>
+            <p className="mt-2 text-sm text-white/55">Review your messages, streaks, calls, and top Hubs.</p>
+          </div>
+          <Link to="/dashboard/activity" className="dashboard-btn-secondary px-3 py-1.5 text-xs font-bold">View activity</Link>
+        </div>
       </section>
     </div>
   );
