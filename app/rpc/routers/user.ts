@@ -10,7 +10,9 @@ import {
 export const userRouter = base.router({
   getProfile: protectedBase.handler(async ({ context }) => userService.getProfile(context.user.id)),
 
-  getActivity: protectedBase.handler(async ({ context }) => userService.getActivity(context.user.id)),
+  getActivity: protectedBase
+    .input(z.object({ year: z.number().int().min(2000).max(2200), month: z.number().int().min(1).max(12), limit: z.number().int().min(1).max(20).default(5) }))
+    .handler(async ({ input, context }) => userService.getActivity(context.user.id, input)),
 
   getInbox: protectedBase.handler(async ({ context }) => userService.getInbox(context.user.id)),
 
