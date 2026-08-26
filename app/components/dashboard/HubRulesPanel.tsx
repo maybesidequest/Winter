@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, EditOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
 import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
@@ -22,6 +22,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
   const createKeyRef = useRef(crypto.randomUUID());
   const updateKeyRef = useRef(crypto.randomUUID());
   const deleteKeysRef = useRef(new Map<string, string>());
+  const reorderKeyRef = useRef(crypto.randomUUID());
 
   const { data: rules = [], isLoading } = useQuery(
     orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } })
@@ -69,12 +70,37 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
     })
   );
 
+  const reorderMutation = useMutation(
+    orpc.hub.reorderRules.mutationOptions({
+      onSuccess: () => {
+        message.success("Rule order updated.");
+        reorderKeyRef.current = crypto.randomUUID();
+        queryClient.invalidateQueries({ queryKey: orpc.hub.listRules.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
+        queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
+      },
+      onError: (err) => message.error(err.message || "Failed to reorder rules."),
+    }),
+  );
+
   const deleteKeyFor = (ruleId: string) => {
     const existing = deleteKeysRef.current.get(ruleId);
     if (existing) return existing;
     const created = crypto.randomUUID();
     deleteKeysRef.current.set(ruleId, created);
     return created;
+  };
+
+  const moveRule = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= rules.length || reorderMutation.isPending) return;
+    const ruleIds = rules.map((rule) => rule.id);
+    [ruleIds[index], ruleIds[target]] = [ruleIds[target], ruleIds[index]];
+    reorderMutation.mutate({
+      hubId: hub.metadata.id,
+      ruleIds,
+      expectedVersion: hub.version,
+      idempotencyKey: reorderKeyRef.current,
+    });
   };
 
   const handleSubmit = () => {
@@ -132,6 +158,24 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
             actions={
               canEdit
                 ? [
+                    <Button
+                      key="up"
+                      type="text"
+                      icon={<ArrowUpOutlined />}
+                      size="small"
+                      disabled={index === 0 || reorderMutation.isPending}
+                      aria-label={`Move rule ${index + 1} up`}
+                      onClick={() => moveRule(index, -1)}
+                    />,
+                    <Button
+                      key="down"
+                      type="text"
+                      icon={<ArrowDownOutlined />}
+                      size="small"
+                      disabled={index === rules.length - 1 || reorderMutation.isPending}
+                      aria-label={`Move rule ${index + 1} down`}
+                      onClick={() => moveRule(index, 1)}
+                    />,
                     <Button
                       key="edit"
                       type="text"
