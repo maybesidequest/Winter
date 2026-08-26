@@ -46,7 +46,7 @@ export const hubFeaturesRouter = protectedBase.router({
   listAudit: protectedBase
     .input(z.object({ hubId: z.string(), limit: z.number().int().min(1).max(100).optional(), offset: z.number().int().min(0).optional() }))
     .handler(async ({ input, context }) => {
-      requireCapability("HUB_LOGGING");
+      requireCapability("HUB_AUDIT");
       return hubService.listAudit(context.user.id, input);
     }),
 
