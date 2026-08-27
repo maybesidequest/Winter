@@ -67,10 +67,11 @@ export const hubRouter = base.router({
       connectionId: z.string(),
       enabled: z.boolean(),
       hubId: z.string(),
+      idempotencyKey: z.string().min(1),
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled);
+      const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
       }
@@ -81,10 +82,11 @@ export const hubRouter = base.router({
     .input(z.object({
       connectionId: z.string(),
       hubId: z.string(),
+      idempotencyKey: z.string().min(1),
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId);
+      const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
       }
@@ -98,6 +100,7 @@ export const hubRouter = base.router({
       serverId: z.string(),
       inviteCode: z.string().optional(),
       customName: z.string().optional(),
+      idempotencyKey: z.string().min(1),
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
@@ -106,8 +109,9 @@ export const hubRouter = base.router({
         input.hubId,
         input.channelId,
         input.serverId,
+        input.idempotencyKey,
         input.inviteCode,
-        input.customName
+        input.customName,
       );
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });

@@ -38,7 +38,7 @@ export const quickConnectInputSchema = z.object({
   channelId: z.string().min(1),
   inviteCode: z.string().optional(),
   customName: z.string().optional(),
+  idempotencyKey: z.string().min(1),
 });
 
 export type QuickConnectInput = z.infer<typeof quickConnectInputSchema>;
-

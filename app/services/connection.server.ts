@@ -30,7 +30,7 @@ export const connectionService = {
   },
 
 
-  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
+  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
       const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
         .find((connection) => connection.metadata.id === connectionId);
@@ -40,7 +40,7 @@ export const connectionService = {
         enabled,
         expectedVersion: current.version,
         actorId: userId,
-        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+        idempotencyKey,
       });
       return { success: true };
     } catch (error: unknown) {
@@ -50,12 +50,12 @@ export const connectionService = {
     }
   },
 
-  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey?: string): Promise<{ success: boolean; error?: string }> {
+  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
     try {
       await controlConnectionService.disconnectChannel({
         connectionId,
         actorId: userId,
-        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+        idempotencyKey,
       });
       return { success: true };
     } catch (error: unknown) {
@@ -70,9 +70,9 @@ export const connectionService = {
     hubId: string,
     channelId: string,
     serverId: string,
+    idempotencyKey: string,
     inviteCode?: string,
-    customName?: string,
-    idempotencyKey?: string
+    customName?: string
   ): Promise<{ success: boolean; hubId?: string; error?: string }> {
     try {
       await controlConnectionService.connectChannel({
@@ -82,7 +82,7 @@ export const connectionService = {
         serverId,
         inviteCode,
         customName,
-        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+        idempotencyKey,
       });
       return { success: true, hubId };
     } catch (error: unknown) {

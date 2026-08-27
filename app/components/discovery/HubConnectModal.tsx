@@ -60,6 +60,7 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
       serverId: selectedServerId,
       channelId: selectedChannelId,
       inviteCode: inviteCode.trim() || undefined,
+      idempotencyKey: crypto.randomUUID(),
     });
   };
 

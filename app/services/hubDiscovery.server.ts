@@ -171,7 +171,7 @@ export const hubDiscoveryService = {
         channelId: input.channelId,
         inviteCode: input.inviteCode,
         customName: input.customName,
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: input.idempotencyKey,
       });
       return { success: true };
     } catch (error: unknown) {
