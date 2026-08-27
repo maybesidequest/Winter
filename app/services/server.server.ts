@@ -85,7 +85,12 @@ async function assertManageable(userId: string, serverId: string, forceRefresh =
 
 export const serverService = {
   async list(userId: string, forceRefresh = false): Promise<ServerResource[]> {
-    const guilds = await manageableGuilds(userId, forceRefresh);
+    // Server visibility is permission-sensitive.  Do not serve a cached
+    // Discord guild snapshot here: a revoked manager must lose access on the
+    // next request.  Keep the parameter for callers that already pass it, but
+    // make the safe behavior unconditional.
+    void forceRefresh;
+    const guilds = await manageableGuilds(userId, true);
     if (guilds.length === 0) return [];
 
     const guildIds = guilds.map((g) => g.id);
