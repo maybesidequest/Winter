@@ -21,8 +21,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return new Response("Forbidden", { status: 403 });
   }
 
-  const secretString = process.env.JWT_SECRET || "fallback_dev_secret_please_change";
-  const secret = new TextEncoder().encode(secretString);
+  const secretString = process.env.JWT_SECRET;
+  if (!secretString && process.env.NODE_ENV === "production") {
+    // Never mint bearer tokens with a public fallback secret.  A deployment
+    // missing JWT_SECRET must fail closed instead of making every SSE token
+    // forgeable.
+    return new Response("SSE authentication is temporarily unavailable.", { status: 503 });
+  }
+  const secret = new TextEncoder().encode(secretString || "dev_only_local_sse_secret_key_32_bytes!");
 
   // Mint a short-lived token (e.g., 5 minutes)
   const jwt = await new SignJWT({ userId: user.id, hubId })

@@ -1,6 +1,11 @@
 import { Strategy } from "remix-auth/strategy";
 import { createCookie, redirect } from "react-router";
 
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret && process.env.NODE_ENV === "production") {
+  throw new Error("SESSION_SECRET environment variable is required in production");
+}
+
 // We use an encrypted cookie to store the OAuth `state` to prevent CSRF attacks.
 export const oauthStateCookie = createCookie("oauth_state", {
   path: "/",
@@ -8,7 +13,7 @@ export const oauthStateCookie = createCookie("oauth_state", {
   sameSite: "lax",
   secure: process.env.NODE_ENV === "production",
   maxAge: 60 * 10, // 10 minutes to finish login
-  secrets: [process.env.SESSION_SECRET || "default_dev_secret_interchat_2026"],
+  secrets: [sessionSecret || "dev_only_local_oauth_state_secret_key_32_bytes!"],
 });
 
 export interface DiscordStrategyOptions {
