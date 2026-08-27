@@ -34,7 +34,9 @@ function controlErrorMessage(error: unknown, fallback: string): string {
     case 14:
       return "The control plane is temporarily unavailable. Try again shortly.";
     default:
-      return rpcError.details || rpcError.message || fallback;
+      // Do not expose raw gRPC details: they may contain SQL, endpoint, or
+      // internal resource identifiers. Keep diagnostics server-side only.
+      return fallback;
   }
 }
 
@@ -78,7 +80,7 @@ export const hubService = {
     return controlHubService.getHub(hubId, userId);
   },
 
-  async createHub(userId: string, input: CreateHubInput, idempotencyKey?: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
+  async createHub(userId: string, input: CreateHubInput, idempotencyKey: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
 
     try {
       const res = await controlHubService.createHub({
@@ -92,7 +94,7 @@ export const hubService = {
         welcomeMessage: input.welcomeMessage || undefined,
         language: input.language,
         region: input.region,
-        idempotencyKey: idempotencyKey || crypto.randomUUID(),
+        idempotencyKey,
       });
       return { success: true, hubId: res.metadata.id };
     } catch (error: unknown) {
@@ -162,7 +164,7 @@ export const hubService = {
         spec,
         updateMask,
         expectedVersion,
-        idempotencyKey: input.idempotencyKey || crypto.randomUUID(),
+        idempotencyKey: input.idempotencyKey,
       });
 
       return { success: true, hub: updated };
