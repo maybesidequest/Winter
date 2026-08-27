@@ -1,4 +1,11 @@
-const IRIS_URL = (process.env.IRIS_URL || "http://localhost:8080").replace(/\/+$/, "");
+const configuredIrisUrl = process.env.IRIS_URL;
+if (!configuredIrisUrl && process.env.NODE_ENV === "production") {
+  throw new Error("IRIS_URL is required in production");
+}
+const IRIS_URL = (configuredIrisUrl || "http://localhost:8080").replace(/\/+$/, "");
+if (process.env.NODE_ENV === "production" && !IRIS_URL.startsWith("https://")) {
+  throw new Error("IRIS_URL must use HTTPS in production");
+}
 const IRIS_TIMEOUT_MS = Number(process.env.IRIS_TIMEOUT_MS || 1500);
 
 const IRIS_TLS = (() => {
@@ -17,6 +24,10 @@ const IRIS_TLS = (() => {
     ...(process.env.IRIS_TLS_DOMAIN ? { serverName: process.env.IRIS_TLS_DOMAIN } : {}),
   };
 })();
+
+if (process.env.NODE_ENV === "production" && !IRIS_TLS) {
+  throw new Error("IRIS_TLS_CA, IRIS_TLS_CERT, and IRIS_TLS_KEY are required in production");
+}
 
 export class IrisUnavailableError extends Error {
   constructor(message = "Authorization service is unavailable.") { super(message); this.name = "IrisUnavailableError"; }
