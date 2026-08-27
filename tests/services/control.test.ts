@@ -2,7 +2,7 @@ import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import { describe, expect, it } from "bun:test";
 import { CONTROL_DESCRIPTOR_BASE64 } from "~/generated/control/v1/controlDescriptor";
-import { invokeUnary, type UnaryMethod } from "~/services/control/transport";
+import { invokeUnary, type ControlGrpcPackage, type UnaryMethod } from "~/services/control/transport";
 
 describe("Control Plane Descriptor & Client Setup", () => {
   it("loads the binary descriptor set without errors", () => {
@@ -18,7 +18,9 @@ describe("Control Plane Descriptor & Client Setup", () => {
     });
 
     expect(definition).toBeDefined();
-    const loaded = grpc.loadPackageDefinition(definition) as any;
+    const loaded = grpc.loadPackageDefinition(definition) as unknown as {
+      interchat: { control: { v1: ControlGrpcPackage } };
+    };
     expect(loaded.interchat.control.v1.HubService).toBeDefined();
     expect(loaded.interchat.control.v1.ServerService).toBeDefined();
     expect(loaded.interchat.control.v1.ConnectionService).toBeDefined();
@@ -87,7 +89,7 @@ describe("Control Plane Descriptor & Client Setup", () => {
 
     expect(wireRequest?.hub_id).toBe("hub-123");
     expect(wireRequest?.expected_version).toBe(1);
-    expect((response as any)?.hub?.metadata?.name).toBe("Updated Hub");
-    expect((response as any)?.hub?.version).toBe(2);
+    expect((response as { hub?: { metadata?: { name?: string }; version?: number } })?.hub?.metadata?.name).toBe("Updated Hub");
+    expect((response as { hub?: { metadata?: { name?: string }; version?: number } })?.hub?.version).toBe(2);
   });
 });

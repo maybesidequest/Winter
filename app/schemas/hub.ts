@@ -159,12 +159,16 @@ export const assignHubStaffSchema = z.object({
   userId: z.string().min(1),
   role: z.string().min(1),
   permissionsBitmask: z.number().int().default(0),
+  roleId: z.string().optional(),
+  expectedVersion: z.number().int().default(0),
   idempotencyKey: z.string().default(() => crypto.randomUUID()),
 });
 
 export const removeHubStaffSchema = z.object({
   hubId: z.string(),
   userId: z.string().min(1),
+  roleId: z.string().optional(),
+  expectedVersion: z.number().int().default(0),
   idempotencyKey: z.string().default(() => crypto.randomUUID()),
 });
 

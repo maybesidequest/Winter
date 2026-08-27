@@ -3,6 +3,12 @@ import * as protoLoader from "@grpc/proto-loader";
 import { readFileSync } from "node:fs";
 import { CONTROL_DESCRIPTOR_BASE64 } from "~/generated/control/v1/controlDescriptor";
 
+import type { ProtoGrpcType as HubProto } from "~/generated/control/v1/hub_service";
+import type { ProtoGrpcType as ServerProto } from "~/generated/control/v1/server_service";
+import type { ProtoGrpcType as ConnectionProto } from "~/generated/control/v1/connection_service";
+import type { ProtoGrpcType as UserProto } from "~/generated/control/v1/user_service";
+import type { ProtoGrpcType as ModerationProto } from "~/generated/control/v1/moderation_service";
+
 import type { HubServiceClient } from "~/generated/control/v1/interchat/control/v1/HubService";
 import type { ConnectionServiceClient } from "~/generated/control/v1/interchat/control/v1/ConnectionService";
 import type { ServerServiceClient } from "~/generated/control/v1/interchat/control/v1/ServerService";
@@ -11,19 +17,11 @@ import type { ModerationServiceClient } from "~/generated/control/v1/interchat/c
 import type { RequestContext as GeneratedRequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
 import type { ActorType as GeneratedActorType } from "~/generated/control/v1/interchat/control/v1/ActorType";
 
-type ServiceConstructor<T extends grpc.Client> = new (
-  address: string,
-  credentials: grpc.ChannelCredentials,
-  options?: grpc.ClientOptions,
-) => T;
-
-interface ControlPackage {
-  HubService: ServiceConstructor<HubServiceClient>;
-  ServerService: ServiceConstructor<ServerServiceClient>;
-  ConnectionService: ServiceConstructor<ConnectionServiceClient>;
-  UserService: ServiceConstructor<UserServiceClient>;
-  ModerationService: ServiceConstructor<ModerationServiceClient>;
-}
+export type ControlGrpcPackage = HubProto["interchat"]["control"]["v1"] &
+  ServerProto["interchat"]["control"]["v1"] &
+  ConnectionProto["interchat"]["control"]["v1"] &
+  UserProto["interchat"]["control"]["v1"] &
+  ModerationProto["interchat"]["control"]["v1"];
 
 export type UnaryMethod<TReq, TRes> = (
   request: TReq,
@@ -67,7 +65,7 @@ function credentials(): grpc.ChannelCredentials {
   throw new Error("Control Plane mTLS credentials are not configured.");
 }
 
-function loadPackageDefinition(): ControlPackage {
+function loadPackageDefinition(): ControlGrpcPackage {
   const definition = protoLoader.loadFileDescriptorSetFromBuffer(
     Buffer.from(CONTROL_DESCRIPTOR_BASE64, "base64"),
     {
@@ -79,7 +77,7 @@ function loadPackageDefinition(): ControlPackage {
     }
   );
   const root = grpc.loadPackageDefinition(definition) as unknown as {
-    interchat?: { control?: { v1?: ControlPackage } };
+    interchat?: { control?: { v1?: ControlGrpcPackage } };
   };
   const control = root.interchat?.control?.v1;
   if (!control) throw new Error("Control Plane protobuf package is unavailable.");
@@ -106,11 +104,11 @@ export function getServiceClients(): Required<ServiceRegistry> {
     "grpc.default_authority": domain,
   };
 
-  registry.hubClient = new pkg.HubService(address, creds, options) as HubServiceClient;
-  registry.serverClient = new pkg.ServerService(address, creds, options) as ServerServiceClient;
-  registry.connectionClient = new pkg.ConnectionService(address, creds, options) as ConnectionServiceClient;
-  registry.userClient = new pkg.UserService(address, creds, options) as UserServiceClient;
-  registry.moderationClient = new pkg.ModerationService(address, creds, options) as ModerationServiceClient;
+  registry.hubClient = new pkg.HubService(address, creds, options);
+  registry.serverClient = new pkg.ServerService(address, creds, options);
+  registry.connectionClient = new pkg.ConnectionService(address, creds, options);
+  registry.userClient = new pkg.UserService(address, creds, options);
+  registry.moderationClient = new pkg.ModerationService(address, creds, options);
 
   return registry as Required<ServiceRegistry>;
 }

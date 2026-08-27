@@ -89,11 +89,11 @@ export const hubFeaturesService = {
     return hubStaffService.listStaff(hubId, userId);
   },
 
-  async assignStaffRole(userId: string, input: { hubId: string; userId: string; role: string; permissionsBitmask: number; idempotencyKey: string }) {
+  async assignStaffRole(userId: string, input: { hubId: string; userId: string; role: string; permissionsBitmask: number; roleId?: string; expectedVersion?: number; idempotencyKey: string }) {
     return hubStaffService.assignStaffRole({ ...input, actorId: userId });
   },
 
-  async removeStaffRole(userId: string, input: { hubId: string; userId: string; idempotencyKey: string }) {
+  async removeStaffRole(userId: string, input: { hubId: string; userId: string; roleId?: string; expectedVersion?: number; idempotencyKey: string }) {
     return hubStaffService.removeStaffRole({ ...input, actorId: userId });
   },
 

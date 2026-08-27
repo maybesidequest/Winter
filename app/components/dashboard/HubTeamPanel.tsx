@@ -112,6 +112,8 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       userId: userId.trim(),
       role,
       permissionsBitmask: selected.spec.permissionsBitmask,
+      roleId: selected.metadata.id,
+      expectedVersion: hub.version,
       idempotencyKey: assignKeyRef.current,
     });
   };
@@ -237,6 +239,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                           {
                             hubId: hub.metadata.id,
                             userId: item.metadata.userId,
+                            expectedVersion: hub.version,
                             idempotencyKey: keyFor(removeStaffKeysRef.current, item.metadata.userId),
                           },
                           { onSuccess: () => removeStaffKeysRef.current.delete(item.metadata.userId) },

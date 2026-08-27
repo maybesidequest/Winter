@@ -1,11 +1,12 @@
 import { Typography, Card } from "antd";
 import CytoscapeComponent from "react-cytoscapejs";
+import type { ElementDefinition } from "cytoscape";
 import { useEffect, useState } from "react";
 
 const { Title, Paragraph } = Typography;
 
 export default function StaffRelationships() {
-  const [elements, setElements] = useState([]);
+  const [elements, setElements] = useState<ElementDefinition[]>([]);
 
   useEffect(() => {
     // Mock data for cytoscape
@@ -17,7 +18,7 @@ export default function StaffRelationships() {
       { data: { source: "hub1", target: "srv1" } },
       { data: { source: "hub1", target: "srv2" } },
       { data: { source: "hub1", target: "srv3" } },
-    ] as any);
+    ]);
   }, []);
 
   return (

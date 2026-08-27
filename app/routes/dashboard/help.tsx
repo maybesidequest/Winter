@@ -34,12 +34,12 @@ export default function DashboardHelp() {
     orpc.user.submitFeedback.mutationOptions({
       onSuccess: (data) => {
         message.success("Thank you for your feedback! Receipt saved.");
-        setFeedbackReceipt(data as any);
+        setFeedbackReceipt(data);
         setFeedbackMessage("");
         feedbackIdempotencyKey.current = crypto.randomUUID();
       },
-      onError: (err: any) => {
-        message.error(err?.message || "Failed to submit feedback. Try again.");
+      onError: (err) => {
+        message.error(err.message || "Failed to submit feedback. Try again.");
       },
     })
   );

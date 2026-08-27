@@ -9,6 +9,8 @@ export interface AssignHubStaffRoleRequest {
   'userId'?: (string);
   'role'?: (string);
   'permissionsBitmask'?: (number | string | Long);
+  'roleId'?: (string);
+  'expectedVersion'?: (number | string | Long);
 }
 
 export interface AssignHubStaffRoleRequest__Output {
@@ -17,4 +19,6 @@ export interface AssignHubStaffRoleRequest__Output {
   'userId': (string);
   'role': (string);
   'permissionsBitmask': (number);
+  'roleId': (string);
+  'expectedVersion': (number);
 }

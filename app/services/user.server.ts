@@ -108,7 +108,7 @@ export const userService = {
         updatedAt: new Date().toISOString(),
       },
       spec: {
-        locale: (prefs?.language as any) || "en",
+        locale: prefs?.language || "en",
         showBadges: prefs?.badgeVisibility ?? true,
         mentionOnReply: prefs?.replyMention ?? true,
         showNsfwHubs: false,
@@ -206,7 +206,10 @@ export const userService = {
     };
   },
 
-  async updateUserPreferences(userId: string, input: any) {
+  async updateUserPreferences(
+    userId: string,
+    input: PatchUserPreferencesInput & { dashboardPreference?: PatchDashboardPreferencesInput }
+  ) {
     const patchRes = await this.patchUserPreferences(userId, {
       locale: input.locale,
       showBadges: input.showBadges,
