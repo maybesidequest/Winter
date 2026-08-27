@@ -187,8 +187,13 @@ export const hubDiscoveryService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to quick connect via control plane", error);
-      const msg = error instanceof Error ? error.message : "Failed to connect.";
-      return { success: false, error: msg };
+      // Control errors may contain internal IDs or dependency details. Keep
+      // those in server logs only; the browser gets a stable, actionable
+      // message and can retry without exposing implementation details.
+      return {
+        success: false,
+        error: "This connection could not be created right now. Please check your server and try again.",
+      };
     }
   },
 };
