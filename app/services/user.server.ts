@@ -122,8 +122,6 @@ export const userService = {
       },
       status: {
         isStaff,
-        badges: [],
-        reputation: 0,
         messageCount: activity.lifetimeMessages,
         callCount: activity.completedCalls,
         hubJoinCount: activity.activeHubCount,
@@ -131,10 +129,7 @@ export const userService = {
         longestStreak: activity.longestStreak,
         streakFreezes: activity.streakFreezes,
         lastStreakDate: null,
-        lastVoted: null,
-        voteCount: 0,
         hubsCount: activity.activeHubCount,
-        serversCount: 0,
         customerId: null,
       },
     };

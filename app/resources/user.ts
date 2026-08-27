@@ -23,8 +23,8 @@ export type UserSpec = {
 
 export type UserStatus = {
   isStaff: boolean;
-  badges: string[];
-  reputation: number;
+  badges?: string[];
+  reputation?: number;
   messageCount: number;
   callCount: number;
   hubJoinCount: number;
@@ -32,10 +32,10 @@ export type UserStatus = {
   longestStreak: number;
   streakFreezes: number;
   lastStreakDate: string | null;
-  lastVoted: string | null;
-  voteCount: number;
+  lastVoted?: string | null;
+  voteCount?: number;
   hubsCount: number;
-  serversCount: number;
+  serversCount?: number;
   customerId: string | null;
 };
 
