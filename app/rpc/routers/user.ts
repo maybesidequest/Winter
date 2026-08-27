@@ -23,7 +23,7 @@ export const userRouter = base.router({
 
   getLeaderboard: protectedBase
     .input(z.object({
-      kind: z.enum(["MESSAGES", "CALLS", "VOTES", "STREAKS"]),
+      kind: z.enum(["MESSAGES", "CALLS", "VOTES", "STREAKS", "SERVERS"]),
       limit: z.number().int().min(1).max(100).default(20),
       offset: z.number().int().min(0).max(10_000).default(0),
     }))

@@ -257,7 +257,10 @@ export const serverService = {
         id: conn.metadata.id,
         channelId: conn.metadata.channelId || "",
         channelName: null,
-        hubId: conn.metadata.hubId || "",
+        // Do not expose a Hub identifier when the authoritative Hub lookup
+        // was denied or the Hub was deleted. The bridge remains visible, but
+        // callers cannot use a leaked ID to probe private resources.
+        hubId: hub ? conn.metadata.hubId || "" : "",
         hubName: hub?.metadata.name || conn.spec.customName || "Unavailable Hub",
         hubIconUrl: hub?.spec.iconUrl || null,
         connected: conn.spec.connected,

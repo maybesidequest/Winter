@@ -44,7 +44,7 @@ export const userService = {
 
   async getLeaderboard(
     userId: string,
-    kind: "LEADERBOARD_KIND_MESSAGES" | "LEADERBOARD_KIND_CALLS" | "LEADERBOARD_KIND_VOTES" | "LEADERBOARD_KIND_STREAKS",
+    kind: "LEADERBOARD_KIND_MESSAGES" | "LEADERBOARD_KIND_CALLS" | "LEADERBOARD_KIND_VOTES" | "LEADERBOARD_KIND_STREAKS" | "LEADERBOARD_KIND_SERVERS",
     limit = 20,
     offset = 0,
   ): Promise<UserLeaderboard> {
