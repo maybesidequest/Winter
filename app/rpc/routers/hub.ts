@@ -38,7 +38,7 @@ export const hubRouter = base.router({
       requireCapability("HUB_LIFECYCLE");
       const result = await hubService.createHub(context.user.id, input, input.idempotencyKey);
       if (!result.success) {
-        throw new ORPCError("BAD_REQUEST", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "Hub could not be created." });
       }
       return { success: true, hubId: result.hubId };
     }),
@@ -73,7 +73,7 @@ export const hubRouter = base.router({
       requireCapability("CONNECTIONS");
       const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled, input.idempotencyKey);
       if (!result.success) {
-        throw new ORPCError("BAD_REQUEST", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "This connection could not be updated." });
       }
       return { success: true };
     }),
@@ -88,7 +88,7 @@ export const hubRouter = base.router({
       requireCapability("CONNECTIONS");
       const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId, input.idempotencyKey);
       if (!result.success) {
-        throw new ORPCError("BAD_REQUEST", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "This connection could not be disconnected." });
       }
       return { success: true };
     }),
@@ -114,7 +114,7 @@ export const hubRouter = base.router({
         input.customName,
       );
       if (!result.success) {
-        throw new ORPCError("BAD_REQUEST", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "This connection could not be created." });
       }
       return { success: true };
     }),
@@ -125,7 +125,7 @@ export const hubRouter = base.router({
       requireCapability("HUB_LIFECYCLE");
       const result = await hubService.deleteHub(context.user.id, input.hubId, input.idempotencyKey);
       if (!result.success) {
-        throw new ORPCError("FORBIDDEN", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "Hub could not be deleted." });
       }
       return { success: true };
     }),
@@ -136,7 +136,7 @@ export const hubRouter = base.router({
       requireCapability("HUB_LIFECYCLE");
       const result = await hubService.transferOwnership(context.user.id, input.hubId, input.newOwnerId, input.idempotencyKey);
       if (!result.success) {
-        throw new ORPCError("FORBIDDEN", { message: result.error });
+        throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "Ownership could not be transferred." });
       }
       return { success: true };
     }),

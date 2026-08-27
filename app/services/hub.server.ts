@@ -40,13 +40,14 @@ function controlErrorMessage(error: unknown, fallback: string): string {
   }
 }
 
-type HubUpdateErrorCode = "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" | "SERVICE_UNAVAILABLE";
+export type HubUpdateErrorCode = "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" | "SERVICE_UNAVAILABLE" | "NOT_FOUND";
 
 function controlErrorCode(error: unknown): HubUpdateErrorCode {
   const code = (error as { code?: number }).code;
   if (code === 7 || code === 16) return "FORBIDDEN";
   if (code === 9 || code === 10 || code === 6) return "CONFLICT";
   if (code === 4 || code === 14) return "SERVICE_UNAVAILABLE";
+  if (code === 5) return "NOT_FOUND";
   return "BAD_REQUEST";
 }
 
@@ -80,7 +81,7 @@ export const hubService = {
     return controlHubService.getHub(hubId, userId);
   },
 
-  async createHub(userId: string, input: CreateHubInput, idempotencyKey: string): Promise<{ success: boolean; hubId?: string; error?: string }> {
+  async createHub(userId: string, input: CreateHubInput, idempotencyKey: string): Promise<{ success: boolean; hubId?: string; error?: string; errorCode?: HubUpdateErrorCode }> {
 
     try {
       const res = await controlHubService.createHub({
@@ -99,7 +100,7 @@ export const hubService = {
       return { success: true, hubId: res.metadata.id };
     } catch (error: unknown) {
       console.error("Failed to create hub via control plane", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to create hub.") };
+      return { success: false, error: controlErrorMessage(error, "Failed to create hub."), errorCode: controlErrorCode(error) };
     }
   },
 
@@ -178,7 +179,7 @@ export const hubService = {
     }
   },
 
-  async deleteHub(userId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
+  async deleteHub(userId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
     try {
       const current = await controlHubService.getHub(hubId, userId);
       await controlHubService.deleteHub({
@@ -191,11 +192,11 @@ export const hubService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to delete hub", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to delete hub.") };
+      return { success: false, error: controlErrorMessage(error, "Failed to delete hub."), errorCode: controlErrorCode(error) };
     }
   },
 
-  async transferOwnership(userId: string, hubId: string, newOwnerId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
+  async transferOwnership(userId: string, hubId: string, newOwnerId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
     try {
       const current = await controlHubService.getHub(hubId, userId);
       await controlHubService.transferOwnership({
@@ -208,7 +209,7 @@ export const hubService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to transfer hub ownership", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to transfer hub ownership.") };
+      return { success: false, error: controlErrorMessage(error, "Failed to transfer hub ownership."), errorCode: controlErrorCode(error) };
     }
   },
 

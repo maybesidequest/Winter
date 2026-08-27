@@ -12,6 +12,17 @@ function safeControlError(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function controlErrorCode(error: unknown): "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" | "SERVICE_UNAVAILABLE" | "NOT_FOUND" {
+  const code = typeof error === "object" && error && "code" in error
+    ? Number((error as { code: unknown }).code)
+    : undefined;
+  if (code === 5) return "NOT_FOUND";
+  if (code === 7 || code === 16) return "FORBIDDEN";
+  if (code === 6 || code === 9 || code === 10) return "CONFLICT";
+  if (code === 4 || code === 14) return "SERVICE_UNAVAILABLE";
+  return "BAD_REQUEST";
+}
+
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
     const connections = await controlConnectionService.getConnections({
@@ -41,7 +52,7 @@ export const connectionService = {
   },
 
 
-  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
+  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
     try {
       const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
         .find((connection) => connection.metadata.id === connectionId);
@@ -56,11 +67,11 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to toggle connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be updated.") };
+      return { success: false, error: safeControlError(error, "This connection could not be updated."), errorCode: controlErrorCode(error) };
     }
   },
 
-  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string }> {
+  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
     try {
       await controlConnectionService.disconnectChannel({
         connectionId,
@@ -70,7 +81,7 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to disconnect connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be disconnected.") };
+      return { success: false, error: safeControlError(error, "This connection could not be disconnected."), errorCode: controlErrorCode(error) };
     }
   },
 
@@ -82,7 +93,7 @@ export const connectionService = {
     idempotencyKey: string,
     inviteCode?: string,
     customName?: string
-  ): Promise<{ success: boolean; hubId?: string; error?: string }> {
+  ): Promise<{ success: boolean; hubId?: string; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
     try {
       await controlConnectionService.connectChannel({
         actorId: userId,
@@ -96,7 +107,7 @@ export const connectionService = {
       return { success: true, hubId };
     } catch (error: unknown) {
       console.error("Failed to create connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be created.") };
+      return { success: false, error: safeControlError(error, "This connection could not be created."), errorCode: controlErrorCode(error) };
     }
   },
 };
