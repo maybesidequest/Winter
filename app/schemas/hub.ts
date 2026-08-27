@@ -45,7 +45,7 @@ export const createHubSchema = z.object({
   iconUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
   // Generated once at the mutation boundary and reused if the request is retried.
-  idempotencyKey: z.string().min(1).optional(),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export type CreateHubInput = z.infer<typeof createHubSchema>;
@@ -76,7 +76,7 @@ export const createHubRuleSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required").max(1000),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const updateHubRuleSchema = z.object({
@@ -85,53 +85,53 @@ export const updateHubRuleSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().min(1).max(1000),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const reorderHubRulesSchema = z.object({
   hubId: z.string(),
   ruleIds: z.array(z.string()),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubRuleSchema = z.object({
   hubId: z.string(),
   ruleId: z.string(),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const createHubInviteSchema = z.object({
   hubId: z.string(),
   maxUses: z.number().int().min(0).default(0),
   durationSeconds: z.number().int().min(0).default(0),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const revokeHubInviteSchema = z.object({
   hubId: z.string(),
   inviteCode: z.string().min(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const createHubAnnouncementSchema = z.object({
   hubId: z.string(),
   content: z.string().min(1, "Content is required").max(2000),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const updateHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
   content: z.string().min(1, "Content is required").max(2000),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const patchHubBadgesSchema = z.object({
@@ -140,7 +140,7 @@ export const patchHubBadgesSchema = z.object({
   managerBadge: z.string().max(32).optional().nullable(),
   moderatorBadge: z.string().max(32).optional().nullable(),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const patchHubLogConfigSchema = z.object({
@@ -151,7 +151,7 @@ export const patchHubLogConfigSchema = z.object({
   eventFlags: z.number().int().min(0).default(0),
   notificationRoleId: z.string().optional().nullable(),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const assignHubStaffSchema = z.object({
@@ -161,7 +161,7 @@ export const assignHubStaffSchema = z.object({
   permissionsBitmask: z.number().int().default(0),
   roleId: z.string().optional(),
   expectedVersion: z.number().int().default(0),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const removeHubStaffSchema = z.object({
@@ -169,7 +169,7 @@ export const removeHubStaffSchema = z.object({
   userId: z.string().min(1),
   roleId: z.string().optional(),
   expectedVersion: z.number().int().default(0),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const createHubRoleSchema = z.object({
@@ -177,7 +177,7 @@ export const createHubRoleSchema = z.object({
   name: z.string().trim().min(1).max(64),
   permissionsBitmask: z.number().int().nonnegative(),
   position: z.number().int().default(0),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const updateHubRoleSchema = createHubRoleSchema.extend({
@@ -189,7 +189,7 @@ export const deleteHubRoleSchema = z.object({
   hubId: z.string(),
   roleId: z.string().min(1),
   expectedVersion: z.number().int().positive(),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const lockdownHubSchema = z.object({
@@ -197,19 +197,19 @@ export const lockdownHubSchema = z.object({
   locked: z.boolean(),
   reason: z.string().max(500).default(""),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const transferHubOwnershipSchema = z.object({
   hubId: z.string(),
   newOwnerId: z.string().min(1),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubSchema = z.object({
   hubId: z.string(),
   confirmationName: z.string().min(1),
   expectedVersion: z.number().int().default(1),
-  idempotencyKey: z.string().default(() => crypto.randomUUID()),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
 });
