@@ -28,7 +28,7 @@ export type PatchPrefixInput = z.infer<typeof patchPrefixSchema>;
 export const addBlockSchema = serverIdSchema.extend({
   targetType: z.enum(["user", "server"]),
   targetId: z.string().min(17).max(21).regex(/^\d+$/, "Target ID must be numeric snowflake"),
-  reason: z.string().max(500).optional(),
+  reason: z.string().trim().min(1, "Reason is required.").max(500),
   idempotencyKey: z.string().min(1),
 });
 export type AddBlockInput = z.infer<typeof addBlockSchema>;
