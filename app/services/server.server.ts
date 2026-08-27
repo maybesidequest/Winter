@@ -147,7 +147,7 @@ export const serverService = {
 
 
   async get(userId: string, serverId: string): Promise<ServerResource> {
-    const guild = await assertManageable(userId, serverId);
+    const guild = await assertManageable(userId, serverId, true);
     try {
       const res = await controlServerService.getServer(serverId, userId);
       return {
@@ -189,7 +189,7 @@ export const serverService = {
   },
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
-    await assertManageable(userId, serverId);
+    await assertManageable(userId, serverId, true);
     const token = await getDiscordAccessToken(userId);
     const response = await discordFetch(`/guilds/${serverId}/channels`, `Bearer ${token}`);
     if (!response.ok) return [];
@@ -238,7 +238,7 @@ export const serverService = {
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
-    await assertManageable(userId, serverId);
+    await assertManageable(userId, serverId, true);
     const connections = await controlConnectionService.getConnections({
       serverId,
       actorId: userId,
@@ -316,7 +316,7 @@ export const serverService = {
 
 
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
-    await assertManageable(userId, serverId);
+    await assertManageable(userId, serverId, true);
     const blocks = await controlServerService.getBlocklist(serverId, userId);
 
     return blocks.map((b) => ({
