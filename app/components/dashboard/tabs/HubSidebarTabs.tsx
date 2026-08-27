@@ -5,14 +5,13 @@ import {
   BellOutlined,
   ClusterOutlined,
   DownOutlined,
-  EditOutlined,
   FileTextOutlined,
   HistoryOutlined,
   IdcardOutlined,
   LinkOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
-  UpOutlined,
+  UpOutlined
 } from "@ant-design/icons";
 import { useState } from "react";
 import { NavLink } from "react-router";
@@ -28,13 +27,22 @@ interface HubSidebarTabsProps {
 export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const permissions = hub?.metadata.permissions;
-  const can = (...actions: (keyof NonNullable<typeof permissions>)[]) =>
-    !permissions || actions.some((action) => permissions[action]);
+  const can = (...actions: string[]) => {
+    if (!permissions) return true;
+    if (Array.isArray(permissions)) {
+      const permMap = Object.fromEntries(
+        (permissions as any[])
+          .filter((p) => p && typeof p === "object" && "key" in p)
+          .map((p) => [p.key, Boolean(p.value)])
+      );
+      return actions.some((action) => permMap[action]);
+    }
+    return actions.some((action) => (permissions as any)[action]);
+  };
   const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "general", label: "General", icon: <EditOutlined />, visible: enabled("HUB_CONFIG") && can("MANAGE_HUB_SETTINGS") },
     { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: false },
     {
       path: "moderation",
@@ -42,7 +50,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
       icon: <SafetyCertificateOutlined />,
       visible: false,
     },
-    { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && can("MANAGE_RULES") },
+    { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_RULES")) },
     {
       path: "modules",
       label: "Modules",
@@ -80,7 +88,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
       visible: enabled("HUB_ANNOUNCEMENTS") && can("ANNOUNCE"),
     },
     { path: "audit", label: "Audit history", icon: <HistoryOutlined />, visible: enabled("HUB_AUDIT") && can("VIEW_LOGS") },
-    { path: "settings", label: "Settings", icon: <SettingOutlined />, visible: false },
+    {
+      path: "settings",
+      label: "Settings",
+      icon: <SettingOutlined />,
+      visible: can("MANAGE_HUB_SETTINGS") || hub?.metadata.effectiveRole === "OWNER",
+    },
   ].filter((item) => item.visible !== false);
 
   return (

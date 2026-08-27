@@ -1,15 +1,15 @@
-import { useParams, Link, useNavigate, useOutletContext } from "react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
-import { orpc } from "~/lib/orpc";
-import { PageHeader } from "~/components/dashboard/PageHeader";
+import { useRef } from "react";
+import { Link, useNavigate, useOutletContext, useParams } from "react-router";
 import { HubWorkspaceTabs } from "~/components/dashboard/HubWorkspaceTabs";
+import { PageHeader } from "~/components/dashboard/PageHeader";
+import { orpc } from "~/lib/orpc";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
 
 const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
-  overview: { title: "Overview", desc: "Hub status and activity at a glance." },
+  overview: { title: "Overview", desc: "Hub status, activity, and identity settings." },
   general: { title: "General", desc: "Manage identity, branding, and description." },
   connections: { title: "Connections", desc: "Manage connected Discord servers and channels." },
   moderation: { title: "Moderation", desc: "Manage safety settings, rules, and access." },
@@ -25,13 +25,13 @@ const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
 };
 
 const LEGACY_VIEWS: Record<string, string> = {
+  general: "overview",
   routes: "connections",
   safety: "moderation",
-  rules: "moderation",
   members: "team",
 };
 
-const VISIBLE_HUB_VIEWS = new Set(["overview", "general", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit"]);
+const VISIBLE_HUB_VIEWS = new Set(["overview", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
@@ -43,6 +43,7 @@ const VIEW_CAPABILITIES: Record<string, string> = {
   team: "HUB_TEAM",
   announcements: "HUB_ANNOUNCEMENTS",
   audit: "HUB_AUDIT",
+  settings: "HUB_CONFIG",
 };
 
 type DashboardContext = {
@@ -66,9 +67,9 @@ export default function HubWorkspace() {
   const patchAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
-    orpc.hub.getHub.queryOptions({ input: { hubId } })
+    orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 })
   );
-  const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions());
+  const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }));
   const hub = hubDetail || hubs.find((h) => h.metadata.id === hubId);
   const isLoading = isHubLoading && !hub;
   const connectionsEnabled = import.meta.env.DEV && activeTab === "connections";
@@ -180,6 +181,20 @@ export default function HubWorkspace() {
     desc: `Manage ${activeTab} for ${hub.metadata.name}.`,
   };
 
+  const hasPerm = (action: string) => {
+    const perms = hub.metadata.permissions as any;
+    if (!perms) return false;
+    if (Array.isArray(perms)) {
+      const permMap = Object.fromEntries(
+        perms
+          .filter((p: any) => p && typeof p === "object" && "key" in p)
+          .map((p: any) => [p.key, Boolean(p.value)])
+      );
+      return !!permMap[action];
+    }
+    return !!perms[action];
+  };
+
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <PageHeader
@@ -197,8 +212,8 @@ export default function HubWorkspace() {
         activeTab={activeTab}
         hub={hub}
         connections={connections}
-        canEdit={!!hub.metadata.permissions?.MANAGE_HUB_SETTINGS}
-        canManageConnections={!!hub.metadata.permissions?.MANAGE_CONNECTIONS}
+        canEdit={hasPerm("MANAGE_HUB_SETTINGS")}
+        canManageConnections={hasPerm("MANAGE_CONNECTIONS")}
         isOwner={hub.metadata.effectiveRole === "OWNER"}
         isSaving={patchMutation.isPending}
         saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}

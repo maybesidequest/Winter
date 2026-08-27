@@ -42,7 +42,10 @@ async function discordFetch(path: string, authorization: string) {
   const timeout = setTimeout(() => controller.abort(), Number(process.env.DISCORD_API_TIMEOUT_MS || 4000));
   try {
     return await fetch(`https://discord.com/api/v10${path}`, {
-      headers: { Authorization: authorization },
+      headers: {
+        Authorization: authorization,
+        "User-Agent": "InterChat-Winter/1.0 (https://interchat.app)",
+      },
       signal: controller.signal,
     });
   } catch {
@@ -67,7 +70,24 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
 
   const token = await getDiscordAccessToken(userId);
   const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
-  if (!response.ok) throw new Error("Discord servers could not be loaded.");
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "");
+    console.error(`Discord API /users/@me/guilds error: HTTP ${response.status} ${response.statusText}`, errorBody);
+    if (response.status === 401) {
+      throw new Error("Discord authorization expired. Sign in again.");
+    }
+    if (response.status === 429) {
+      // If we are rate-limited, fall back to cached guilds if available
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        try {
+          return JSON.parse(cached) as DiscordGuild[];
+        } catch { }
+      }
+      throw new Error("Discord API rate limit exceeded. Please wait a moment.");
+    }
+    throw new Error("Discord servers could not be loaded.");
+  }
   const guilds = (await response.json()) as DiscordGuild[];
   const manageable = guilds.filter(
     (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
@@ -85,12 +105,17 @@ async function assertManageable(userId: string, serverId: string, forceRefresh =
 
 export const serverService = {
   async list(userId: string, forceRefresh = false): Promise<ServerResource[]> {
-    // Server visibility is permission-sensitive.  Do not serve a cached
-    // Discord guild snapshot here: a revoked manager must lose access on the
-    // next request.  Keep the parameter for callers that already pass it, but
-    // make the safe behavior unconditional.
-    void forceRefresh;
-    const guilds = await manageableGuilds(userId, true);
+    const cacheKey = `winter:servers:${userId}`;
+    if (!forceRefresh) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        try {
+          return JSON.parse(cached) as ServerResource[];
+        } catch { }
+      }
+    }
+
+    const guilds = await manageableGuilds(userId, forceRefresh);
     if (guilds.length === 0) return [];
 
     const guildIds = guilds.map((g) => g.id);
@@ -102,13 +127,10 @@ export const serverService = {
         installedServersMap.set(s.metadata.id, s);
       }
     } catch (err) {
-      // An unavailable Control Plane must not be rendered as a fleet of
-      // uninstalled servers. Preserve the failure so the UI can show an
-      // unavailable state instead of inventing configuration.
-      throw err;
+      console.warn(`[serverService.list] Failed to batch get servers for user ${userId}:`, err);
     }
 
-    return guilds.map((guild) => {
+    const result: ServerResource[] = guilds.map((guild) => {
       const server = installedServersMap.get(guild.id);
       if (server) {
         return {
@@ -148,14 +170,25 @@ export const serverService = {
         },
       };
     });
+
+    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
+    return result;
   },
 
 
   async get(userId: string, serverId: string): Promise<ServerResource> {
-    const guild = await assertManageable(userId, serverId, true);
+    const cacheKey = `winter:server:${serverId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as ServerResource;
+      } catch { }
+    }
+
+    const guild = await assertManageable(userId, serverId, false);
     try {
       const res = await controlServerService.getServer(serverId, userId);
-      return {
+      const server: ServerResource = {
         metadata: {
           id: guild.id,
           name: guild.name,
@@ -168,8 +201,12 @@ export const serverService = {
         },
         version: res.version,
       };
+      await redis.set(cacheKey, JSON.stringify(server), "EX", 120);
+      return server;
     } catch (error) {
-      if (!isControlNotFound(error)) throw error;
+      if (!isControlNotFound(error)) {
+        console.warn(`[serverService.get] Control Plane failed for server ${serverId}:`, error);
+      }
       return {
         metadata: {
           id: guild.id,
@@ -194,22 +231,41 @@ export const serverService = {
   },
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
-    await assertManageable(userId, serverId, true);
-    const token = await getDiscordAccessToken(userId);
-    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bearer ${token}`);
+    await assertManageable(userId, serverId, false);
+    const botToken = process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN;
+    if (!botToken) {
+      // In environments without a Discord bot token configured, user tokens cannot
+      // query guild channels. Degrade gracefully immediately without waiting on Discord.
+      return [];
+    }
+
+    const cacheKey = `discord:channels:${serverId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as DiscordChannelResource[];
+      } catch { }
+    }
+
+    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bot ${botToken}`);
     if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      console.warn(`[channels] Discord channel fetch failed for server ${serverId}: HTTP ${response.status}`, errorText);
       if (response.status === 401 || response.status === 403) {
-        throw new Error("Discord authorization expired or lacks access to this server.");
+        return [];
       }
       throw new Error("Discord channels could not be loaded. Please try again shortly.");
     }
     const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
-    return channels
+    const result = channels
       .filter((channel) => channel.type === 0 || channel.type === 5)
       // Discord's channel listing does not include the bot's effective
       // webhook permission. Let the Control Plane perform the authoritative
       // check instead of advertising a fabricated capability.
       .map((channel) => ({ ...channel, canCreateWebhook: false }));
+
+    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
+    return result;
   },
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
@@ -231,6 +287,12 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await Promise.all([
+      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:servers:${userId}`),
+      redis.incr(`server:settings:version:${input.serverId}`),
+      redis.del(`server:settings:${input.serverId}`),
+    ]).catch(() => { });
     return { success: true, serverName: guild.name, server: updated };
   },
 
@@ -244,43 +306,78 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    const prefixVal = input.prefix ? JSON.stringify(input.prefix) : "false";
+    await Promise.all([
+      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:servers:${userId}`),
+      redis.set(`server:prefix:${input.serverId}`, prefixVal, "EX", 3600),
+      redis.incr(`server:prefix:version:${input.serverId}`),
+    ]).catch(() => { });
     return { success: true, serverName: guild.name, server: updated };
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
-    await assertManageable(userId, serverId, true);
-    const connections = await controlConnectionService.getConnections({
-      serverId,
-      actorId: userId,
-    });
+    const cacheKey = `winter:bridges:${serverId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as ServerBridgeResource[];
+      } catch { }
+    }
 
-    return Promise.all(connections.map(async (conn) => {
-      let hub: Awaited<ReturnType<typeof controlHubService.getHub>> | undefined;
-      if (conn.metadata.hubId) {
-        try {
-          hub = await controlHubService.getHub(conn.metadata.hubId, userId);
-        } catch {
-          // A private or deleted Hub should not leak its internal ID.
+    await assertManageable(userId, serverId, false);
+    try {
+      const [connections, channels] = await Promise.all([
+        controlConnectionService.getConnections({
+          serverId,
+          actorId: userId,
+        }),
+        serverService.channels(userId, serverId).catch(() => []),
+      ]);
+
+      const channelMap = new Map(channels.map((c) => [c.id, c.name]));
+
+      const hubPromises = new Map<string, Promise<Awaited<ReturnType<typeof controlHubService.getHub>> | undefined>>();
+      const getHubMemoized = (hubId: string) => {
+        let p = hubPromises.get(hubId);
+        if (!p) {
+          p = controlHubService.getHub(hubId, userId).catch(() => undefined);
+          hubPromises.set(hubId, p);
         }
-      }
-      return {
-        id: conn.metadata.id,
-        channelId: conn.metadata.channelId || "",
-        channelName: null,
-        // Do not expose a Hub identifier when the authoritative Hub lookup
-        // was denied or the Hub was deleted. The bridge remains visible, but
-        // callers cannot use a leaked ID to probe private resources.
-        hubId: hub ? conn.metadata.hubId || "" : "",
-        hubName: hub?.metadata.name || conn.spec.customName || "Unavailable Hub",
-        hubIconUrl: hub?.spec.iconUrl || null,
-        connected: conn.spec.connected,
-        pausedByBot: !conn.status.healthy,
-        pauseReason: conn.status.statusMessage || null,
-        createdAt: conn.metadata.createdAt || new Date().toISOString(),
-        version: conn.version,
-        webhookProvisioned: conn.status.webhookProvisioned,
+        return p;
       };
-    }));
+
+      const result = await Promise.all(connections.map(async (conn) => {
+        let hub: Awaited<ReturnType<typeof controlHubService.getHub>> | undefined;
+        if (conn.metadata.hubId) {
+          hub = await getHubMemoized(conn.metadata.hubId);
+        }
+        const channelId = conn.metadata.channelId || "";
+        return {
+          id: conn.metadata.id,
+          channelId,
+          channelName: channelId ? channelMap.get(channelId) || null : null,
+          // Do not expose a Hub identifier when the authoritative Hub lookup
+          // was denied or the Hub was deleted. The bridge remains visible, but
+          // callers cannot use a leaked ID to probe private resources.
+          hubId: hub ? conn.metadata.hubId || "" : "",
+          hubName: hub?.metadata.name || conn.spec.customName || "Unavailable Hub",
+          hubIconUrl: hub?.spec.iconUrl || null,
+          connected: conn.spec.connected,
+          pausedByBot: !conn.status.healthy,
+          pauseReason: conn.status.statusMessage || null,
+          createdAt: conn.metadata.createdAt || new Date().toISOString(),
+          version: conn.version,
+          webhookProvisioned: conn.status.webhookProvisioned,
+        };
+      }));
+
+      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+      return result;
+    } catch (err) {
+      console.warn(`[serverService.bridges] Could not fetch connections for server ${serverId}:`, err);
+      return [];
+    }
   },
 
   async toggleBridge(userId: string, input: { serverId: string; connectionId: string; enabled: boolean; expectedVersion: number; idempotencyKey: string }) {
@@ -295,6 +392,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -308,6 +406,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -321,20 +420,36 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 
 
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
-    await assertManageable(userId, serverId, true);
-    const blocks = await controlServerService.getBlocklist(serverId, userId);
+    const cacheKey = `winter:blocklist:${serverId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as ServerBlockResource[];
+      } catch { }
+    }
 
-    return blocks.map((b) => ({
-      id: b.id,
-      targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : "server",
-      targetId: b.targetId,
-      createdAt: b.createdAt || new Date().toISOString(),
-    }));
+    await assertManageable(userId, serverId, false);
+    try {
+      const blocks = await controlServerService.getBlocklist(serverId, userId);
+
+      const result: ServerBlockResource[] = blocks.map((b) => ({
+        id: b.id,
+        targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : "server",
+        targetId: b.targetId,
+        createdAt: b.createdAt || new Date().toISOString(),
+      }));
+      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+      return result;
+    } catch (err) {
+      console.warn(`[serverService.blocklist] Could not fetch blocklist for server ${serverId}:`, err);
+      return [];
+    }
   },
 
   async addBlock(userId: string, input: AddBlockInput) {
@@ -348,6 +463,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
     return { success: true, id: res.id };
   },
 
@@ -359,6 +475,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
+    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 };

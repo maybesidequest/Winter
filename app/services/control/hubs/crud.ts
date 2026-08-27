@@ -1,27 +1,25 @@
-import type { HubResource, HubSpec } from "~/resources/hub";
-import type { Hub__Output as ProtoHub } from "~/generated/control/v1/interchat/control/v1/Hub";
-import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/interchat/control/v1/HubSpec";
-import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
-import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyHubsRequest";
-import type { ListMyHubsResponse } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
-import type { ListMyHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
-import type { ListUserHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListUserHubsRequest";
-import type { ListUserHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListUserHubsResponse";
 import type { CreateHubRequest } from "~/generated/control/v1/interchat/control/v1/CreateHubRequest";
-import type { UpvoteHubRequest } from "~/generated/control/v1/interchat/control/v1/UpvoteHubRequest";
-import type { UpvoteHubResponse__Output } from "~/generated/control/v1/interchat/control/v1/UpvoteHubResponse";
-import type { LockdownHubRequest } from "~/generated/control/v1/interchat/control/v1/LockdownHubRequest";
-import type { TransferHubOwnershipRequest } from "~/generated/control/v1/interchat/control/v1/TransferHubOwnershipRequest";
 import type { DeleteHubRequest } from "~/generated/control/v1/interchat/control/v1/DeleteHubRequest";
 import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
-import type { ManagedHubSummary } from "~/generated/control/v1/interchat/control/v1/ManagedHubSummary";
+import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
+import type { GetPopularTagsRequest } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsRequest";
+import type { GetPopularTagsResponse } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsResponse";
+import type { Hub__Output as ProtoHub } from "~/generated/control/v1/interchat/control/v1/Hub";
+import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
+import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/interchat/control/v1/HubSpec";
+import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyHubsRequest";
+import type { ListMyHubsResponse, ListMyHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
+import type { ListUserHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListUserHubsRequest";
+import type { ListUserHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListUserHubsResponse";
+import type { LockdownHubRequest } from "~/generated/control/v1/interchat/control/v1/LockdownHubRequest";
+import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
 import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
 import type { SearchHubsRequest } from "~/generated/control/v1/interchat/control/v1/SearchHubsRequest";
 import type { SearchHubsResponse } from "~/generated/control/v1/interchat/control/v1/SearchHubsResponse";
-import type { GetPopularTagsRequest } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsRequest";
-import type { GetPopularTagsResponse } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsResponse";
-import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
-import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
+import type { TransferHubOwnershipRequest } from "~/generated/control/v1/interchat/control/v1/TransferHubOwnershipRequest";
+import type { UpvoteHubRequest } from "~/generated/control/v1/interchat/control/v1/UpvoteHubRequest";
+import type { UpvoteHubResponse__Output } from "~/generated/control/v1/interchat/control/v1/UpvoteHubResponse";
+import type { HubResource, HubSpec } from "~/resources/hub";
 import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string {
@@ -37,6 +35,21 @@ function activity(value: string): HubResource["status"]["activityLevel"] {
   return value.replace("HUB_ACTIVITY_LEVEL_", "") as HubResource["status"]["activityLevel"];
 }
 
+function toPermissionsRecord(raw: unknown): Record<string, boolean> {
+  if (!raw) return {};
+  if (Array.isArray(raw)) {
+    return Object.fromEntries(
+      raw
+        .filter((entry): entry is { key: string; value: boolean } => entry && typeof entry === "object" && "key" in entry)
+        .map((entry) => [entry.key, Boolean(entry.value)])
+    );
+  }
+  if (typeof raw === "object") {
+    return raw as Record<string, boolean>;
+  }
+  return {};
+}
+
 function toResource(hub: ProtoHub): HubResource {
   const metadata = hub.metadata;
   const spec = hub.spec;
@@ -49,7 +62,7 @@ function toResource(hub: ProtoHub): HubResource {
       createdAt: timestamp(metadata.createdAt),
       updatedAt: timestamp(metadata.updatedAt),
       effectiveRole: metadata.effectiveRole,
-      permissions: metadata.permissions as HubResource["metadata"]["permissions"],
+      permissions: toPermissionsRecord(metadata.permissions) as HubResource["metadata"]["permissions"],
     },
     spec: {
       description: spec.description,
@@ -157,7 +170,15 @@ export const hubCrudService = {
       limit,
       cursor,
     };
-    return await invokeUnary<ListMyHubsRequest, ListMyHubsResponse__Output>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request) as ListMyHubsResponse;
+    const res = await invokeUnary<ListMyHubsRequest, ListMyHubsResponse__Output>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request);
+    if (res.hubs) {
+      for (const h of res.hubs) {
+        if (h.permissions) {
+          h.permissions = toPermissionsRecord(h.permissions);
+        }
+      }
+    }
+    return res as ListMyHubsResponse;
   },
 
   async searchHubs(input: {

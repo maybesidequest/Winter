@@ -1,15 +1,12 @@
-import { Drawer } from "antd";
 import {
-  SafetyCertificateFilled,
-  CrownFilled,
-  StarFilled,
-  LinkOutlined,
-  CommentOutlined,
-  ClusterOutlined,
-  FileTextOutlined,
-  GlobalOutlined,
   CloseOutlined,
+  CrownFilled,
+  FileTextOutlined,
+  LinkOutlined,
+  SafetyCertificateFilled,
+  StarFilled
 } from "@ant-design/icons";
+import { Drawer } from "antd";
 import type { HubPublicResource } from "~/resources/hubDiscovery";
 import { HubVoteButton } from "./HubVoteButton";
 
@@ -33,7 +30,7 @@ export function HubDetailsDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      width={480}
+      width="min(100vw, 480px)"
       title={null}
       closable={false}
       styles={{
@@ -60,6 +57,7 @@ export function HubDetailsDrawer({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close hub details"
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-[0_1.5px_0_0_rgba(255,255,255,0.12)] hover:shadow-[0_2.5px_0_0_rgba(255,255,255,0.2)] hover:-translate-y-[1px] active:translate-y-[1px] active:shadow-[0_0.5px_0_0_rgba(255,255,255,0.12)] cursor-pointer"
           >
             <CloseOutlined className="text-xs" />
@@ -176,4 +174,3 @@ export function HubDetailsDrawer({
     </Drawer>
   );
 }
-

@@ -1,15 +1,15 @@
-import { useRef, useState } from "react";
-import { Modal, Form, Input, Radio, message, Popconfirm } from "antd";
 import {
-  SafetyCertificateOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  UserOutlined,
   CloudServerOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import { Form, Input, message, Modal, Popconfirm, Radio } from "antd";
+import { useRef, useState } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
-import type { ServerBlockResource, ServerResource } from "~/resources/server";
 import { orpcClient as orpc } from "~/lib/orpc";
+import type { ServerBlockResource, ServerResource } from "~/resources/server";
 
 interface ServerBlocklistCardProps {
   server: ServerResource;
@@ -117,7 +117,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
             <h3 className="text-base font-bold text-white font-['Sora']">
               No Blocked Entities
             </h3>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-white/70">
               Your server blocklist is clean. Blocked users or servers will not be matched in Calls or bridge messages to this server.
             </p>
           </div>
@@ -130,7 +130,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/[0.08] text-white/50 uppercase tracking-wider font-semibold">
+                <tr className="border-b border-white/[0.08] text-white/70 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Target ID</th>
                   <th className="py-3 px-4">Date Added</th>
@@ -142,11 +142,10 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
                   <tr key={block.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-semibold border ${
-                          block.targetType === "user"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-semibold border ${block.targetType === "user"
                             ? "bg-violet-500/10 text-violet-300 border-violet-500/20"
                             : "bg-sky-500/10 text-sky-300 border-sky-500/20"
-                        }`}
+                          }`}
                       >
                         {block.targetType === "user" ? <UserOutlined /> : <CloudServerOutlined />}
                         <span>{block.targetType.toUpperCase()}</span>

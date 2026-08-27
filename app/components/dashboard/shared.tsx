@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
-import { Card, Typography } from "antd";
 import type { CardProps } from "antd";
+import { Card, Typography } from "antd";
+import type { CSSProperties, ReactNode } from "react";
 
 const { Text } = Typography;
 
@@ -13,7 +13,7 @@ export const dashboardGlassCardStyle: CSSProperties = {
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
   border: "1px solid rgba(255, 255, 255, 0.08)",
-  boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
+  boxShadow: "0 3px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.55)",
 };
 
 const dashboardGlassCardStyles: NonNullable<CardProps["styles"]> = {
@@ -60,6 +60,7 @@ export function DashboardDangerCard({ style, styles, ...props }: CardProps) {
         ...dashboardGlassCardStyle,
         background: "rgba(245, 34, 45, 0.05)",
         border: "1px solid rgba(245, 34, 45, 0.2)",
+        boxShadow: "0 3px 0 0 rgba(245, 34, 45, 0.2), 0 8px 24px -4px rgba(0, 0, 0, 0.55)",
         ...style,
       }}
       styles={{

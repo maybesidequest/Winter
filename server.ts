@@ -10,6 +10,7 @@ const handleRequest = createRequestHandler(build, process.env.NODE_ENV || "produ
 Bun.serve({
   hostname: "0.0.0.0",
   port: process.env.PORT || 4000,
+  idleTimeout: 30,
   async fetch(req) {
     const url = new URL(req.url);
 
@@ -24,6 +25,10 @@ Bun.serve({
         console.error("Winter readiness check failed", error);
         return new Response("not ready", { status: 503, headers: { "content-type": "text/plain" } });
       }
+    }
+
+    if (url.pathname.startsWith("/.well-known/")) {
+      return new Response(null, { status: 404 });
     }
 
     // 1. Serve static client assets built by Vite

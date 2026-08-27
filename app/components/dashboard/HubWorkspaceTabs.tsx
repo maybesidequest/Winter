@@ -1,17 +1,16 @@
-import type { HubResource } from "~/resources/hub";
-import type { HubConnectionResource } from "~/resources/connection";
+import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPanel";
+import { HubAuditPanel } from "~/components/dashboard/HubAuditPanel";
+import { HubBadgesPanel } from "~/components/dashboard/HubBadgesPanel";
+import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
+import { HubLoggingPanel } from "~/components/dashboard/HubLoggingPanel";
 import { HubOverview } from "~/components/dashboard/HubOverview";
-import { HubSummary } from "~/components/dashboard/HubSummary";
 import { HubRoutes } from "~/components/dashboard/HubRoutes";
 import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
-import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
-import { HubBadgesPanel } from "~/components/dashboard/HubBadgesPanel";
-import { HubLoggingPanel } from "~/components/dashboard/HubLoggingPanel";
-import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPanel";
-import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
-import { HubAuditPanel } from "~/components/dashboard/HubAuditPanel";
+import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
+import type { HubConnectionResource } from "~/resources/connection";
+import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 
 interface HubWorkspaceTabsProps {
@@ -49,10 +48,21 @@ export function HubWorkspaceTabs({
   onDeleteHub,
   onTransferOwnership,
 }: HubWorkspaceTabsProps) {
-  const can = (...actions: string[]) => actions.some((action) => hub.metadata.permissions?.[action as keyof typeof hub.metadata.permissions]);
+  const can = (...actions: string[]) => {
+    const perms = hub.metadata.permissions as any;
+    if (!perms) return false;
+    if (Array.isArray(perms)) {
+      const permMap = Object.fromEntries(
+        perms
+          .filter((p: any) => p && typeof p === "object" && "key" in p)
+          .map((p: any) => [p.key, Boolean(p.value)])
+      );
+      return actions.some((action) => permMap[action]);
+    }
+    return actions.some((action) => perms[action]);
+  };
   switch (activeTab) {
     case "overview":
-      return <HubSummary hub={hub} />;
     case "general":
       return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} error={saveError} onSave={onSaveConfig} />;
     case "connections":
@@ -72,7 +82,7 @@ export function HubWorkspaceTabs({
         </div>
       );
     case "rules":
-      return <HubRulesPanel hub={hub} canEdit={can("MANAGE_RULES")} />;
+      return <HubRulesPanel hub={hub} canEdit={isOwner || can("MANAGE_RULES")} />;
     case "audit":
       return <HubAuditPanel hub={hub} />;
     case "modules":
@@ -124,6 +134,6 @@ export function HubWorkspaceTabs({
         </div>
       );
     default:
-      return <HubSummary hub={hub} />;
+      return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} error={saveError} onSave={onSaveConfig} />;
   }
 }

@@ -1,11 +1,11 @@
-import { PlusOutlined, TeamOutlined, ArrowRightOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined, ExclamationCircleOutlined, PlusOutlined, TeamOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useOutletContext } from "react-router";
-import { orpc } from "~/lib/orpc";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { orpc } from "~/lib/orpc";
 
 export default function HubsPage() {
   const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
@@ -14,7 +14,7 @@ export default function HubsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: hubs = [], isLoading, isError } = useQuery({
-    ...orpc.hub.getUserHubs.queryOptions(),
+    ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
     enabled: capabilities.HUB_LIST || import.meta.env.DEV,
   });
   if (!capabilities.HUB_LIST && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
@@ -129,16 +129,14 @@ export default function HubsPage() {
                   {/* Status Badge */}
                   <div className="flex items-center gap-2">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                        hub.spec.locked
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${hub.spec.locked
                           ? "bg-red-500/15 text-red-300 border-red-500/30"
                           : "bg-violet-500/15 text-violet-300 border-violet-500/30"
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          hub.spec.locked ? "bg-red-400" : "bg-violet-400"
-                        }`}
+                        className={`w-1.5 h-1.5 rounded-full ${hub.spec.locked ? "bg-red-400" : "bg-violet-400"
+                          }`}
                       />
                       {hub.spec.locked ? "Locked" : hub.spec.visibility}
                     </span>

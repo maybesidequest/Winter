@@ -1,16 +1,14 @@
-import type { CreateHubInput, PatchHubConfigInput } from "~/schemas/hub";
-import type { HubResource } from "~/resources/hub";
-import { permissionService } from "~/services/permission.server";
-import { irisClient } from "~/services/iris.server";
-import { controlHubService } from "~/services/control.server";
-import { hubFeaturesService } from "~/services/hubFeatures.server";
-import { isCapabilityEnabled } from "~/services/capabilities.server";
 import {
   PERMISSION_ACTIONS,
   PERMISSION_BITMASKS,
   getDefaultPermissions,
   type PermissionAction,
 } from "~/permissions/config";
+import type { HubResource } from "~/resources/hub";
+import type { CreateHubInput, PatchHubConfigInput } from "~/schemas/hub";
+import { isCapabilityEnabled } from "~/services/capabilities.server";
+import { controlHubService } from "~/services/control.server";
+import { hubFeaturesService } from "~/services/hubFeatures.server";
 
 const DEFAULT_HUB_ICON_URL = "https://interchat.tech/images/interchat.png";
 
@@ -215,5 +213,60 @@ export const hubService = {
 
   async lockdownHub(userId: string, input: { hubId: string; locked: boolean; reason: string; expectedVersion: number; idempotencyKey: string }) {
     return controlHubService.lockdownHub({ ...input, actorId: userId });
+  },
+
+  async listRules(userId: string, hubId: string) {
+    return controlHubService.listRules(hubId, userId);
+  },
+
+  async createRule(userId: string, input: {
+    hubId: string;
+    title: string;
+    description: string;
+    expectedVersion: number;
+    idempotencyKey: string;
+  }) {
+    return controlHubService.createRule({
+      ...input,
+      actorId: userId,
+    });
+  },
+
+  async updateRule(userId: string, input: {
+    hubId: string;
+    ruleId: string;
+    title: string;
+    description: string;
+    expectedVersion: number;
+    idempotencyKey: string;
+  }) {
+    return controlHubService.updateRule({
+      ...input,
+      actorId: userId,
+    });
+  },
+
+  async deleteRule(userId: string, input: {
+    hubId: string;
+    ruleId: string;
+    expectedVersion: number;
+    idempotencyKey: string;
+  }) {
+    return controlHubService.deleteRule({
+      ...input,
+      actorId: userId,
+    });
+  },
+
+  async reorderRules(userId: string, input: {
+    hubId: string;
+    ruleIds: string[];
+    expectedVersion: number;
+    idempotencyKey: string;
+  }) {
+    return controlHubService.reorderRules({
+      ...input,
+      actorId: userId,
+    });
   },
 };

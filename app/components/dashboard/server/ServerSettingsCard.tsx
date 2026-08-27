@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState } from "react";
 import {
-  SettingOutlined,
-  CopyOutlined,
   CheckCircleOutlined,
+  CopyOutlined,
   ExclamationCircleOutlined,
   LinkOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { message } from "antd";
+import { useEffect, useRef, useState } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
-import type { ServerResource } from "~/resources/server";
 import { orpcClient as orpc } from "~/lib/orpc";
+import type { ServerResource } from "~/resources/server";
 
 interface ServerSettingsCardProps {
   server: ServerResource;
@@ -124,21 +124,21 @@ export function ServerSettingsCard({
                 maxLength={10}
                 disabled={!isInstalled || savingPrefix}
                 onChange={(event) => setPrefix(event.target.value)}
-                className="w-28 text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1 rounded-xl"
+                className="w-28 text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1 rounded-xl focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={savePrefix}
                 disabled={!isInstalled || savingPrefix || prefix.trim() === (server.spec.prefix || "!")}
-                className="dashboard-btn-primary px-3 py-2 text-xs"
+                className="dashboard-btn-primary px-3.5 py-2 text-xs"
               >
                 {savingPrefix ? "Saving…" : "Save"}
               </button>
-              <span className="text-xs text-white/50">
+              <span className="text-xs text-white/60">
                 (or slash commands <code>/</code>)
               </span>
             </div>
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-white/70 mt-1">
               Choose the prefix used for text commands in this server.
             </p>
           </div>
@@ -155,16 +155,16 @@ export function ServerSettingsCard({
             </span>
             <div className="flex items-center gap-2">
               {isInstalled ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                   <CheckCircleOutlined /> Active & Installed
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
                   <ExclamationCircleOutlined /> Not Installed
                 </span>
               )}
             </div>
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-white/70 mt-1">
               Re-authorize or grant updated Discord permissions to ensure smooth operation across all features.
             </p>
           </div>
@@ -186,36 +186,49 @@ export function ServerSettingsCard({
         className="p-6 rounded-2xl border flex flex-col gap-4"
         style={dashboardGlassCardStyle}
       >
-        <h3 className="text-sm font-bold text-white font-['Sora']">
-          Required Discord Permissions
-        </h3>
+        <div>
+          <h3 className="text-sm font-bold text-white font-['Sora']">
+            Required Discord Permissions
+          </h3>
+          <p className="text-xs text-white/60 mt-0.5">
+            Verified permissions for InterChat bot inside this Discord server
+          </p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {REQUIRED_PERMISSIONS.map((perm) => (
-            <div
-              key={perm.name}
-              className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-start gap-3"
-            >
-              {permissionsKnown ? (
-                (botPermissions & perm.bit) === perm.bit ? (
+          {REQUIRED_PERMISSIONS.map((perm) => {
+            const hasPerm = permissionsKnown && (botPermissions & perm.bit) === perm.bit;
+            const isMissing = permissionsKnown && !hasPerm;
+
+            return (
+              <div
+                key={perm.name}
+                className={`p-3 rounded-xl border flex items-start gap-3 transition-colors ${hasPerm
+                    ? "bg-emerald-500/[0.04] border-emerald-500/20"
+                    : isMissing
+                      ? "bg-amber-500/[0.04] border-amber-500/20"
+                      : "bg-white/[0.03] border-white/[0.06]"
+                  }`}
+              >
+                {hasPerm ? (
                   <CheckCircleOutlined className="text-emerald-400 mt-0.5 flex-shrink-0" />
-                ) : (
+                ) : isMissing ? (
                   <ExclamationCircleOutlined className="text-amber-400 mt-0.5 flex-shrink-0" />
-                )
-              ) : (
-                <ExclamationCircleOutlined className="text-white/40 mt-0.5 flex-shrink-0" />
-              )}
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold text-white">{perm.name}</span>
-                <span className="text-[11px] text-white/50">
-                  {permissionsKnown
-                    ? (botPermissions & perm.bit) === perm.bit
-                      ? `Verified. ${perm.desc}`
-                      : `Missing. ${perm.desc}`
-                    : "Permission status is not available yet."}
-                </span>
+                ) : (
+                  <ExclamationCircleOutlined className="text-white/40 mt-0.5 flex-shrink-0" />
+                )}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold text-white">{perm.name}</span>
+                  <span className="text-[11px] text-white/70">
+                    {permissionsKnown
+                      ? hasPerm
+                        ? `Granted. ${perm.desc}`
+                        : `Missing. ${perm.desc}`
+                      : "Permission status not available."}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

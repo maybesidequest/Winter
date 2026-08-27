@@ -11,7 +11,7 @@ export type ServerResource = {
     lobbyChannelIds: string[];
   };
   /** Observed integration state. Counts are intentionally not included until backed by Control Plane data. */
-  status: { botInstalled: boolean; manageable: boolean; botPermissions?: number };
+  status: { botInstalled: boolean; manageable: boolean; botPermissions?: number; connectionCount?: number };
   version?: number;
 };
 

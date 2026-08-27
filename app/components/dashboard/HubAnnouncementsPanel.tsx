@@ -1,10 +1,10 @@
+import { DeleteOutlined, EditOutlined, PlusOutlined, SendOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, List, message, Modal, Popconfirm, Typography } from "antd";
 import { useRef, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Input, List, Modal, Typography, message, Popconfirm } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined, SendOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 
 const { Paragraph, Text } = Typography;
 
@@ -94,11 +94,9 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
       title={<DashboardSectionTitle>Hub Announcements</DashboardSectionTitle>}
       extra={
         canEdit && (
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusOutlined />}
-            className="dashboard-btn-primary"
+          <button
+            type="button"
+            className="dashboard-btn-primary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             disabled={isLoading || isError}
             onClick={() => {
               setEditingId(null);
@@ -107,65 +105,66 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
               setModalOpen(true);
             }}
           >
-            New Announcement
-          </Button>
+            <PlusOutlined />
+            <span>New Announcement</span>
+          </button>
         )
       }
     >
       {!canEdit && <DashboardReadOnlyNotice message="Only staff with announcement access can publish changes." />}
-      {isError && <Text type="danger">Announcements are temporarily unavailable. Try again before making changes.</Text>}
+      {isError && <span className="text-xs text-red-300">Announcements are temporarily unavailable. Try again before making changes.</span>}
       <List
         loading={isLoading}
         dataSource={announcements}
-        locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.4)" }}>No announcements yet.</Text> }}
+        locale={{ emptyText: <span className="text-xs text-white/60">No announcements posted yet.</span> }}
         renderItem={(item) => (
           <List.Item
             style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
             actions={
               canEdit
                 ? [
-                    <Button
-                      key="edit"
-                      type="text"
-                      icon={<EditOutlined />}
-                      size="small"
-                      style={{ color: "rgba(255,255,255,0.6)" }}
-                      onClick={() => {
-                        setEditingId(item.id);
-                        setContent(item.content);
-                        updateKeyRef.current = crypto.randomUUID();
-                        setModalOpen(true);
-                      }}
-                    />,
-                    <Popconfirm
-                      key="del"
-                      title="Delete this announcement?"
-                      onConfirm={() =>
-                        deleteMutation.mutate(
-                          {
-                            hubId: hub.metadata.id,
-                            announcementId: item.id,
-                            idempotencyKey: deleteKeyFor(item.id),
-                          },
-                          { onSuccess: () => deleteKeysRef.current.delete(item.id) },
-                        )
-                      }
-                    >
-                      <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                    </Popconfirm>,
-                  ]
+                  <Button
+                    key="edit"
+                    type="text"
+                    icon={<EditOutlined />}
+                    size="small"
+                    style={{ color: "rgba(255,255,255,0.7)" }}
+                    onClick={() => {
+                      setEditingId(item.id);
+                      setContent(item.content);
+                      updateKeyRef.current = crypto.randomUUID();
+                      setModalOpen(true);
+                    }}
+                  />,
+                  <Popconfirm
+                    key="del"
+                    title="Delete this announcement?"
+                    onConfirm={() =>
+                      deleteMutation.mutate(
+                        {
+                          hubId: hub.metadata.id,
+                          announcementId: item.id,
+                          idempotencyKey: deleteKeyFor(item.id),
+                        },
+                        { onSuccess: () => deleteKeysRef.current.delete(item.id) },
+                      )
+                    }
+                  >
+                    <Button type="text" danger icon={<DeleteOutlined />} size="small" />
+                  </Popconfirm>,
+                ]
                 : []
             }
           >
             <List.Item.Meta
               avatar={<SendOutlined style={{ color: "#8175ee", fontSize: 18, marginTop: 4 }} />}
               title={
-                <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>
+                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
                   Posted {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                 </Text>
               }
               description={
-                <Paragraph style={{ color: "rgba(255,255,255,0.85)", margin: 0, whiteSpace: "pre-wrap" }}>
+                <Paragraph style={{ color: "rgba(255,255,255,0.9)", margin: 0, whiteSpace: "pre-wrap" }}>
                   {item.content}
                 </Paragraph>
               }
@@ -182,13 +181,15 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
         confirmLoading={createMutation.isPending || updateMutation.isPending}
         okText={editingId ? "Update" : "Broadcast"}
       >
-        <div style={{ marginTop: 16 }}>
-          <Input.TextArea
+        <div className="mt-4 flex flex-col gap-2">
+          <label className="text-xs font-bold text-white/90">Announcement Content</label>
+          <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your announcement to all connected servers..."
             rows={5}
             maxLength={2000}
+            className="dashboard-textarea text-xs"
           />
         </div>
       </Modal>

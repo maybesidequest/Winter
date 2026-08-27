@@ -1,10 +1,10 @@
+import { CopyOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, InputNumber, List, message, Modal, Popconfirm, Tag, Typography } from "antd";
 import { useRef, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, InputNumber, List, Modal, Typography, message, Popconfirm, Tag } from "antd";
-import { PlusOutlined, DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
 
 const { Text } = Typography;
 
@@ -65,59 +65,58 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
       title={<DashboardSectionTitle>Hub Invites</DashboardSectionTitle>}
       extra={
         canEdit && (
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusOutlined />}
-            className="dashboard-btn-primary"
+          <button
+            type="button"
+            className="dashboard-btn-primary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             disabled={isLoading || isError}
             onClick={() => {
               createKeyRef.current = crypto.randomUUID();
               setModalOpen(true);
             }}
           >
-            Create Invite
-          </Button>
+            <PlusOutlined />
+            <span>Create Invite</span>
+          </button>
         )
       }
     >
       {!canEdit && <DashboardReadOnlyNotice message="Only staff with invite-management access can create or revoke invites." />}
-      {isError && <Text type="danger">Invites are temporarily unavailable. Try again before making changes.</Text>}
+      {isError && <span className="text-xs text-red-300">Invites are temporarily unavailable. Try again before making changes.</span>}
       <List
         loading={isLoading}
         dataSource={invites}
-        locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.4)" }}>No active invites.</Text> }}
+        locale={{ emptyText: <span className="text-xs text-white/60">No active invites.</span> }}
         renderItem={(item) => (
           <List.Item
             style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
             actions={
               canEdit
                 ? [
-                    <Button
-                      key="copy"
-                      type="text"
-                      icon={<CopyOutlined />}
-                      size="small"
-                      style={{ color: "rgba(255,255,255,0.6)" }}
-                      onClick={() => handleCopy(item.code)}
-                    />,
-                    <Popconfirm
-                      key="del"
-                      title="Revoke this invite code?"
-                      onConfirm={() =>
-                        revokeMutation.mutate(
-                          {
-                            hubId: hub.metadata.id,
-                            inviteCode: item.code,
-                            idempotencyKey: revokeKeyFor(item.code),
-                          },
-                          { onSuccess: () => revokeKeysRef.current.delete(item.code) },
-                        )
-                      }
-                    >
-                      <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                    </Popconfirm>,
-                  ]
+                  <Button
+                    key="copy"
+                    type="text"
+                    icon={<CopyOutlined />}
+                    size="small"
+                    style={{ color: "rgba(255,255,255,0.6)" }}
+                    onClick={() => handleCopy(item.code)}
+                  />,
+                  <Popconfirm
+                    key="del"
+                    title="Revoke this invite code?"
+                    onConfirm={() =>
+                      revokeMutation.mutate(
+                        {
+                          hubId: hub.metadata.id,
+                          inviteCode: item.code,
+                          idempotencyKey: revokeKeyFor(item.code),
+                        },
+                        { onSuccess: () => revokeKeysRef.current.delete(item.code) },
+                      )
+                    }
+                  >
+                    <Button type="text" danger icon={<DeleteOutlined />} size="small" />
+                  </Popconfirm>,
+                ]
                 : []
             }
           >
@@ -131,7 +130,7 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
                 </div>
               }
               description={
-                <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>
+                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
                   Expires: {item.expiresAt ? new Date(item.expiresAt).toLocaleDateString() : "Never"}
                 </Text>
               }

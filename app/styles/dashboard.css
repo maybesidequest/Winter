@@ -13,7 +13,7 @@
   --dash-coral: #ff8c73;
   --dash-sky: #8fd3ff;
   --dash-danger: #ef4444;
-  --dash-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.75);
+  --dash-shadow: 0 3px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.55);
   --dash-sidebar: 256px;
 }
 
@@ -25,7 +25,7 @@
   --dash-muted: #aaa9b4;
   --dash-border: rgba(255, 255, 255, 0.08);
   --dash-violet-soft: #302b5e;
-  --dash-shadow: 0 4px 0 0 rgba(10, 8, 23, 0.75);
+  --dash-shadow: 0 3px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.55);
 }
 
 .dashboard-root {
@@ -210,6 +210,7 @@
   color: var(--dash-violet);
   box-shadow: 0 4px 0 0 #242633, 0 3px 6px 0 rgba(0, 0, 0, 0.4);
 }
+
 .dashboard-icon-button:active {
   transform: translateY(1px);
   box-shadow: 0 1px 0 0 #242633;
@@ -305,6 +306,48 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+/* Tactile Flat-Depth Cards matching Button & Toggle standard */
+.dashboard-card {
+  --card-edge: rgba(255, 255, 255, 0.08);
+  background: #13141f;
+  border: 1px solid var(--card-edge);
+  border-radius: 16px;
+  box-shadow: 0 3px 0 0 var(--card-edge), 0 8px 24px -4px rgba(0, 0, 0, 0.55);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.dashboard-card--interactive {
+  cursor: pointer;
+}
+
+.dashboard-card--interactive:hover {
+  --card-edge: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 var(--card-edge), 0 12px 32px -4px rgba(0, 0, 0, 0.65);
+}
+
+.dashboard-card--interactive:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 0 var(--card-edge);
+}
+
+/* Sub-card or inner panel within a main dashboard card */
+.dashboard-subcard {
+  --subcard-edge: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--subcard-edge);
+  border-radius: 12px;
+  box-shadow: 0 1.5px 0 0 var(--subcard-edge);
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.dashboard-subcard--interactive:hover {
+  --subcard-edge: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2.5px 0 0 var(--subcard-edge);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .dashboard-button {

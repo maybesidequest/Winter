@@ -1,12 +1,37 @@
+import { DeleteOutlined, EditOutlined, PlusOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Alert, Button, List, message, Modal, Popconfirm, Select, Tag, Typography } from "antd";
 import { useRef, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, Input, InputNumber, List, Modal, Select, Tag, Typography, message, Popconfirm } from "antd";
-import { PlusOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { orpc } from "~/lib/orpc";
-import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
 import type { HubResource } from "~/resources/hub";
+import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
 
 const { Text } = Typography;
+
+export const HUB_ROLE_PERMISSIONS = [
+  { key: "MANAGE_HUB_SETTINGS", label: "Manage Settings", desc: "Edit Hub branding, bio, and modules", bit: 1 },
+  { key: "MODERATE_MESSAGES", label: "Moderate Messages", desc: "Warn members and moderate relayed chat", bit: 2 },
+  { key: "MANAGE_CONNECTIONS", label: "Manage Bridges", desc: "Pause, resume, or disconnect Discord servers", bit: 4 },
+  { key: "MANAGE_MODERATORS", label: "Manage Staff", desc: "Assign or modify roles and team access", bit: 8 },
+  { key: "MANAGE_RULES", label: "Manage Rules", desc: "Create, edit, reorder, and remove hub rules", bit: 16 },
+  { key: "VIEW_ANALYTICS", label: "View Analytics", desc: "View message volume and bridge statistics", bit: 32 },
+  { key: "VIEW_LOGS", label: "View Logs & Audit", desc: "Access audit history and log channels", bit: 64 },
+  { key: "MANAGE_BANS", label: "Manage Bans", desc: "Ban and unban users across connected channels", bit: 128 },
+  { key: "ANNOUNCE", label: "Broadcast Announcements", desc: "Send cross-server announcements", bit: 4096 },
+  { key: "LOCKDOWN_HUB", label: "Lockdown Hub", desc: "Emergency freeze on all bridge message traffic", bit: 8192 },
+  { key: "MANAGE_INVITES", label: "Manage Invites", desc: "Create and revoke server invite codes", bit: 16384 },
+] as const;
+
+function getPermissionLabels(bitmask: number): string[] {
+  if (bitmask === 0) return ["No permissions"];
+  const labels: string[] = [];
+  for (const perm of HUB_ROLE_PERMISSIONS) {
+    if ((bitmask & perm.bit) === perm.bit) {
+      labels.push(perm.label);
+    }
+  }
+  return labels.length > 0 ? labels : [`Bitmask: ${bitmask}`];
+}
 
 interface HubTeamPanelProps {
   hub: HubResource;
@@ -15,14 +40,15 @@ interface HubTeamPanelProps {
 
 export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
   const queryClient = useQueryClient();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [userId, setUserId] = useState("");
-  const [role, setRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+
   const [roleName, setRoleName] = useState("");
-  const [rolePermissions, setRolePermissions] = useState(2);
+  const [roleBitmask, setRoleBitmask] = useState(2);
   const [editingRole, setEditingRole] = useState<(typeof roles)[number] | null>(null);
-  const [editingRoleName, setEditingRoleName] = useState("");
-  const [editingRolePermissions, setEditingRolePermissions] = useState(0);
+
   const assignKeyRef = useRef(crypto.randomUUID());
   const createRoleKeyRef = useRef(crypto.randomUUID());
   const updateRoleKeyRef = useRef(crypto.randomUUID());
@@ -40,7 +66,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     orpc.hub.assignStaffRole.mutationOptions({
       onSuccess: () => {
         message.success("Staff member assigned.");
-        setModalOpen(false);
+        setAssignModalOpen(false);
         setUserId("");
         assignKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listStaff.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
@@ -52,8 +78,10 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
   const createRoleMutation = useMutation(
     orpc.hub.createRole.mutationOptions({
       onSuccess: () => {
-        message.success("Role created.");
+        message.success("Role created successfully.");
+        setRoleModalOpen(false);
         setRoleName("");
+        setRoleBitmask(2);
         createRoleKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
@@ -75,6 +103,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     orpc.hub.updateRole.mutationOptions({
       onSuccess: () => {
         message.success("Role updated.");
+        setRoleModalOpen(false);
         setEditingRole(null);
         updateRoleKeyRef.current = crypto.randomUUID();
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
@@ -103,19 +132,44 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
 
   const handleAssign = () => {
     if (!userId.trim()) return message.error("User ID is required.");
-    // Keep the dashboard assignment equivalent to the Bot's built-in role
-    // templates. The Control Plane remains the authority for final validation.
-    const selected = roles.find((item) => item.spec.name === role);
-    if (!selected) return message.error("Select a valid Hub role.");
+    const found = roles.find((item) => item.spec.name === selectedRole);
+    if (!found) return message.error("Select a valid Hub role.");
     assignMutation.mutate({
       hubId: hub.metadata.id,
       userId: userId.trim(),
-      role,
-      permissionsBitmask: selected.spec.permissionsBitmask,
-      roleId: selected.metadata.id,
+      role: selectedRole,
+      permissionsBitmask: found.spec.permissionsBitmask,
+      roleId: found.metadata.id,
       expectedVersion: hub.version,
       idempotencyKey: assignKeyRef.current,
     });
+  };
+
+  const handleSaveRole = () => {
+    if (!roleName.trim()) return message.error("Role name is required.");
+    if (editingRole) {
+      updateRoleMutation.mutate({
+        hubId: hub.metadata.id,
+        roleId: editingRole.metadata.id,
+        name: roleName.trim(),
+        permissionsBitmask: roleBitmask,
+        position: editingRole.spec.position,
+        expectedVersion: editingRole.version,
+        idempotencyKey: updateRoleKeyRef.current,
+      });
+    } else {
+      createRoleMutation.mutate({
+        hubId: hub.metadata.id,
+        name: roleName.trim(),
+        permissionsBitmask: roleBitmask,
+        position: 0,
+        idempotencyKey: createRoleKeyRef.current,
+      });
+    }
+  };
+
+  const togglePermission = (bit: number) => {
+    setRoleBitmask((prev) => ((prev & bit) === bit ? prev & ~bit : prev | bit));
   };
 
   return (
@@ -123,34 +177,36 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       title={<DashboardSectionTitle>Hub Staff & Roles</DashboardSectionTitle>}
       extra={
         canEdit && !staffError && !rolesError && !rolesLoading && (
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusOutlined />}
-            className="dashboard-btn-primary"
-            onClick={() => {
-              assignKeyRef.current = crypto.randomUUID();
-              setModalOpen(true);
-            }}
-          >
-            Assign Staff
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingRole(null);
+                setRoleName("");
+                setRoleBitmask(2);
+                createRoleKeyRef.current = crypto.randomUUID();
+                setRoleModalOpen(true);
+              }}
+              className="dashboard-btn-secondary px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <SafetyCertificateOutlined />
+              <span>Create Role</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                assignKeyRef.current = crypto.randomUUID();
+                setAssignModalOpen(true);
+              }}
+              className="dashboard-btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <PlusOutlined />
+              <span>Assign Staff</span>
+            </button>
+          </div>
         )
       }
     >
-      {canEdit && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <Input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="New role name" disabled={rolesLoading || rolesError} />
-          <InputNumber min={0} value={rolePermissions} onChange={(value) => setRolePermissions(value ?? 0)} disabled={rolesLoading || rolesError} />
-          <Button
-            onClick={() => createRoleMutation.mutate({ hubId: hub.metadata.id, name: roleName.trim(), permissionsBitmask: rolePermissions, position: 0, idempotencyKey: createRoleKeyRef.current })}
-            loading={createRoleMutation.isPending}
-            disabled={rolesLoading || rolesError || !roleName.trim()}
-          >
-            Create role
-          </Button>
-        </div>
-      )}
       {(staffError || rolesError) && (
         <Alert
           type="error"
@@ -160,77 +216,119 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
           style={{ marginBottom: 16 }}
         />
       )}
-      <List
-        loading={rolesLoading}
-        size="small"
-        dataSource={roles}
-        locale={{ emptyText: "No roles available." }}
-        renderItem={(item) => (
-          <List.Item
-            actions={canEdit && !item.status.protected ? [
-              <Button
-                key="edit-role"
-                type="text"
-                size="small"
-                onClick={() => {
-                  setEditingRole(item);
-                  setEditingRoleName(item.spec.name);
-                  setEditingRolePermissions(item.spec.permissionsBitmask);
-                  updateRoleKeyRef.current = crypto.randomUUID();
-                }}
-              >
-                Edit
-              </Button>,
-              <Popconfirm
-                key="delete-role"
-                title="Delete this role?"
-                onConfirm={() =>
-                  deleteRoleMutation.mutate(
-                    { hubId: hub.metadata.id, roleId: item.metadata.id, expectedVersion: item.version, idempotencyKey: keyFor(deleteRoleKeysRef.current, item.metadata.id) },
-                    { onSuccess: () => deleteRoleKeysRef.current.delete(item.metadata.id) },
-                  )
+
+      {/* Roles Section */}
+      <div className="flex flex-col gap-3 mb-6 pb-6 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-white/90 tracking-wide uppercase">Configured Roles</span>
+          <span className="text-[11px] text-white/60">{roles.length} available</span>
+        </div>
+
+        <List
+          loading={rolesLoading}
+          size="small"
+          dataSource={roles}
+          locale={{ emptyText: <span className="text-xs text-white/60">No roles configured.</span> }}
+          renderItem={(item) => {
+            const grantedLabels = getPermissionLabels(item.spec.permissionsBitmask);
+            return (
+              <List.Item
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+                actions={
+                  canEdit && !item.status.protected
+                    ? [
+                      <Button
+                        key="edit-role"
+                        type="text"
+                        size="small"
+                        icon={<EditOutlined />}
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onClick={() => {
+                          setEditingRole(item);
+                          setRoleName(item.spec.name);
+                          setRoleBitmask(item.spec.permissionsBitmask);
+                          updateRoleKeyRef.current = crypto.randomUUID();
+                          setRoleModalOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>,
+                      <Popconfirm
+                        key="delete-role"
+                        title="Delete this role?"
+                        onConfirm={() =>
+                          deleteRoleMutation.mutate(
+                            {
+                              hubId: hub.metadata.id,
+                              roleId: item.metadata.id,
+                              expectedVersion: item.version,
+                              idempotencyKey: keyFor(deleteRoleKeysRef.current, item.metadata.id),
+                            },
+                            { onSuccess: () => deleteRoleKeysRef.current.delete(item.metadata.id) },
+                          )
+                        }
+                      >
+                        <Button type="text" danger size="small" icon={<DeleteOutlined />}>
+                          Delete
+                        </Button>
+                      </Popconfirm>,
+                    ]
+                    : []
                 }
               >
-                <Button type="text" danger size="small">Delete</Button>
-              </Popconfirm>,
-            ] : []}
-          >
-            <Tag>{item.spec.name}</Tag>
-            <Text type="secondary">{item.spec.permissionsBitmask} · {item.status.memberCount} members</Text>
-          </List.Item>
-        )}
-      />
-      <Modal
-        title="Edit Hub role"
-        open={Boolean(editingRole)}
-        confirmLoading={updateRoleMutation.isPending}
-        onCancel={() => setEditingRole(null)}
-        onOk={() => {
-          if (!editingRole) return;
-          updateRoleMutation.mutate({
-            hubId: hub.metadata.id,
-            roleId: editingRole.metadata.id,
-            name: editingRoleName,
-            permissionsBitmask: editingRolePermissions,
-            position: editingRole.spec.position,
-            expectedVersion: editingRole.version,
-            idempotencyKey: updateRoleKeyRef.current,
-          });
-        }}
-      >
-        <Input value={editingRoleName} onChange={(e) => setEditingRoleName(e.target.value)} />
-        <InputNumber min={0} value={editingRolePermissions} onChange={(value) => setEditingRolePermissions(value ?? 0)} style={{ marginTop: 12, width: "100%" }} />
-      </Modal>
-      <List
-        loading={staffLoading}
-        dataSource={staff}
-        locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.4)" }}>No staff roles assigned.</Text> }}
-        renderItem={(item) => (
-          <List.Item
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-            actions={
-              canEdit && !staffError && !rolesError
-                ? [
+                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-4">
+                  <div className="flex items-center gap-2">
+                    <Tag color="purple" style={{ margin: 0, fontWeight: 600 }}>
+                      {item.spec.name}
+                    </Tag>
+                    {item.status.protected && (
+                      <span className="text-[10px] text-amber-300/80 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-medium">
+                        System Protected
+                      </span>
+                    )}
+                    <span className="text-xs text-white/60">
+                      · {item.status.memberCount} {item.status.memberCount === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {grantedLabels.slice(0, 4).map((label) => (
+                      <span
+                        key={label}
+                        className="text-[10px] bg-white/[0.04] text-white/70 px-2 py-0.5 rounded-md border border-white/[0.04]"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                    {grantedLabels.length > 4 && (
+                      <span className="text-[10px] text-white/50 bg-white/[0.02] px-1.5 py-0.5 rounded">
+                        +{grantedLabels.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </List.Item>
+            );
+          }}
+        />
+      </div>
+
+      {/* Staff Assignments Section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-white/90 tracking-wide uppercase">Staff Assignments</span>
+          <span className="text-[11px] text-white/60">{staff.length} active</span>
+        </div>
+
+        <List
+          loading={staffLoading}
+          dataSource={staff}
+          locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.6)" }}>No staff roles assigned.</Text> }}
+          renderItem={(item) => (
+            <List.Item
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+              actions={
+                canEdit && !staffError && !rolesError
+                  ? [
                     <Popconfirm
                       key="del"
                       title="Remove this staff member?"
@@ -249,63 +347,119 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                       <Button type="text" danger icon={<DeleteOutlined />} size="small" />
                     </Popconfirm>,
                   ]
-                : []
-            }
-          >
-            <List.Item.Meta
-              avatar={<UserOutlined style={{ color: "#a897ea", fontSize: 20, marginTop: 4 }} />}
-              title={
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
-                    User ID: {item.metadata.userId}
+                  : []
+              }
+            >
+              <List.Item.Meta
+                avatar={<UserOutlined style={{ color: "#a897ea", fontSize: 20, marginTop: 4 }} />}
+                title={
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
+                      User ID: {item.metadata.userId}
+                    </Text>
+                    <Tag color={item.spec.role === "OWNER" ? "gold" : item.spec.role === "MANAGER" ? "purple" : "cyan"}>
+                      {item.spec.role}
+                    </Tag>
+                  </div>
+                }
+                description={
+                  <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
+                    Assigned by {item.spec.assignedBy || "System"}
                   </Text>
-                  <Tag color={item.spec.role === "OWNER" ? "gold" : (item.spec.role === "MANAGER" ? "purple" : "cyan")}>
-                    {item.spec.role}
-                  </Tag>
-                </div>
-              }
-              description={
-                <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>
-                  Assigned by {item.spec.assignedBy || "System"}
-                </Text>
-              }
-            />
-          </List.Item>
-        )}
-      />
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
 
+      {/* Role Creation / Editing Modal with Permissions Matrix */}
+      <Modal
+        title={editingRole ? `Edit Role: ${editingRole.spec.name}` : "Create Hub Role"}
+        open={roleModalOpen}
+        confirmLoading={createRoleMutation.isPending || updateRoleMutation.isPending}
+        onCancel={() => setRoleModalOpen(false)}
+        onOk={handleSaveRole}
+        okText={editingRole ? "Save Role" : "Create Role"}
+        width={560}
+      >
+        <div className="flex flex-col gap-4 mt-4 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-white/90">Role Name</label>
+            <input
+              type="text"
+              value={roleName}
+              onChange={(e) => setRoleName(e.target.value)}
+              placeholder="e.g. Moderator, Assistant, Community Lead"
+              className="dashboard-input text-xs"
+              maxLength={64}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-white/90">Role Permissions</label>
+              <span className="text-[11px] text-violet-300 font-mono">Bitmask: {roleBitmask}</span>
+            </div>
+            <p className="text-[11px] text-white/60 m-0">
+              Select the capabilities granted to members assigned this role.
+            </p>
+
+            <div className="flex flex-col divide-y divide-white/[0.06] rounded-xl border border-white/[0.08] bg-white/[0.02] p-1 mt-1">
+              {HUB_ROLE_PERMISSIONS.map((perm) => {
+                const checked = (roleBitmask & perm.bit) === perm.bit;
+                return (
+                  <label
+                    key={perm.key}
+                    className="flex items-center justify-between p-2.5 hover:bg-white/[0.04] rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex flex-col gap-0.5 pr-3">
+                      <span className="text-xs font-semibold text-white/90">{perm.label}</span>
+                      <span className="text-[11px] text-white/60">{perm.desc}</span>
+                    </div>
+                    <DepthToggle
+                      checked={checked}
+                      onChange={() => togglePermission(perm.bit)}
+                      aria-label={perm.label}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Staff Assignment Modal */}
       <Modal
         title="Assign Hub Staff Role"
-        open={modalOpen}
+        open={assignModalOpen}
         onOk={handleAssign}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => setAssignModalOpen(false)}
         confirmLoading={assignMutation.isPending}
-        okText="Assign"
+        okText="Assign Member"
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
-          <div>
-            <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
-              Discord User ID
-            </Text>
-            <Input
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-white/90">Discord User ID</label>
+            <input
+              type="text"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               placeholder="e.g. 123456789012345678"
+              className="dashboard-input text-xs"
             />
+            <span className="text-[11px] text-white/60">Enter the member's numeric Discord snowflake ID.</span>
           </div>
-          <div>
-            <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
-              Role Tier
-            </Text>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-white/90">Role</label>
             <Select
-              value={role || undefined}
-              onChange={setRole}
-              placeholder="Select a Hub role"
+              value={selectedRole || undefined}
+              onChange={setSelectedRole}
+              placeholder="Select a role"
               disabled={rolesLoading || rolesError || roles.length === 0}
               style={{ width: "100%" }}
-              options={[
-                ...roles.map((item) => ({ label: item.spec.name, value: item.spec.name })),
-              ]}
+              options={roles.map((item) => ({ label: item.spec.name, value: item.spec.name }))}
             />
           </div>
         </div>

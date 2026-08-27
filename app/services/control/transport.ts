@@ -3,19 +3,19 @@ import * as protoLoader from "@grpc/proto-loader";
 import { readFileSync } from "node:fs";
 import { CONTROL_DESCRIPTOR_BASE64 } from "~/generated/control/v1/controlDescriptor";
 
-import type { ProtoGrpcType as HubProto } from "~/generated/control/v1/hub_service";
-import type { ProtoGrpcType as ServerProto } from "~/generated/control/v1/server_service";
 import type { ProtoGrpcType as ConnectionProto } from "~/generated/control/v1/connection_service";
-import type { ProtoGrpcType as UserProto } from "~/generated/control/v1/user_service";
+import type { ProtoGrpcType as HubProto } from "~/generated/control/v1/hub_service";
 import type { ProtoGrpcType as ModerationProto } from "~/generated/control/v1/moderation_service";
+import type { ProtoGrpcType as ServerProto } from "~/generated/control/v1/server_service";
+import type { ProtoGrpcType as UserProto } from "~/generated/control/v1/user_service";
 
-import type { HubServiceClient } from "~/generated/control/v1/interchat/control/v1/HubService";
+import type { ActorType as GeneratedActorType } from "~/generated/control/v1/interchat/control/v1/ActorType";
 import type { ConnectionServiceClient } from "~/generated/control/v1/interchat/control/v1/ConnectionService";
-import type { ServerServiceClient } from "~/generated/control/v1/interchat/control/v1/ServerService";
-import type { UserServiceClient } from "~/generated/control/v1/interchat/control/v1/UserService";
+import type { HubServiceClient } from "~/generated/control/v1/interchat/control/v1/HubService";
 import type { ModerationServiceClient } from "~/generated/control/v1/interchat/control/v1/ModerationService";
 import type { RequestContext as GeneratedRequestContext } from "~/generated/control/v1/interchat/control/v1/RequestContext";
-import type { ActorType as GeneratedActorType } from "~/generated/control/v1/interchat/control/v1/ActorType";
+import type { ServerServiceClient } from "~/generated/control/v1/interchat/control/v1/ServerService";
+import type { UserServiceClient } from "~/generated/control/v1/interchat/control/v1/UserService";
 
 export type ControlGrpcPackage = HubProto["interchat"]["control"]["v1"] &
   ServerProto["interchat"]["control"]["v1"] &
@@ -167,7 +167,26 @@ export function deepToSnakeCase<T = unknown>(obj: unknown): T {
 
 export function deepToCamelCase<T = unknown>(obj: unknown): T {
   if (obj === null || typeof obj !== "object") return obj as T;
-  if (Array.isArray(obj)) return obj.map(deepToCamelCase) as unknown as T;
+  if (Array.isArray(obj)) {
+    if (
+      obj.length > 0 &&
+      obj.every(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          "key" in item &&
+          "value" in item &&
+          Object.keys(item).length === 2,
+      )
+    ) {
+      const mapResult: Record<string, unknown> = {};
+      for (const entry of obj) {
+        mapResult[entry.key] = deepToCamelCase(entry.value);
+      }
+      return mapResult as T;
+    }
+    return obj.map(deepToCamelCase) as unknown as T;
+  }
   if (obj instanceof Date || obj instanceof Uint8Array || Buffer.isBuffer(obj)) return obj as unknown as T;
 
   const result: Record<string, unknown> = {};

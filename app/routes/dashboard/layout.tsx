@@ -21,6 +21,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { user, capabilities };
 }
 
+export function shouldRevalidate() {
+  return false;
+}
+
 export default function DashboardLayout() {
   const { user, capabilities } = useLoaderData<typeof loader>();
   const location = useLocation();

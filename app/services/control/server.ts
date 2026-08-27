@@ -54,6 +54,7 @@ function toServer(value: Server__Output): ServerResource {
       botInstalled: value.status.botInstalled,
       manageable: value.status.botInstalled,
       botPermissions: Number(value.status.botPermissions || 0),
+      connectionCount: Number(value.status.connectionCount || 0),
     },
     version: value.version,
   };
