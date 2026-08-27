@@ -1,18 +1,18 @@
 import { ORPCError } from "@orpc/server";
-import { base, protectedBase } from "../context";
-import { serverService } from "~/services/server.server";
 import { redis } from "~/redis.server";
 import { requireCapability } from "~/rpc/capabilityGuard";
 import {
   addBlockSchema,
+  bridgeActionSchema,
   listServersSchema,
   patchCallConfigSchema,
   patchPrefixSchema,
   removeBlockSchema,
   serverIdSchema,
   toggleBridgeSchema,
-  bridgeActionSchema,
 } from "~/schemas/server";
+import { serverService } from "~/services/server.server";
+import { base, protectedBase } from "../context";
 
 export const serverRouter = base.router({
   list: protectedBase
@@ -49,7 +49,7 @@ export const serverRouter = base.router({
     .handler(({ input, context }) => {
       requireCapability("SERVER_CONFIG");
       return serverService.updateCallConfig(context.user.id, input);
-  }),
+    }),
   patchPrefix: protectedBase
     .input(patchPrefixSchema)
     .handler(({ input, context }) => {

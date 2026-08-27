@@ -5,9 +5,9 @@ import type {
   ServerBridgeResource,
   ServerResource,
 } from "~/resources/server";
-import { getDiscordAccessToken } from "~/services/oauthToken.server";
 import type { AddBlockInput, PatchCallConfigInput, PatchPrefixInput, RemoveBlockInput } from "~/schemas/server";
-import { controlServerService, controlConnectionService, controlHubService } from "~/services/control.server";
+import { controlConnectionService, controlHubService, controlServerService } from "~/services/control.server";
+import { getDiscordAccessToken } from "~/services/oauthToken.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;

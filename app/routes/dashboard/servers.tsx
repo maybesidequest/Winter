@@ -1,16 +1,16 @@
 import {
-  SafetyCertificateOutlined,
   ArrowRightOutlined,
   ExclamationCircleOutlined,
   ReloadOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { Link } from "react-router";
 import { message } from "antd";
-import { orpc } from "~/lib/orpc";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { orpc } from "~/lib/orpc";
 
 export default function ServersPage() {
   const queryClient = useQueryClient();
@@ -60,8 +60,8 @@ export default function ServersPage() {
               {isRefreshing
                 ? "Refreshing..."
                 : cooldown > 0
-                ? `Refresh in ${cooldown}s`
-                : "Refresh servers"}
+                  ? `Refresh in ${cooldown}s`
+                  : "Refresh servers"}
             </span>
           </button>
         }
@@ -137,16 +137,14 @@ export default function ServersPage() {
                     {/* Status Badge */}
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                          isInstalled
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${isInstalled
                             ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
                             : "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            isInstalled ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" : "bg-amber-400"
-                          }`}
+                          className={`w-1.5 h-1.5 rounded-full ${isInstalled ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" : "bg-amber-400"
+                            }`}
                         />
                         {isInstalled ? "Ready" : "Install required"}
                       </span>

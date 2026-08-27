@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
-import { Outlet, useLocation, useLoaderData, useNavigate } from "react-router";
-import type { Route } from "./+types/layout";
-import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
-import { ConfigProvider, theme } from "antd";
+import { CloseOutlined, MenuOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { orpc } from "~/lib/orpc";
+import { ConfigProvider, theme } from "antd";
+import { useEffect, useState } from "react";
+import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router";
+import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
-import { CreateHubWizard } from "~/components/CreateHubWizard";
+import { orpc } from "~/lib/orpc";
 import { requireUser } from "~/services/auth.server";
 import { CONTROL_CAPABILITIES, isCapabilityEnabled } from "~/services/capabilities.server";
 import "~/styles/dashboard.css";
+import type { Route } from "./+types/layout";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await requireUser(request);
