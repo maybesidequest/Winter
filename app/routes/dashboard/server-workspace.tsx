@@ -1,28 +1,22 @@
-import type { ReactNode } from "react";
-import { useLoaderData, useOutletContext, useParams, Link } from "react-router";
-import type { Route } from "./+types/server-workspace";
 import {
-  CloudServerOutlined,
-  ThunderboltOutlined,
   ApartmentOutlined,
+  CloudServerOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
+import type { ReactNode } from "react";
+import { Link, useLoaderData, useOutletContext, useParams } from "react-router";
 import { PageHeader } from "~/components/dashboard/PageHeader";
-import { requireUser } from "~/services/auth.server";
-import { serverService } from "~/services/server.server";
-import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
-import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCallSettingsCard";
-import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
+import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
+import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCallSettingsCard";
+import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
 import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
+import { requireUser } from "~/services/auth.server";
 import { isCapabilityEnabled } from "~/services/capabilities.server";
-import type {
-  DiscordChannelResource,
-  ServerBlockResource,
-  ServerBridgeResource,
-  ServerResource,
-} from "~/resources/server";
+import { serverService } from "~/services/server.server";
+import type { Route } from "./+types/server-workspace";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
@@ -52,9 +46,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   };
 }
 
-const VISIBLE_SERVER_VIEWS = new Set(["overview", "bridges", "safety", "settings"]);
+const VISIBLE_SERVER_VIEWS = new Set(["overview", "bridges", "calls", "safety", "settings"]);
 const VIEW_CAPABILITIES: Record<string, string> = {
   bridges: "CONNECTIONS",
+  calls: "SERVER_CONFIG",
   safety: "SERVER_BLOCKLIST",
   settings: "SERVER_CONFIG",
 };

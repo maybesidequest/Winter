@@ -38,13 +38,13 @@ export function ServerSidebarTabs({ serverId, server, onNavigate, capabilities }
       path: "calls",
       label: "Calls",
       icon: <ThunderboltOutlined />,
-      visible: false,
+      visible: enabled("SERVER_CONFIG"),
     },
     {
       path: "safety",
       label: "Blocklist",
       icon: <SafetyCertificateOutlined />,
-      visible: enabled("SERVER_CONFIG"),
+      visible: enabled("SERVER_BLOCKLIST"),
     },
     {
       path: "settings",
