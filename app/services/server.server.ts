@@ -73,7 +73,7 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
     (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
   );
 
-  await redis.set(cacheKey, JSON.stringify(manageable), "EX", 120);
+  await redis.set(cacheKey, JSON.stringify(manageable), "EX", 600);
   return manageable;
 }
 

@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const listServersSchema = z
+  .object({
+    forceRefresh: z.boolean().optional(),
+  })
+  .optional();
+export type ListServersInput = z.infer<typeof listServersSchema>;
+
 export const serverIdSchema = z.object({ serverId: z.string().min(1) });
 export const patchCallConfigSchema = serverIdSchema.extend({
   pingOnMatch: z.boolean(),

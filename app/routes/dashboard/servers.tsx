@@ -2,15 +2,45 @@ import {
   SafetyCertificateOutlined,
   ArrowRightOutlined,
   ExclamationCircleOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
+import { message } from "antd";
 import { orpc } from "~/lib/orpc";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 
 export default function ServersPage() {
+  const queryClient = useQueryClient();
   const { data: servers = [], isLoading, isError } = useQuery(orpc.server.list.queryOptions());
+  const [cooldown, setCooldown] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
+  const handleRefresh = async () => {
+    if (cooldown > 0 || isRefreshing) return;
+    setIsRefreshing(true);
+    setCooldown(5);
+    try {
+      const fresh = await queryClient.fetchQuery(
+        orpc.server.list.queryOptions({ input: { forceRefresh: true } })
+      );
+      queryClient.setQueryData(orpc.server.list.queryOptions().queryKey, fresh);
+      message.success("Server list refreshed from Discord.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to refresh servers from Discord.";
+      message.error(msg);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
@@ -18,6 +48,23 @@ export default function ServersPage() {
         eyebrow="Places"
         title="Discord servers"
         description="Manage InterChat text Call behavior for servers where you have Discord Manage Server permission."
+        actions={
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={cooldown > 0 || isRefreshing}
+            className="dashboard-btn-secondary flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
+          >
+            <ReloadOutlined className={isRefreshing ? "animate-spin text-purple-400" : "text-white/70"} />
+            <span>
+              {isRefreshing
+                ? "Refreshing..."
+                : cooldown > 0
+                ? `Refresh in ${cooldown}s`
+                : "Refresh servers"}
+            </span>
+          </button>
+        }
       />
 
       {isError && (

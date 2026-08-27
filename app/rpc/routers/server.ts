@@ -1,8 +1,11 @@
+import { ORPCError } from "@orpc/server";
 import { base, protectedBase } from "../context";
 import { serverService } from "~/services/server.server";
+import { redis } from "~/redis.server";
 import { requireCapability } from "~/rpc/capabilityGuard";
 import {
   addBlockSchema,
+  listServersSchema,
   patchCallConfigSchema,
   patchPrefixSchema,
   removeBlockSchema,
@@ -12,10 +15,23 @@ import {
 } from "~/schemas/server";
 
 export const serverRouter = base.router({
-  list: protectedBase.handler(({ context }) => {
-    requireCapability("SERVER_CONFIG");
-    return serverService.list(context.user.id);
-  }),
+  list: protectedBase
+    .input(listServersSchema)
+    .handler(async ({ input, context }) => {
+      requireCapability("SERVER_CONFIG");
+      const forceRefresh = Boolean(input?.forceRefresh);
+      if (forceRefresh) {
+        const rateLimitKey = `ratelimit:server_refresh:${context.user.id}`;
+        const isLimited = await redis.get(rateLimitKey);
+        if (isLimited) {
+          throw new ORPCError("TOO_MANY_REQUESTS", {
+            message: "Please wait 5 seconds before refreshing servers again.",
+          });
+        }
+        await redis.set(rateLimitKey, "1", "EX", 5);
+      }
+      return serverService.list(context.user.id, forceRefresh);
+    }),
   get: protectedBase
     .input(serverIdSchema)
     .handler(({ input, context }) => {
