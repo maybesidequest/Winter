@@ -1,6 +1,17 @@
 import type { HubConnectionResource } from "~/resources/connection";
 import { controlConnectionService } from "~/services/control.server";
 
+function safeControlError(error: unknown, fallback: string): string {
+  const code = typeof error === "object" && error && "code" in error
+    ? Number((error as { code: unknown }).code)
+    : undefined;
+  if (code === 5) return "This connection is no longer available.";
+  if (code === 7 || code === 16) return "You do not have permission to manage this connection.";
+  if (code === 6 || code === 9 || code === 10) return "This connection changed while you were editing it. Refresh and try again.";
+  if (code === 4 || code === 14) return "Connection management is temporarily unavailable. Try again shortly.";
+  return fallback;
+}
+
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
     const connections = await controlConnectionService.getConnections({
@@ -45,8 +56,7 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to toggle connection via control plane", error);
-      const msg = error instanceof Error ? error.message : "Failed to toggle connection.";
-      return { success: false, error: msg };
+      return { success: false, error: safeControlError(error, "This connection could not be updated.") };
     }
   },
 
@@ -60,8 +70,7 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to disconnect connection via control plane", error);
-      const msg = error instanceof Error ? error.message : "Failed to disconnect connection.";
-      return { success: false, error: msg };
+      return { success: false, error: safeControlError(error, "This connection could not be disconnected.") };
     }
   },
 
@@ -87,8 +96,7 @@ export const connectionService = {
       return { success: true, hubId };
     } catch (error: unknown) {
       console.error("Failed to create connection via control plane", error);
-      const msg = error instanceof Error ? error.message : "Failed to create connection.";
-      return { success: false, error: msg };
+      return { success: false, error: safeControlError(error, "This connection could not be created.") };
     }
   },
 };
