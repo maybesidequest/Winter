@@ -3,6 +3,7 @@ import { sessionStorage } from "./session.server";
 import { DiscordStrategy } from "./discordStrategy.server";
 import { permissionService } from "./permission.server";
 import { saveDiscordTokens } from "./oauthToken.server";
+import { userService } from "./control/user";
 
 export interface User {
   id: string;
@@ -29,14 +30,27 @@ authenticator.use(
       scope: ["identify", "guilds"],
     },
     async ({ profile, tokens }) => {
+      const username = profile.global_name || profile.username;
+      const avatarUrl = profile.avatar
+        ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
+        : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+      // Keep the authoritative User row in sync before issuing a session. This
+      // is required for FK-backed Control Plane mutations (for example Hub
+      // creation) and keeps Winter's isolated token store separate from the
+      // management database.
+      await userService.syncDiscordIdentity({
+        discordUserId: profile.id,
+        username,
+        displayName: username,
+        avatarUrl,
+      });
       await saveDiscordTokens(profile.id, tokens);
 
       return {
         id: profile.id,
-        username: profile.global_name || profile.username,
-        avatarUrl: profile.avatar
-          ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
-          : "https://cdn.discordapp.com/embed/avatars/0.png",
+        username,
+        avatarUrl,
       };
     }
   )
@@ -59,4 +73,3 @@ export async function requireStaff(request: Request): Promise<User> {
   }
   return user;
 }
-
