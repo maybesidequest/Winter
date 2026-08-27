@@ -192,7 +192,12 @@ export const serverService = {
     await assertManageable(userId, serverId, true);
     const token = await getDiscordAccessToken(userId);
     const response = await discordFetch(`/guilds/${serverId}/channels`, `Bearer ${token}`);
-    if (!response.ok) return [];
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Discord authorization expired or lacks access to this server.");
+      }
+      throw new Error("Discord channels could not be loaded. Please try again shortly.");
+    }
     const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
     return channels
       .filter((channel) => channel.type === 0 || channel.type === 5)
