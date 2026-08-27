@@ -288,8 +288,21 @@ export const userService = {
     recordedAt?: string;
   }> {
     const clients = getServiceClients();
+    const payloadBytes = new Uint8Array(input.rawPayload);
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      payloadBytes.buffer as ArrayBuffer,
+    );
+    const payloadHash = Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
     const response = await invokeUnary<RecordVoteRequest, RecordVoteResponse__Output>(clients.userClient.RecordVote.bind(clients.userClient), {
-      context: makeRequestContext("interchat-winter-webhook"),
+      context: makeRequestContext(
+        "interchat-winter-webhook",
+        true,
+        `vote:${input.provider}:${payloadHash}`,
+        "ACTOR_TYPE_SERVICE",
+      ),
       provider: `VOTE_PROVIDER_${input.provider.replace(/^VOTE_PROVIDER_/, "")}` as VoteProvider,
       rawPayload: input.rawPayload,
       signature: input.signature,
