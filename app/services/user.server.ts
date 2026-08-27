@@ -3,13 +3,11 @@ import { permissionService } from "~/services/permission.server";
 import { controlUserService, type UserProfile, type UserPreferences, type UserActivity, type UserLeaderboard } from "~/services/control.server";
 import type {
   UserResource,
-  UserCallRecord,
   SupportedLocale,
 } from "~/resources/user";
 import type {
   PatchUserPreferencesInput,
   PatchDashboardPreferencesInput,
-  UserCallHistoryQueryInput,
 } from "~/schemas/user";
 
 export const SUPPORTED_LOCALES: SupportedLocale[] = [
@@ -170,14 +168,6 @@ export const userService = {
   ): Promise<{ success: boolean }> {
     return this.updateDashboardPreference(userId, input);
   },
-
-  async getCallHistory(
-    userId: string,
-    options: UserCallHistoryQueryInput
-  ): Promise<UserCallRecord[]> {
-    return [];
-  },
-
 
   getSupportedLocales(): SupportedLocale[] {
     return SUPPORTED_LOCALES;

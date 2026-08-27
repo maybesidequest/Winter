@@ -5,7 +5,6 @@ import { requireCapability } from "~/rpc/capabilityGuard";
 import {
   patchUserPreferencesSchema,
   patchDashboardPreferencesSchema,
-  userCallHistoryQuerySchema,
 } from "../../schemas/user";
 
 export const userRouter = base.router({
@@ -76,12 +75,6 @@ export const userRouter = base.router({
     .input(patchDashboardPreferencesSchema)
     .handler(async ({ input, context }) => {
       return userService.patchDashboardPreferences(context.user.id, input);
-    }),
-
-  callHistory: protectedBase
-    .input(userCallHistoryQuerySchema)
-    .handler(async ({ input, context }) => {
-      return userService.getCallHistory(context.user.id, input);
     }),
 
   locales: base.handler(async () => {
