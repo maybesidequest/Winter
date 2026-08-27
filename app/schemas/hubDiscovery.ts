@@ -20,6 +20,9 @@ export const hubDiscoveryQuerySchema = z.object({
   region: z.string().optional(),
   nsfw: z.boolean().default(false),
   page: z.number().int().min(1).default(1),
+  // Control Plane uses keyset cursors. The service also accepts page for
+  // backwards compatibility with the existing dashboard URL.
+  cursor: z.string().optional(),
   limit: z.number().int().min(1).max(50).default(24),
 });
 

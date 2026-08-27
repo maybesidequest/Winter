@@ -58,5 +58,6 @@ export type HubSearchResult = {
     limit: number;
     totalItems: number;
     totalPages: number;
+    nextCursor?: string;
   };
 };

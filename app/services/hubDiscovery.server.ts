@@ -77,6 +77,7 @@ export const hubDiscoveryService = {
       region,
       nsfw = false,
       page = 1,
+      cursor: requestedCursor,
       limit = 24,
     } = input;
 
@@ -89,7 +90,7 @@ export const hubDiscoveryService = {
       newest: "HUB_SEARCH_SORT_NEWEST",
     };
 
-    const res = await controlHubService.searchHubs({
+    const searchPage = (cursor?: string) => controlHubService.searchHubs({
       query: search,
       sort: sortMap[sort] || "HUB_SEARCH_SORT_TRENDING",
       tags,
@@ -97,8 +98,17 @@ export const hubDiscoveryService = {
       region: region !== "ALL" ? region : undefined,
       nsfwFilter: (nsfw ? "NSFW_FILTER_ALL" : "NSFW_FILTER_SFW_ONLY") as NsfwFilter,
       limit,
+      cursor,
       actorId: userId,
     });
+
+    // Page-number links predate the cursor-based Control API. Walk the
+    // cursor chain for those links so page 2+ never repeats page 1. New
+    // callers can pass the returned nextCursor directly.
+    let res = await searchPage(requestedCursor);
+    for (let currentPage = 1; currentPage < page && res.nextCursor; currentPage += 1) {
+      res = await searchPage(res.nextCursor);
+    }
 
     const items = (res.hubs || []).map(directoryHubToResource);
 
@@ -111,6 +121,7 @@ export const hubDiscoveryService = {
         limit,
         totalItems,
         totalPages: Math.ceil(totalItems / limit) || 1,
+        nextCursor: res.nextCursor || undefined,
       },
     };
   },
