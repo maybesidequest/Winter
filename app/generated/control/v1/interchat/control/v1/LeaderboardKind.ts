@@ -6,6 +6,7 @@ export const LeaderboardKind = {
   LEADERBOARD_KIND_CALLS: 'LEADERBOARD_KIND_CALLS',
   LEADERBOARD_KIND_VOTES: 'LEADERBOARD_KIND_VOTES',
   LEADERBOARD_KIND_STREAKS: 'LEADERBOARD_KIND_STREAKS',
+  LEADERBOARD_KIND_SERVERS: 'LEADERBOARD_KIND_SERVERS',
 } as const;
 
 export type LeaderboardKind =
@@ -19,5 +20,7 @@ export type LeaderboardKind =
   | 3
   | 'LEADERBOARD_KIND_STREAKS'
   | 4
+  | 'LEADERBOARD_KIND_SERVERS'
+  | 5
 
 export type LeaderboardKind__Output = typeof LeaderboardKind[keyof typeof LeaderboardKind]
