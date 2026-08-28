@@ -73,16 +73,20 @@ export const hubFeaturesService = {
     return controlHubService.listAnnouncements(hubId, userId);
   },
 
-  async createAnnouncement(userId: string, input: { hubId: string; content: string; idempotencyKey: string }) {
+  async createAnnouncement(userId: string, input: { hubId: string; content: string; idempotencyKey: string; title?: string; scheduledFor?: string; repeatIntervalSeconds?: number; timeZone?: string; desiredState?: "DRAFT" | "SCHEDULED" | "PAUSED" }) {
     return controlHubService.createAnnouncement({ ...input, actorId: userId });
   },
 
-  async updateAnnouncement(userId: string, input: { hubId: string; announcementId: string; content: string; idempotencyKey: string }) {
+  async updateAnnouncement(userId: string, input: { hubId: string; announcementId: string; content: string; idempotencyKey: string; expectedVersion: number; title?: string; scheduledFor?: string; repeatIntervalSeconds?: number; timeZone?: string; desiredState?: "DRAFT" | "SCHEDULED" | "PAUSED" }) {
     return controlHubService.updateAnnouncement({ ...input, actorId: userId });
   },
 
-  async deleteAnnouncement(userId: string, input: { hubId: string; announcementId: string; idempotencyKey: string }) {
+  async deleteAnnouncement(userId: string, input: { hubId: string; announcementId: string; idempotencyKey: string; expectedVersion: number }) {
     return controlHubService.deleteAnnouncement({ ...input, actorId: userId });
+  },
+
+  async transitionAnnouncement(userId: string, input: { hubId: string; announcementId: string; desiredState: "DRAFT" | "SCHEDULED" | "PAUSED"; expectedVersion: number; idempotencyKey: string }) {
+    return controlHubService.transitionAnnouncement({ ...input, actorId: userId });
   },
 
   async listStaff(userId: string, hubId: string) {

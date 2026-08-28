@@ -117,20 +117,40 @@ export const revokeHubInviteSchema = z.object({
 
 export const createHubAnnouncementSchema = z.object({
   hubId: z.string(),
-  content: z.string().min(1, "Content is required").max(2000),
+  content: z.string().trim().min(3, "Content must be at least 3 characters").max(2000),
+  title: z.string().trim().min(1).max(200).default("Announcement"),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
+  repeatIntervalSeconds: z.number().int().min(0).max(31_536_000).default(0),
+  timeZone: z.string().min(1).max(64).default("UTC"),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]).default("DRAFT"),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const updateHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
-  content: z.string().min(1, "Content is required").max(2000),
+  content: z.string().trim().min(3, "Content must be at least 3 characters").max(2000),
+  title: z.string().trim().min(1).max(200).optional(),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
+  repeatIntervalSeconds: z.number().int().min(0).max(31_536_000).optional(),
+  timeZone: z.string().min(1).max(64).optional(),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]).optional(),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
+  expectedVersion: z.number().int().positive(),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
+});
+
+export const transitionHubAnnouncementSchema = z.object({
+  hubId: z.string(),
+  announcementId: z.string(),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
