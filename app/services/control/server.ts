@@ -3,8 +3,11 @@ import type { Server__Output } from "~/generated/control/v1/interchat/control/v1
 import type { BatchGetServersResponse__Output } from "~/generated/control/v1/interchat/control/v1/BatchGetServersResponse";
 import type { ServerBlock__Output } from "~/generated/control/v1/interchat/control/v1/ServerBlock";
 import type { BlocklistResponse__Output } from "~/generated/control/v1/interchat/control/v1/BlocklistResponse";
+import type { ConnectableChannel__Output } from "~/generated/control/v1/interchat/control/v1/ConnectableChannel";
 import type { GetServerRequest } from "~/generated/control/v1/interchat/control/v1/GetServerRequest";
 import type { BatchGetServersRequest } from "~/generated/control/v1/interchat/control/v1/BatchGetServersRequest";
+import type { ListConnectableChannelsRequest } from "~/generated/control/v1/interchat/control/v1/ListConnectableChannelsRequest";
+import type { ListConnectableChannelsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListConnectableChannelsResponse";
 import type { PatchServerConfigRequest } from "~/generated/control/v1/interchat/control/v1/PatchServerConfigRequest";
 import type { GetBlocklistRequest } from "~/generated/control/v1/interchat/control/v1/GetBlocklistRequest";
 import type { AddBlockRequest } from "~/generated/control/v1/interchat/control/v1/AddBlockRequest";
@@ -40,7 +43,12 @@ function timestamp(value: { seconds?: number; nanos?: number } | null | undefine
 function toServer(value: Server__Output): ServerResource {
   if (!value.metadata || !value.spec || !value.status) throw new Error("Control Plane returned an incomplete Server resource.");
   return {
-    metadata: { id: value.metadata.id, name: value.metadata.name, iconUrl: value.metadata.iconUrl || null },
+    metadata: {
+      id: value.metadata.id,
+      name: value.metadata.name,
+      iconUrl: value.metadata.iconUrl || null,
+      ownerId: value.metadata.ownerId,
+    },
     spec: {
       prefix: value.spec.prefix || null,
       hideServerName: false,
@@ -55,6 +63,7 @@ function toServer(value: Server__Output): ServerResource {
       manageable: value.status.botInstalled,
       botPermissions: Number(value.status.botPermissions || 0),
       connectionCount: Number(value.status.connectionCount || 0),
+      activeCall: value.status.activeCall,
     },
     version: value.version,
   };
@@ -98,6 +107,18 @@ export const serverService = {
       servers: res.servers.map(toServer),
       missingServerIds: res.missingServerIds,
     };
+  },
+
+  async listConnectableChannels(serverId: string, actorId: string): Promise<ConnectableChannel__Output[]> {
+    const clients = getServiceClients();
+    const response = await invokeUnary<ListConnectableChannelsRequest, ListConnectableChannelsResponse__Output>(
+      clients.serverClient.ListConnectableChannels.bind(clients.serverClient),
+      {
+        context: makeRequestContext(actorId),
+        serverId,
+      },
+    );
+    return response.channels;
   },
 
 

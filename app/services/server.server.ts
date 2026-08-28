@@ -128,6 +128,7 @@ export const serverService = {
       }
     } catch (err) {
       console.warn(`[serverService.list] Failed to batch get servers for user ${userId}:`, err);
+      throw new Error("Server configuration is temporarily unavailable. Please try again shortly.", { cause: err });
     }
 
     const result: ServerResource[] = guilds.map((guild) => {
@@ -206,6 +207,7 @@ export const serverService = {
     } catch (error) {
       if (!isControlNotFound(error)) {
         console.warn(`[serverService.get] Control Plane failed for server ${serverId}:`, error);
+        throw new Error("Server configuration is temporarily unavailable. Please try again shortly.", { cause: error });
       }
       return {
         metadata: {
@@ -232,13 +234,6 @@ export const serverService = {
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
     await assertManageable(userId, serverId, false);
-    const botToken = process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN;
-    if (!botToken) {
-      // In environments without a Discord bot token configured, user tokens cannot
-      // query guild channels. Degrade gracefully immediately without waiting on Discord.
-      return [];
-    }
-
     const cacheKey = `discord:channels:${serverId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
@@ -247,22 +242,16 @@ export const serverService = {
       } catch { }
     }
 
-    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bot ${botToken}`);
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "");
-      console.warn(`[channels] Discord channel fetch failed for server ${serverId}: HTTP ${response.status}`, errorText);
-      if (response.status === 401 || response.status === 403) {
-        return [];
-      }
-      throw new Error("Discord channels could not be loaded. Please try again shortly.");
-    }
-    const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
-    const result = channels
-      .filter((channel) => channel.type === 0 || channel.type === 5)
-      // Discord's channel listing does not include the bot's effective
-      // webhook permission. Let the Control Plane perform the authoritative
-      // check instead of advertising a fabricated capability.
-      .map((channel) => ({ ...channel, canCreateWebhook: false }));
+    const channels = await controlServerService.listConnectableChannels(serverId, userId);
+    const result = channels.map((channel) => ({
+      id: channel.channelId,
+      name: channel.name,
+      type: channel.type,
+      actorPermissions: Number(channel.actorPermissions || 0),
+      botPermissions: Number(channel.botPermissions || 0),
+      connectable: channel.connectable,
+      rejectionReason: channel.rejectionReason || null,
+    }));
 
     await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
     return result;
@@ -332,7 +321,7 @@ export const serverService = {
           serverId,
           actorId: userId,
         }),
-        serverService.channels(userId, serverId).catch(() => []),
+        serverService.channels(userId, serverId),
       ]);
 
       const channelMap = new Map(channels.map((c) => [c.id, c.name]));
@@ -376,7 +365,7 @@ export const serverService = {
       return result;
     } catch (err) {
       console.warn(`[serverService.bridges] Could not fetch connections for server ${serverId}:`, err);
-      return [];
+      throw new Error("Server bridges are temporarily unavailable. Please try again shortly.", { cause: err });
     }
   },
 
@@ -448,7 +437,7 @@ export const serverService = {
       return result;
     } catch (err) {
       console.warn(`[serverService.blocklist] Could not fetch blocklist for server ${serverId}:`, err);
-      return [];
+      throw new Error("Server blocklist is temporarily unavailable. Please try again shortly.", { cause: err });
     }
   },
 

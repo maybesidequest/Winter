@@ -1,5 +1,5 @@
 export type ServerResource = {
-  metadata: { id: string; name: string; iconUrl: string | null; bannerUrl?: string | null };
+  metadata: { id: string; name: string; iconUrl: string | null; ownerId?: string; bannerUrl?: string | null };
   spec: {
     bannerUrl?: string | null;
     prefix?: string | null;
@@ -11,7 +11,7 @@ export type ServerResource = {
     lobbyChannelIds: string[];
   };
   /** Observed integration state. Counts are intentionally not included until backed by Control Plane data. */
-  status: { botInstalled: boolean; manageable: boolean; botPermissions?: number; connectionCount?: number };
+  status: { botInstalled: boolean; manageable: boolean; botPermissions?: number; connectionCount?: number; activeCall?: boolean };
   version?: number;
 };
 
@@ -19,7 +19,10 @@ export type DiscordChannelResource = {
   id: string;
   name: string;
   type: number;
-  canCreateWebhook: boolean;
+  actorPermissions: number;
+  botPermissions: number;
+  connectable: boolean;
+  rejectionReason: string | null;
 };
 
 export type ServerBridgeResource = {

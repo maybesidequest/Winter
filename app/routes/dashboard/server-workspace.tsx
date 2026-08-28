@@ -61,22 +61,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const [channels, bridges, blocks] = await Promise.all([
     shouldLoadChannels
-      ? serverService.channels(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Channels fetch failed for ${serverId}:`, err);
-        return [];
-      })
+      ? serverService.channels(user.id, serverId)
       : Promise.resolve([]),
     shouldLoadBridges
-      ? serverService.bridges(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Bridges fetch failed for ${serverId}:`, err);
-        return [];
-      })
+      ? serverService.bridges(user.id, serverId)
       : Promise.resolve([]),
     shouldLoadBlocks
-      ? serverService.blocklist(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Blocklist fetch failed for ${serverId}:`, err);
-        return [];
-      })
+      ? serverService.blocklist(user.id, serverId)
       : Promise.resolve([]),
   ]);
 
