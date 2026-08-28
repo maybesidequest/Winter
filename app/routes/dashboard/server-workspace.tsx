@@ -6,7 +6,7 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import type { ReactNode } from "react";
-import { Link, useLoaderData, useOutletContext, useParams, type ShouldRevalidateFunctionArgs } from "react-router";
+import { Link, useLoaderData, useOutletContext, useParams, useRevalidator, type ShouldRevalidateFunctionArgs } from "react-router";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
@@ -16,6 +16,7 @@ import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettings
 import { requireUser } from "~/services/auth.server";
 import { isCapabilityEnabled } from "~/services/capabilities.server";
 import { serverService } from "~/services/server.server";
+import { stateForControlError, type ServerDataState } from "~/services/serverState";
 import type { Route } from "./+types/server-workspace";
 
 export function shouldRevalidate({
@@ -33,6 +34,17 @@ export function shouldRevalidate({
   return false;
 }
 
+async function loadCollection<T>(enabled: boolean, load: () => Promise<T[]>): Promise<{ items: T[]; state: ServerDataState; error?: string }> {
+  if (!enabled) return { items: [], state: "not_requested" };
+  try {
+    const items = await load();
+    return { items, state: items.length === 0 ? "empty" : "ready" };
+  } catch (error) {
+    const failure = stateForControlError(error);
+    return { items: [], state: failure.state, error: failure.message };
+  }
+}
+
 export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await requireUser(request);
   const serverId = params.serverId;
@@ -40,7 +52,23 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response("Server not found", { status: 404 });
   }
 
-  const server = await serverService.get(user.id, serverId);
+  let server: Awaited<ReturnType<typeof serverService.get>>;
+  try {
+    server = await serverService.get(user.id, serverId);
+  } catch (error) {
+    const failure = stateForControlError(error);
+    return {
+      server: null,
+      serverState: failure.state,
+      serverError: failure.message,
+      channels: [],
+      channelsState: "not_requested" as const,
+      bridges: [],
+      bridgesState: "not_requested" as const,
+      blocks: [],
+      blocksState: "not_requested" as const,
+    };
+  }
   const requestedView = params.view || "overview";
 
   // Performance optimization: only load supplementary data when on the respective view
@@ -59,23 +87,25 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     isCapabilityEnabled("SERVER_BLOCKLIST") &&
     (requestedView === "safety" || requestedView === "blocklist");
 
-  const [channels, bridges, blocks] = await Promise.all([
-    shouldLoadChannels
-      ? serverService.channels(user.id, serverId)
-      : Promise.resolve([]),
-    shouldLoadBridges
-      ? serverService.bridges(user.id, serverId)
-      : Promise.resolve([]),
-    shouldLoadBlocks
-      ? serverService.blocklist(user.id, serverId)
-      : Promise.resolve([]),
+  const [channelResult, bridgeResult, blockResult] = await Promise.all([
+    loadCollection(shouldLoadChannels, () => serverService.channels(user.id, serverId)),
+    loadCollection(shouldLoadBridges, () => serverService.bridges(user.id, serverId)),
+    loadCollection(shouldLoadBlocks, () => serverService.blocklist(user.id, serverId)),
   ]);
 
   return {
     server,
-    channels,
-    bridges,
-    blocks,
+    serverState: "ready" as const,
+    serverError: null,
+    channels: channelResult.items,
+    channelsState: channelResult.state,
+    channelsError: channelResult.error,
+    bridges: bridgeResult.items,
+    bridgesState: bridgeResult.state,
+    bridgesError: bridgeResult.error,
+    blocks: blockResult.items,
+    blocksState: blockResult.state,
+    blocksError: blockResult.error,
   };
 }
 
@@ -93,7 +123,25 @@ type DashboardContext = {
 };
 
 export default function ServerWorkspace() {
-  const { server, channels, bridges, blocks } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+  const revalidator = useRevalidator();
+  if (!data.server) {
+    const denied = data.serverState === "permission_denied";
+    return (
+      <main className="max-w-2xl mx-auto p-6">
+        <div className="dashboard-alert" role="alert">
+          <h1 className="text-lg font-bold">{denied ? "Server access denied" : "Server controls unavailable"}</h1>
+          <p>{data.serverError}</p>
+          {!denied && (
+            <button className="dashboard-button dashboard-button--primary mt-4" onClick={() => revalidator.revalidate()} disabled={revalidator.state !== "idle"}>
+              {revalidator.state === "idle" ? "Retry" : "Retrying…"}
+            </button>
+          )}
+        </div>
+      </main>
+    );
+  }
+  const { server, channels, bridges, blocks } = data;
   const { capabilities = {} } = useOutletContext<DashboardContext>();
   const params = useParams();
   const requestedView = LEGACY_VIEWS[params.view || "overview"] || params.view || "overview";
@@ -135,6 +183,14 @@ export default function ServerWorkspace() {
   };
 
   const currentView = viewTitles[view] || viewTitles.overview;
+  const viewDataState = view === "calls"
+    ? { state: data.channelsState, error: data.channelsError }
+    : view === "bridges"
+      ? { state: data.bridgesState, error: data.bridgesError }
+      : view === "safety" || view === "blocklist"
+        ? { state: data.blocksState, error: data.blocksError }
+        : null;
+  const viewUnavailable = viewDataState && (viewDataState.state === "permission_denied" || viewDataState.state === "unavailable");
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
@@ -193,9 +249,19 @@ export default function ServerWorkspace() {
           blocksCount={blocks.length > 0 ? blocks.length : undefined}
         />
       )}
-      {view === "bridges" && <ServerBridgesCard server={server} bridges={bridges} channels={channels} />}
-      {view === "calls" && <ServerCallSettingsCard server={server} channels={channels} />}
-      {(view === "safety" || view === "blocklist") && (
+      {viewDataState && viewUnavailable && (
+        <div className="dashboard-alert" role="alert">
+          <p>{viewDataState.error}</p>
+          {viewDataState.state === "unavailable" && (
+            <button className="dashboard-button dashboard-button--primary mt-3" onClick={() => revalidator.revalidate()} disabled={revalidator.state !== "idle"}>
+              {revalidator.state === "idle" ? "Retry" : "Retrying…"}
+            </button>
+          )}
+        </div>
+      )}
+      {view === "bridges" && !viewUnavailable && <ServerBridgesCard server={server} bridges={bridges} channels={channels} />}
+      {view === "calls" && !viewUnavailable && <ServerCallSettingsCard server={server} channels={channels} />}
+      {(view === "safety" || view === "blocklist") && !viewUnavailable && (
         <ServerBlocklistCard server={server} blocks={blocks} />
       )}
       {view === "settings" && <ServerSettingsCard server={server} />}
