@@ -1,4 +1,4 @@
-export type ServerDataState = "not_requested" | "ready" | "empty" | "permission_denied" | "unavailable";
+export type ServerDataState = "not_requested" | "loading" | "ready" | "empty" | "permission_denied" | "unavailable";
 
 export function stateForCollection(enabled: boolean, itemCount: number): ServerDataState {
   if (!enabled) return "not_requested";
@@ -17,11 +17,11 @@ function errorDetails(error: unknown): { message: string; code?: number | string
 }
 
 export function stateForControlError(error: unknown): {
-  state: Exclude<ServerDataState, "not_requested" | "ready" | "empty">;
+  state: Exclude<ServerDataState, "not_requested" | "loading" | "ready" | "empty">;
   message: string;
 } {
   const details = errorDetails(error);
-  const permissionCode = details.code === 7 || details.code === 16 || details.code === "PERMISSION_DENIED" || details.code === "UNAUTHENTICATED";
+  const permissionCode = details.code === 7 || details.code === "PERMISSION_DENIED";
   if (permissionCode || /permission|denied|manage server|forbidden/i.test(details.message)) {
     return { state: "permission_denied", message: "You do not have permission to view this server data." };
   }

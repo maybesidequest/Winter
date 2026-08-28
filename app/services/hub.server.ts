@@ -151,18 +151,12 @@ export const hubService = {
 
       if (updateMask.length === 0) return { success: true };
 
-      let expectedVersion = input.version;
-      if (!expectedVersion) {
-        const current = await controlHubService.getHub(input.hubId, userId);
-        expectedVersion = current.version;
-      }
-
       const updated = await controlHubService.patchHub({
         actorId: userId,
         hubId: input.hubId,
         spec,
         updateMask,
-        expectedVersion,
+        expectedVersion: input.version,
         idempotencyKey: input.idempotencyKey,
       });
 

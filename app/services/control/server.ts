@@ -60,7 +60,7 @@ function toServer(value: Server__Output): ServerResource {
     },
     status: {
       botInstalled: value.status.botInstalled,
-      manageable: value.status.botInstalled,
+      manageable: true,
       botPermissions: Number(value.status.botPermissions || 0),
       connectionCount: Number(value.status.connectionCount || 0),
       activeCall: value.status.activeCall,
@@ -70,11 +70,16 @@ function toServer(value: Server__Output): ServerResource {
 }
 
 function toBlock(value: ServerBlock__Output): ServerBlock {
+  const targetType = value.targetType === "BLOCK_TARGET_TYPE_USER"
+    ? "BLOCK_TARGET_TYPE_USER"
+    : value.targetType === "BLOCK_TARGET_TYPE_SERVER"
+      ? "BLOCK_TARGET_TYPE_SERVER"
+      : (() => { throw new Error("Control Plane returned an unknown block target type."); })();
   return {
     id: value.id,
     serverId: value.serverId,
     targetId: value.targetId,
-    targetType: value.targetType as ServerBlock["targetType"],
+    targetType,
     reason: value.reason,
     authorId: value.authorId,
     createdAt: timestamp(value.createdAt),

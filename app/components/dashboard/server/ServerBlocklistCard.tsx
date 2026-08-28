@@ -6,7 +6,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Form, Input, message, Modal, Popconfirm, Radio } from "antd";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpcClient as orpc } from "~/lib/orpc";
 import type { ServerBlockResource, ServerResource } from "~/resources/server";
@@ -25,6 +25,10 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
   const addIdempotencyKey = useRef(crypto.randomUUID());
   const removeIdempotencyKeys = useRef(new Map<string, string>());
   const isInstalled = server.status.botInstalled;
+
+  useEffect(() => {
+    setBlocks(initialBlocks);
+  }, [initialBlocks, server.metadata.id]);
 
   const handleAddBlock = async () => {
     try {
@@ -45,8 +49,12 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
       addIdempotencyKey.current = crypto.randomUUID();
 
       // Refresh list locally
-      const updated = await orpc.server.blocklist({ serverId: server.metadata.id });
-      setBlocks(updated);
+      try {
+        const updated = await orpc.server.blocklist({ serverId: server.metadata.id });
+        setBlocks(updated);
+      } catch {
+        message.warning("Block saved, but the list could not be refreshed. Reload the page to verify it.");
+      }
     } catch (err: unknown) {
       if (err && typeof err === "object" && "errorFields" in err) return;
       message.error(err instanceof Error ? err.message : "Failed to add block.");
@@ -133,6 +141,8 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
                 <tr className="border-b border-white/[0.08] text-white/70 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Target ID</th>
+                  <th className="py-3 px-4">Reason</th>
+                  <th className="py-3 px-4">Added by</th>
                   <th className="py-3 px-4">Date Added</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -154,8 +164,10 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
                     <td className="py-3.5 px-4">
                       <code className="text-white font-mono text-xs">{block.targetId}</code>
                     </td>
+                    <td className="py-3.5 px-4 text-white/70">{block.reason || "—"}</td>
+                    <td className="py-3.5 px-4"><code className="text-white/70 font-mono text-xs">{block.authorId || "Unknown"}</code></td>
                     <td className="py-3.5 px-4 text-white/60">
-                      {new Date(block.createdAt).toLocaleDateString()}
+                      {block.createdAt ? new Date(block.createdAt).toLocaleDateString() : "Unknown"}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <Popconfirm
@@ -217,7 +229,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
             <Input placeholder="e.g. 123456789012345678" />
           </Form.Item>
 
-          <Form.Item name="reason" label="Reason (Optional)">
+          <Form.Item name="reason" label="Reason" rules={[{ required: true, message: "Please provide a reason" }]}>
             <Input.TextArea placeholder="Internal note for staff" rows={3} maxLength={500} />
           </Form.Item>
         </Form>

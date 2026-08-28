@@ -29,7 +29,7 @@ export function ServerOverviewCard({
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Bot Installation Card */}
-      <section style={{ ...dashboardGlassCardStyle, padding: 24, borderRadius: 16 }}>
+      {server.status.botInstalled && <section style={{ ...dashboardGlassCardStyle, padding: 24, borderRadius: 16 }}>
         <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-start gap-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${server.status.botInstalled
@@ -71,7 +71,7 @@ export function ServerOverviewCard({
             </a>
           )}
         </div>
-      </section>
+      </section>}
 
       {/* Configuration Summary Card */}
       <section style={{ ...dashboardGlassCardStyle, padding: 24, borderRadius: 16 }}>

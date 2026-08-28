@@ -38,11 +38,13 @@ export function ServerBridgeItem({
   const isRepairPending = isBridgePending && pendingAction.action === "repair";
   const isDisconnectPending = isBridgePending && pendingAction.action === "disconnect";
 
-  const formattedDate = new Date(bridge.createdAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const formattedDate = bridge.createdAt
+    ? new Date(bridge.createdAt).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+    : "Unknown date";
 
   return (
     <div

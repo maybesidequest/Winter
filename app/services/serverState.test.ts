@@ -11,6 +11,7 @@ describe("server Control Plane state mapping", () => {
     expect(stateForControlError({ code: 7, message: "rpc failed" }).state).toBe("permission_denied");
     expect(stateForControlError({ message: "temporary wrapper", cause: { code: "PERMISSION_DENIED" } }).state).toBe("permission_denied");
     expect(stateForControlError({ code: 14, message: "unavailable" }).state).toBe("unavailable");
+    expect(stateForControlError({ code: 16, message: "unauthenticated" }).state).toBe("unavailable");
   });
 
   test("models not-requested, empty, and ready collection states", () => {

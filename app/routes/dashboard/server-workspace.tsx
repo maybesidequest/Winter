@@ -6,7 +6,7 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import type { ReactNode } from "react";
-import { Link, useLoaderData, useOutletContext, useParams, useRevalidator, type ShouldRevalidateFunctionArgs } from "react-router";
+import { Link, useLoaderData, useNavigation, useOutletContext, useParams, useRevalidator, type ShouldRevalidateFunctionArgs } from "react-router";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
@@ -124,7 +124,15 @@ type DashboardContext = {
 
 export default function ServerWorkspace() {
   const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
   const revalidator = useRevalidator();
+  if (navigation.state !== "idle") {
+    return (
+      <main className="max-w-2xl mx-auto p-6" aria-busy="true">
+        <div className="dashboard-alert" role="status">Loading authoritative server data…</div>
+      </main>
+    );
+  }
   if (!data.server) {
     const denied = data.serverState === "permission_denied";
     return (
@@ -191,6 +199,13 @@ export default function ServerWorkspace() {
         ? { state: data.blocksState, error: data.blocksError }
         : null;
   const viewUnavailable = viewDataState && (viewDataState.state === "permission_denied" || viewDataState.state === "unavailable");
+  const viewNotRequested = viewDataState?.state === "not_requested";
+  const viewNeedsAttention = Boolean(viewUnavailable || viewNotRequested || (!server.status.botInstalled && view !== "overview"));
+  const viewAttentionMessage = !server.status.botInstalled && view !== "overview"
+    ? "Install InterChat in this Discord server before managing this data."
+    : viewNotRequested
+      ? "This data was not requested for the current server state."
+      : viewDataState?.error;
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
@@ -249,22 +264,22 @@ export default function ServerWorkspace() {
           blocksCount={blocks.length > 0 ? blocks.length : undefined}
         />
       )}
-      {viewDataState && viewUnavailable && (
+      {viewNeedsAttention && (
         <div className="dashboard-alert" role="alert">
-          <p>{viewDataState.error}</p>
-          {viewDataState.state === "unavailable" && (
+          <p>{viewAttentionMessage}</p>
+          {viewDataState?.state === "unavailable" && (
             <button className="dashboard-button dashboard-button--primary mt-3" onClick={() => revalidator.revalidate()} disabled={revalidator.state !== "idle"}>
               {revalidator.state === "idle" ? "Retry" : "Retrying…"}
             </button>
           )}
         </div>
       )}
-      {view === "bridges" && !viewUnavailable && <ServerBridgesCard server={server} bridges={bridges} channels={channels} />}
-      {view === "calls" && !viewUnavailable && <ServerCallSettingsCard server={server} channels={channels} />}
-      {(view === "safety" || view === "blocklist") && !viewUnavailable && (
+      {view === "bridges" && !viewNeedsAttention && <ServerBridgesCard server={server} bridges={bridges} channels={channels} />}
+      {view === "calls" && !viewNeedsAttention && <ServerCallSettingsCard server={server} channels={channels} />}
+      {(view === "safety" || view === "blocklist") && !viewNeedsAttention && (
         <ServerBlocklistCard server={server} blocks={blocks} />
       )}
-      {view === "settings" && <ServerSettingsCard server={server} />}
+      {view === "settings" && !viewNeedsAttention && <ServerSettingsCard server={server} />}
     </div>
   );
 }

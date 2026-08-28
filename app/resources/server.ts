@@ -35,7 +35,7 @@ export type ServerBridgeResource = {
   connected: boolean;
   pausedByBot: boolean;
   pauseReason: string | null;
-  createdAt: string;
+  createdAt: string | null;
   version: number;
   webhookProvisioned: boolean;
 };
@@ -44,6 +44,8 @@ export type ServerBlockResource = {
   id: string;
   targetType: "user" | "server";
   targetId: string;
+  reason: string;
+  authorId: string;
   targetName?: string;
-  createdAt: string;
+  createdAt: string | null;
 };

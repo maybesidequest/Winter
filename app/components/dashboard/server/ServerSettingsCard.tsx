@@ -30,6 +30,7 @@ export function ServerSettingsCard({
 }: ServerSettingsCardProps) {
   const [copied, setCopied] = useState(false);
   const [prefix, setPrefix] = useState(server.spec.prefix || "!");
+  const [savedPrefix, setSavedPrefix] = useState(server.spec.prefix || "!");
   const [version, setVersion] = useState(server.version ?? 1);
   const [savingPrefix, setSavingPrefix] = useState(false);
   const prefixIdempotencyKey = useRef(crypto.randomUUID());
@@ -40,6 +41,7 @@ export function ServerSettingsCard({
 
   useEffect(() => {
     setPrefix(server.spec.prefix || "!");
+    setSavedPrefix(server.spec.prefix || "!");
     setVersion(server.version ?? 1);
   }, [server]);
 
@@ -65,6 +67,7 @@ export function ServerSettingsCard({
         idempotencyKey: prefixIdempotencyKey.current,
       });
       setPrefix(result.server?.spec.prefix || nextPrefix);
+      setSavedPrefix(result.server?.spec.prefix || nextPrefix);
       setVersion(result.server?.version ?? version + 1);
       prefixIdempotencyKey.current = crypto.randomUUID();
       message.success("Command prefix saved.");
@@ -129,7 +132,7 @@ export function ServerSettingsCard({
               <button
                 type="button"
                 onClick={savePrefix}
-                disabled={!isInstalled || savingPrefix || prefix.trim() === (server.spec.prefix || "!")}
+                disabled={!isInstalled || savingPrefix || prefix.trim() === savedPrefix}
                 className="dashboard-btn-primary px-3.5 py-2 text-xs"
               >
                 {savingPrefix ? "Saving…" : "Save"}

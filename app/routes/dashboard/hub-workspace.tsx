@@ -138,14 +138,18 @@ export default function HubWorkspace() {
   );
 
   const patchConfig = (changes: Record<string, unknown>) => {
-    const fingerprint = JSON.stringify({ hubId, version: hub?.version, changes });
+    if (!hub?.version) {
+      message.error("Hub version is unavailable. Refresh before saving.");
+      return;
+    }
+    const fingerprint = JSON.stringify({ hubId, version: hub.version, changes });
     if (!patchAttemptRef.current || patchAttemptRef.current.fingerprint !== fingerprint) {
       patchAttemptRef.current = { fingerprint, key: crypto.randomUUID() };
     }
     patchMutation.mutate({
       hubId,
       idempotencyKey: patchAttemptRef.current.key,
-      version: hub?.version,
+      version: hub.version,
       ...changes,
     });
   };

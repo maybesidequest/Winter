@@ -20,6 +20,12 @@ function isControlNotFound(error: unknown): boolean {
   return code === 5 || code === "NOT_FOUND";
 }
 
+function isControlPermissionDenied(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  return code === 7 || code === "PERMISSION_DENIED";
+}
+
 function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {
   callChannelId?: string;
   callPing?: boolean;
@@ -56,17 +62,9 @@ async function discordFetch(path: string, authorization: string) {
 }
 
 async function manageableGuilds(userId: string, forceRefresh = false): Promise<DiscordGuild[]> {
-  const cacheKey = `discord:guilds:${userId}`;
-  if (!forceRefresh) {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as DiscordGuild[];
-      } catch {
-        // invalid JSON in cache
-      }
-    }
-  }
+  // Guild membership and Manage Server permission are authorization inputs;
+  // never serve them from a stale cache.
+  void forceRefresh;
 
   const token = await getDiscordAccessToken(userId);
   const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
@@ -77,13 +75,6 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
       throw new Error("Discord authorization expired. Sign in again.");
     }
     if (response.status === 429) {
-      // If we are rate-limited, fall back to cached guilds if available
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        try {
-          return JSON.parse(cached) as DiscordGuild[];
-        } catch { }
-      }
       throw new Error("Discord API rate limit exceeded. Please wait a moment.");
     }
     throw new Error("Discord servers could not be loaded.");
@@ -93,7 +84,6 @@ async function manageableGuilds(userId: string, forceRefresh = false): Promise<D
     (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
   );
 
-  await redis.set(cacheKey, JSON.stringify(manageable), "EX", 600);
   return manageable;
 }
 
@@ -105,16 +95,6 @@ async function assertManageable(userId: string, serverId: string, forceRefresh =
 
 export const serverService = {
   async list(userId: string, forceRefresh = false): Promise<ServerResource[]> {
-    const cacheKey = `winter:servers:${userId}`;
-    if (!forceRefresh) {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        try {
-          return JSON.parse(cached) as ServerResource[];
-        } catch { }
-      }
-    }
-
     const guilds = await manageableGuilds(userId, forceRefresh);
     if (guilds.length === 0) return [];
 
@@ -143,7 +123,7 @@ export const serverService = {
           spec: normalizeServerSpec(server.spec),
           status: {
             ...server.status,
-            botInstalled: true,
+            botInstalled: server.status.botInstalled,
             manageable: true,
           },
           version: server.version,
@@ -172,20 +152,11 @@ export const serverService = {
       };
     });
 
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
     return result;
   },
 
 
   async get(userId: string, serverId: string): Promise<ServerResource> {
-    const cacheKey = `winter:server:${userId}:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerResource;
-      } catch { }
-    }
-
     const guild = await assertManageable(userId, serverId, false);
     try {
       const res = await controlServerService.getServer(serverId, userId);
@@ -202,7 +173,6 @@ export const serverService = {
         },
         version: res.version,
       };
-      await redis.set(cacheKey, JSON.stringify(server), "EX", 120);
       return server;
     } catch (error) {
       if (!isControlNotFound(error)) {
@@ -234,14 +204,6 @@ export const serverService = {
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
     await assertManageable(userId, serverId, false);
-    const cacheKey = `discord:channels:${userId}:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as DiscordChannelResource[];
-      } catch { }
-    }
-
     const channels = await controlServerService.listConnectableChannels(serverId, userId);
     const result = channels.map((channel) => ({
       id: channel.channelId,
@@ -253,7 +215,6 @@ export const serverService = {
       rejectionReason: channel.rejectionReason || null,
     }));
 
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
     return result;
   },
 
@@ -306,14 +267,6 @@ export const serverService = {
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
-    const cacheKey = `winter:bridges:${userId}:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerBridgeResource[];
-      } catch { }
-    }
-
     await assertManageable(userId, serverId, false);
     try {
       const [connections, channels] = await Promise.all([
@@ -330,7 +283,12 @@ export const serverService = {
       const getHubMemoized = (hubId: string) => {
         let p = hubPromises.get(hubId);
         if (!p) {
-          p = controlHubService.getHub(hubId, userId).catch(() => undefined);
+          p = controlHubService.getHub(hubId, userId).catch((error) => {
+            // A deleted/private Hub may be redacted from a bridge row, but a
+            // Control Plane outage must make the whole projection unavailable.
+            if (isControlNotFound(error) || isControlPermissionDenied(error)) return undefined;
+            throw error;
+          });
           hubPromises.set(hubId, p);
         }
         return p;
@@ -355,13 +313,12 @@ export const serverService = {
           connected: conn.spec.connected,
           pausedByBot: !conn.status.healthy,
           pauseReason: conn.status.statusMessage || null,
-          createdAt: conn.metadata.createdAt || new Date().toISOString(),
+          createdAt: conn.metadata.createdAt || null,
           version: conn.version,
           webhookProvisioned: conn.status.webhookProvisioned,
         };
       }));
 
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
       return result;
     } catch (err) {
       console.warn(`[serverService.bridges] Could not fetch connections for server ${serverId}:`, err);
@@ -415,25 +372,18 @@ export const serverService = {
 
 
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
-    const cacheKey = `winter:blocklist:${userId}:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerBlockResource[];
-      } catch { }
-    }
-
     await assertManageable(userId, serverId, false);
     try {
       const blocks = await controlServerService.getBlocklist(serverId, userId);
 
       const result: ServerBlockResource[] = blocks.map((b) => ({
         id: b.id,
-        targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : "server",
+        targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : b.targetType === "BLOCK_TARGET_TYPE_SERVER" ? "server" : (() => { throw new Error("Control Plane returned an unknown block target type."); })(),
         targetId: b.targetId,
-        createdAt: b.createdAt || new Date().toISOString(),
+        reason: b.reason,
+        authorId: b.authorId,
+        createdAt: b.createdAt || null,
       }));
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
       return result;
     } catch (err) {
       console.warn(`[serverService.blocklist] Could not fetch blocklist for server ${serverId}:`, err);

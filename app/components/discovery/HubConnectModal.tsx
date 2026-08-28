@@ -18,13 +18,13 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
   const queryClient = useQueryClient();
 
   // Load manageable servers
-  const { data: servers = [], isLoading: isLoadingServers } = useQuery({
+  const { data: servers = [], isLoading: isLoadingServers, isError: serversError, refetch: refetchServers } = useQuery({
     ...orpc.server.list.queryOptions(),
     enabled: open,
   });
 
   // Load channels for the selected server
-  const { data: channels = [], isLoading: isLoadingChannels } = useQuery({
+  const { data: channels = [], isLoading: isLoadingChannels, isError: channelsError, refetch: refetchChannels } = useQuery({
     ...orpc.server.channels.queryOptions({
       input: { serverId: selectedServerId || "" },
     }),
@@ -113,6 +113,7 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
             }))}
             className="w-full"
           />
+          {serversError && <p className="text-rose-300">Server data is temporarily unavailable. <button type="button" className="underline" onClick={() => refetchServers()}>Retry</button></p>}
         </div>
 
         {/* Channel Select */}
@@ -126,10 +127,12 @@ export function HubConnectModal({ hub, open, onCancel }: HubConnectModalProps) {
             onChange={(val) => setSelectedChannelId(val)}
             options={channels.map((c) => ({
               value: c.id,
-              label: `#${c.name}`,
+              label: c.connectable ? `#${c.name}` : `#${c.name} — ${c.rejectionReason || "Unavailable"}`,
+              disabled: !c.connectable,
             }))}
             className="w-full"
           />
+          {channelsError && <p className="text-rose-300">Channel data is temporarily unavailable. <button type="button" className="underline" onClick={() => refetchChannels()}>Retry</button></p>}
         </div>
 
         {/* Invite Code (Optional) */}
