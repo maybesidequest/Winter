@@ -9,6 +9,8 @@ import type { BlocklistResponse as _interchat_control_v1_BlocklistResponse, Bloc
 import type { EmptyResponse as _interchat_control_v1_EmptyResponse, EmptyResponse__Output as _interchat_control_v1_EmptyResponse__Output } from '../../../interchat/control/v1/EmptyResponse';
 import type { GetBlocklistRequest as _interchat_control_v1_GetBlocklistRequest, GetBlocklistRequest__Output as _interchat_control_v1_GetBlocklistRequest__Output } from '../../../interchat/control/v1/GetBlocklistRequest';
 import type { GetServerRequest as _interchat_control_v1_GetServerRequest, GetServerRequest__Output as _interchat_control_v1_GetServerRequest__Output } from '../../../interchat/control/v1/GetServerRequest';
+import type { ListConnectableChannelsRequest as _interchat_control_v1_ListConnectableChannelsRequest, ListConnectableChannelsRequest__Output as _interchat_control_v1_ListConnectableChannelsRequest__Output } from '../../../interchat/control/v1/ListConnectableChannelsRequest';
+import type { ListConnectableChannelsResponse as _interchat_control_v1_ListConnectableChannelsResponse, ListConnectableChannelsResponse__Output as _interchat_control_v1_ListConnectableChannelsResponse__Output } from '../../../interchat/control/v1/ListConnectableChannelsResponse';
 import type { PatchServerConfigRequest as _interchat_control_v1_PatchServerConfigRequest, PatchServerConfigRequest__Output as _interchat_control_v1_PatchServerConfigRequest__Output } from '../../../interchat/control/v1/PatchServerConfigRequest';
 import type { RemoveBlockRequest as _interchat_control_v1_RemoveBlockRequest, RemoveBlockRequest__Output as _interchat_control_v1_RemoveBlockRequest__Output } from '../../../interchat/control/v1/RemoveBlockRequest';
 import type { Server as _interchat_control_v1_Server, Server__Output as _interchat_control_v1_Server__Output } from '../../../interchat/control/v1/Server';
@@ -51,6 +53,15 @@ export interface ServerServiceClient extends grpc.Client {
   getServer(argument: _interchat_control_v1_GetServerRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Server__Output>): grpc.ClientUnaryCall;
   getServer(argument: _interchat_control_v1_GetServerRequest, callback: grpc.requestCallback<_interchat_control_v1_Server__Output>): grpc.ClientUnaryCall;
   
+  ListConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  ListConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  ListConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  ListConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  listConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  listConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  listConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  listConnectableChannels(argument: _interchat_control_v1_ListConnectableChannelsRequest, callback: grpc.requestCallback<_interchat_control_v1_ListConnectableChannelsResponse__Output>): grpc.ClientUnaryCall;
+  
   PatchServerConfig(argument: _interchat_control_v1_PatchServerConfigRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Server__Output>): grpc.ClientUnaryCall;
   PatchServerConfig(argument: _interchat_control_v1_PatchServerConfigRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_interchat_control_v1_Server__Output>): grpc.ClientUnaryCall;
   PatchServerConfig(argument: _interchat_control_v1_PatchServerConfigRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_interchat_control_v1_Server__Output>): grpc.ClientUnaryCall;
@@ -80,6 +91,8 @@ export interface ServerServiceHandlers extends grpc.UntypedServiceImplementation
   
   GetServer: grpc.handleUnaryCall<_interchat_control_v1_GetServerRequest__Output, _interchat_control_v1_Server>;
   
+  ListConnectableChannels: grpc.handleUnaryCall<_interchat_control_v1_ListConnectableChannelsRequest__Output, _interchat_control_v1_ListConnectableChannelsResponse>;
+  
   PatchServerConfig: grpc.handleUnaryCall<_interchat_control_v1_PatchServerConfigRequest__Output, _interchat_control_v1_Server>;
   
   RemoveBlock: grpc.handleUnaryCall<_interchat_control_v1_RemoveBlockRequest__Output, _interchat_control_v1_EmptyResponse>;
@@ -91,6 +104,7 @@ export interface ServerServiceDefinition extends grpc.ServiceDefinition {
   BatchGetServers: MethodDefinition<_interchat_control_v1_BatchGetServersRequest, _interchat_control_v1_BatchGetServersResponse, _interchat_control_v1_BatchGetServersRequest__Output, _interchat_control_v1_BatchGetServersResponse__Output>
   GetBlocklist: MethodDefinition<_interchat_control_v1_GetBlocklistRequest, _interchat_control_v1_BlocklistResponse, _interchat_control_v1_GetBlocklistRequest__Output, _interchat_control_v1_BlocklistResponse__Output>
   GetServer: MethodDefinition<_interchat_control_v1_GetServerRequest, _interchat_control_v1_Server, _interchat_control_v1_GetServerRequest__Output, _interchat_control_v1_Server__Output>
+  ListConnectableChannels: MethodDefinition<_interchat_control_v1_ListConnectableChannelsRequest, _interchat_control_v1_ListConnectableChannelsResponse, _interchat_control_v1_ListConnectableChannelsRequest__Output, _interchat_control_v1_ListConnectableChannelsResponse__Output>
   PatchServerConfig: MethodDefinition<_interchat_control_v1_PatchServerConfigRequest, _interchat_control_v1_Server, _interchat_control_v1_PatchServerConfigRequest__Output, _interchat_control_v1_Server__Output>
   RemoveBlock: MethodDefinition<_interchat_control_v1_RemoveBlockRequest, _interchat_control_v1_EmptyResponse, _interchat_control_v1_RemoveBlockRequest__Output, _interchat_control_v1_EmptyResponse__Output>
 }

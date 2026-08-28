@@ -27,6 +27,9 @@ import type { GetPopularTagsRequest as _interchat_control_v1_GetPopularTagsReque
 import type { GetPopularTagsResponse as _interchat_control_v1_GetPopularTagsResponse, GetPopularTagsResponse__Output as _interchat_control_v1_GetPopularTagsResponse__Output } from './interchat/control/v1/GetPopularTagsResponse';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from './interchat/control/v1/Hub';
 import type { HubAnnouncement as _interchat_control_v1_HubAnnouncement, HubAnnouncement__Output as _interchat_control_v1_HubAnnouncement__Output } from './interchat/control/v1/HubAnnouncement';
+import type { HubAnnouncementMetadata as _interchat_control_v1_HubAnnouncementMetadata, HubAnnouncementMetadata__Output as _interchat_control_v1_HubAnnouncementMetadata__Output } from './interchat/control/v1/HubAnnouncementMetadata';
+import type { HubAnnouncementSpec as _interchat_control_v1_HubAnnouncementSpec, HubAnnouncementSpec__Output as _interchat_control_v1_HubAnnouncementSpec__Output } from './interchat/control/v1/HubAnnouncementSpec';
+import type { HubAnnouncementStatus as _interchat_control_v1_HubAnnouncementStatus, HubAnnouncementStatus__Output as _interchat_control_v1_HubAnnouncementStatus__Output } from './interchat/control/v1/HubAnnouncementStatus';
 import type { HubAnnouncementsResponse as _interchat_control_v1_HubAnnouncementsResponse, HubAnnouncementsResponse__Output as _interchat_control_v1_HubAnnouncementsResponse__Output } from './interchat/control/v1/HubAnnouncementsResponse';
 import type { HubAuditEntry as _interchat_control_v1_HubAuditEntry, HubAuditEntry__Output as _interchat_control_v1_HubAuditEntry__Output } from './interchat/control/v1/HubAuditEntry';
 import type { HubAuditResponse as _interchat_control_v1_HubAuditResponse, HubAuditResponse__Output as _interchat_control_v1_HubAuditResponse__Output } from './interchat/control/v1/HubAuditResponse';
@@ -68,6 +71,7 @@ import type { ManagedHubSummary as _interchat_control_v1_ManagedHubSummary, Mana
 import type { PatchHubBadgesRequest as _interchat_control_v1_PatchHubBadgesRequest, PatchHubBadgesRequest__Output as _interchat_control_v1_PatchHubBadgesRequest__Output } from './interchat/control/v1/PatchHubBadgesRequest';
 import type { PatchHubLogConfigRequest as _interchat_control_v1_PatchHubLogConfigRequest, PatchHubLogConfigRequest__Output as _interchat_control_v1_PatchHubLogConfigRequest__Output } from './interchat/control/v1/PatchHubLogConfigRequest';
 import type { PatchHubRequest as _interchat_control_v1_PatchHubRequest, PatchHubRequest__Output as _interchat_control_v1_PatchHubRequest__Output } from './interchat/control/v1/PatchHubRequest';
+import type { RecordHubAnnouncementDeliveryRequest as _interchat_control_v1_RecordHubAnnouncementDeliveryRequest, RecordHubAnnouncementDeliveryRequest__Output as _interchat_control_v1_RecordHubAnnouncementDeliveryRequest__Output } from './interchat/control/v1/RecordHubAnnouncementDeliveryRequest';
 import type { RemoveHubStaffRoleRequest as _interchat_control_v1_RemoveHubStaffRoleRequest, RemoveHubStaffRoleRequest__Output as _interchat_control_v1_RemoveHubStaffRoleRequest__Output } from './interchat/control/v1/RemoveHubStaffRoleRequest';
 import type { ReorderHubRulesRequest as _interchat_control_v1_ReorderHubRulesRequest, ReorderHubRulesRequest__Output as _interchat_control_v1_ReorderHubRulesRequest__Output } from './interchat/control/v1/ReorderHubRulesRequest';
 import type { RequestContext as _interchat_control_v1_RequestContext, RequestContext__Output as _interchat_control_v1_RequestContext__Output } from './interchat/control/v1/RequestContext';
@@ -80,6 +84,7 @@ import type { ServerMetadata as _interchat_control_v1_ServerMetadata, ServerMeta
 import type { ServerSpec as _interchat_control_v1_ServerSpec, ServerSpec__Output as _interchat_control_v1_ServerSpec__Output } from './interchat/control/v1/ServerSpec';
 import type { ServerStatus as _interchat_control_v1_ServerStatus, ServerStatus__Output as _interchat_control_v1_ServerStatus__Output } from './interchat/control/v1/ServerStatus';
 import type { TransferHubOwnershipRequest as _interchat_control_v1_TransferHubOwnershipRequest, TransferHubOwnershipRequest__Output as _interchat_control_v1_TransferHubOwnershipRequest__Output } from './interchat/control/v1/TransferHubOwnershipRequest';
+import type { TransitionHubAnnouncementStateRequest as _interchat_control_v1_TransitionHubAnnouncementStateRequest, TransitionHubAnnouncementStateRequest__Output as _interchat_control_v1_TransitionHubAnnouncementStateRequest__Output } from './interchat/control/v1/TransitionHubAnnouncementStateRequest';
 import type { UpdateHubAnnouncementRequest as _interchat_control_v1_UpdateHubAnnouncementRequest, UpdateHubAnnouncementRequest__Output as _interchat_control_v1_UpdateHubAnnouncementRequest__Output } from './interchat/control/v1/UpdateHubAnnouncementRequest';
 import type { UpdateHubRoleRequest as _interchat_control_v1_UpdateHubRoleRequest, UpdateHubRoleRequest__Output as _interchat_control_v1_UpdateHubRoleRequest__Output } from './interchat/control/v1/UpdateHubRoleRequest';
 import type { UpdateHubRuleRequest as _interchat_control_v1_UpdateHubRuleRequest, UpdateHubRuleRequest__Output as _interchat_control_v1_UpdateHubRuleRequest__Output } from './interchat/control/v1/UpdateHubRuleRequest';
@@ -133,6 +138,11 @@ export interface ProtoGrpcType {
         Hub: MessageTypeDefinition<_interchat_control_v1_Hub, _interchat_control_v1_Hub__Output>
         HubActivityLevel: EnumTypeDefinition
         HubAnnouncement: MessageTypeDefinition<_interchat_control_v1_HubAnnouncement, _interchat_control_v1_HubAnnouncement__Output>
+        HubAnnouncementDeliveryState: EnumTypeDefinition
+        HubAnnouncementDesiredState: EnumTypeDefinition
+        HubAnnouncementMetadata: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementMetadata, _interchat_control_v1_HubAnnouncementMetadata__Output>
+        HubAnnouncementSpec: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementSpec, _interchat_control_v1_HubAnnouncementSpec__Output>
+        HubAnnouncementStatus: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementStatus, _interchat_control_v1_HubAnnouncementStatus__Output>
         HubAnnouncementsResponse: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementsResponse, _interchat_control_v1_HubAnnouncementsResponse__Output>
         HubAuditEntry: MessageTypeDefinition<_interchat_control_v1_HubAuditEntry, _interchat_control_v1_HubAuditEntry__Output>
         HubAuditResponse: MessageTypeDefinition<_interchat_control_v1_HubAuditResponse, _interchat_control_v1_HubAuditResponse__Output>
@@ -179,6 +189,7 @@ export interface ProtoGrpcType {
         PatchHubBadgesRequest: MessageTypeDefinition<_interchat_control_v1_PatchHubBadgesRequest, _interchat_control_v1_PatchHubBadgesRequest__Output>
         PatchHubLogConfigRequest: MessageTypeDefinition<_interchat_control_v1_PatchHubLogConfigRequest, _interchat_control_v1_PatchHubLogConfigRequest__Output>
         PatchHubRequest: MessageTypeDefinition<_interchat_control_v1_PatchHubRequest, _interchat_control_v1_PatchHubRequest__Output>
+        RecordHubAnnouncementDeliveryRequest: MessageTypeDefinition<_interchat_control_v1_RecordHubAnnouncementDeliveryRequest, _interchat_control_v1_RecordHubAnnouncementDeliveryRequest__Output>
         RemoveHubStaffRoleRequest: MessageTypeDefinition<_interchat_control_v1_RemoveHubStaffRoleRequest, _interchat_control_v1_RemoveHubStaffRoleRequest__Output>
         ReorderHubRulesRequest: MessageTypeDefinition<_interchat_control_v1_ReorderHubRulesRequest, _interchat_control_v1_ReorderHubRulesRequest__Output>
         RequestContext: MessageTypeDefinition<_interchat_control_v1_RequestContext, _interchat_control_v1_RequestContext__Output>
@@ -192,6 +203,7 @@ export interface ProtoGrpcType {
         ServerSpec: MessageTypeDefinition<_interchat_control_v1_ServerSpec, _interchat_control_v1_ServerSpec__Output>
         ServerStatus: MessageTypeDefinition<_interchat_control_v1_ServerStatus, _interchat_control_v1_ServerStatus__Output>
         TransferHubOwnershipRequest: MessageTypeDefinition<_interchat_control_v1_TransferHubOwnershipRequest, _interchat_control_v1_TransferHubOwnershipRequest__Output>
+        TransitionHubAnnouncementStateRequest: MessageTypeDefinition<_interchat_control_v1_TransitionHubAnnouncementStateRequest, _interchat_control_v1_TransitionHubAnnouncementStateRequest__Output>
         UpdateHubAnnouncementRequest: MessageTypeDefinition<_interchat_control_v1_UpdateHubAnnouncementRequest, _interchat_control_v1_UpdateHubAnnouncementRequest__Output>
         UpdateHubRoleRequest: MessageTypeDefinition<_interchat_control_v1_UpdateHubRoleRequest, _interchat_control_v1_UpdateHubRoleRequest__Output>
         UpdateHubRuleRequest: MessageTypeDefinition<_interchat_control_v1_UpdateHubRuleRequest, _interchat_control_v1_UpdateHubRuleRequest__Output>

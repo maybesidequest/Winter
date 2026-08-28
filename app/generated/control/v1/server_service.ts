@@ -8,6 +8,7 @@ import type { Appeal as _interchat_control_v1_Appeal, Appeal__Output as _interch
 import type { BatchGetServersRequest as _interchat_control_v1_BatchGetServersRequest, BatchGetServersRequest__Output as _interchat_control_v1_BatchGetServersRequest__Output } from './interchat/control/v1/BatchGetServersRequest';
 import type { BatchGetServersResponse as _interchat_control_v1_BatchGetServersResponse, BatchGetServersResponse__Output as _interchat_control_v1_BatchGetServersResponse__Output } from './interchat/control/v1/BatchGetServersResponse';
 import type { BlocklistResponse as _interchat_control_v1_BlocklistResponse, BlocklistResponse__Output as _interchat_control_v1_BlocklistResponse__Output } from './interchat/control/v1/BlocklistResponse';
+import type { ConnectableChannel as _interchat_control_v1_ConnectableChannel, ConnectableChannel__Output as _interchat_control_v1_ConnectableChannel__Output } from './interchat/control/v1/ConnectableChannel';
 import type { Connection as _interchat_control_v1_Connection, Connection__Output as _interchat_control_v1_Connection__Output } from './interchat/control/v1/Connection';
 import type { ConnectionMetadata as _interchat_control_v1_ConnectionMetadata, ConnectionMetadata__Output as _interchat_control_v1_ConnectionMetadata__Output } from './interchat/control/v1/ConnectionMetadata';
 import type { ConnectionSpec as _interchat_control_v1_ConnectionSpec, ConnectionSpec__Output as _interchat_control_v1_ConnectionSpec__Output } from './interchat/control/v1/ConnectionSpec';
@@ -18,6 +19,9 @@ import type { GetBlocklistRequest as _interchat_control_v1_GetBlocklistRequest, 
 import type { GetServerRequest as _interchat_control_v1_GetServerRequest, GetServerRequest__Output as _interchat_control_v1_GetServerRequest__Output } from './interchat/control/v1/GetServerRequest';
 import type { Hub as _interchat_control_v1_Hub, Hub__Output as _interchat_control_v1_Hub__Output } from './interchat/control/v1/Hub';
 import type { HubAnnouncement as _interchat_control_v1_HubAnnouncement, HubAnnouncement__Output as _interchat_control_v1_HubAnnouncement__Output } from './interchat/control/v1/HubAnnouncement';
+import type { HubAnnouncementMetadata as _interchat_control_v1_HubAnnouncementMetadata, HubAnnouncementMetadata__Output as _interchat_control_v1_HubAnnouncementMetadata__Output } from './interchat/control/v1/HubAnnouncementMetadata';
+import type { HubAnnouncementSpec as _interchat_control_v1_HubAnnouncementSpec, HubAnnouncementSpec__Output as _interchat_control_v1_HubAnnouncementSpec__Output } from './interchat/control/v1/HubAnnouncementSpec';
+import type { HubAnnouncementStatus as _interchat_control_v1_HubAnnouncementStatus, HubAnnouncementStatus__Output as _interchat_control_v1_HubAnnouncementStatus__Output } from './interchat/control/v1/HubAnnouncementStatus';
 import type { HubAuditEntry as _interchat_control_v1_HubAuditEntry, HubAuditEntry__Output as _interchat_control_v1_HubAuditEntry__Output } from './interchat/control/v1/HubAuditEntry';
 import type { HubBadgeConfig as _interchat_control_v1_HubBadgeConfig, HubBadgeConfig__Output as _interchat_control_v1_HubBadgeConfig__Output } from './interchat/control/v1/HubBadgeConfig';
 import type { HubDirectoryItem as _interchat_control_v1_HubDirectoryItem, HubDirectoryItem__Output as _interchat_control_v1_HubDirectoryItem__Output } from './interchat/control/v1/HubDirectoryItem';
@@ -38,6 +42,8 @@ import type { HubStatus as _interchat_control_v1_HubStatus, HubStatus__Output as
 import type { HubTag as _interchat_control_v1_HubTag, HubTag__Output as _interchat_control_v1_HubTag__Output } from './interchat/control/v1/HubTag';
 import type { Infraction as _interchat_control_v1_Infraction, Infraction__Output as _interchat_control_v1_Infraction__Output } from './interchat/control/v1/Infraction';
 import type { LeaderboardEntry as _interchat_control_v1_LeaderboardEntry, LeaderboardEntry__Output as _interchat_control_v1_LeaderboardEntry__Output } from './interchat/control/v1/LeaderboardEntry';
+import type { ListConnectableChannelsRequest as _interchat_control_v1_ListConnectableChannelsRequest, ListConnectableChannelsRequest__Output as _interchat_control_v1_ListConnectableChannelsRequest__Output } from './interchat/control/v1/ListConnectableChannelsRequest';
+import type { ListConnectableChannelsResponse as _interchat_control_v1_ListConnectableChannelsResponse, ListConnectableChannelsResponse__Output as _interchat_control_v1_ListConnectableChannelsResponse__Output } from './interchat/control/v1/ListConnectableChannelsResponse';
 import type { ManagedHubSummary as _interchat_control_v1_ManagedHubSummary, ManagedHubSummary__Output as _interchat_control_v1_ManagedHubSummary__Output } from './interchat/control/v1/ManagedHubSummary';
 import type { PatchServerConfigRequest as _interchat_control_v1_PatchServerConfigRequest, PatchServerConfigRequest__Output as _interchat_control_v1_PatchServerConfigRequest__Output } from './interchat/control/v1/PatchServerConfigRequest';
 import type { RemoveBlockRequest as _interchat_control_v1_RemoveBlockRequest, RemoveBlockRequest__Output as _interchat_control_v1_RemoveBlockRequest__Output } from './interchat/control/v1/RemoveBlockRequest';
@@ -76,6 +82,7 @@ export interface ProtoGrpcType {
         BatchGetServersResponse: MessageTypeDefinition<_interchat_control_v1_BatchGetServersResponse, _interchat_control_v1_BatchGetServersResponse__Output>
         BlockTargetType: EnumTypeDefinition
         BlocklistResponse: MessageTypeDefinition<_interchat_control_v1_BlocklistResponse, _interchat_control_v1_BlocklistResponse__Output>
+        ConnectableChannel: MessageTypeDefinition<_interchat_control_v1_ConnectableChannel, _interchat_control_v1_ConnectableChannel__Output>
         Connection: MessageTypeDefinition<_interchat_control_v1_Connection, _interchat_control_v1_Connection__Output>
         ConnectionMetadata: MessageTypeDefinition<_interchat_control_v1_ConnectionMetadata, _interchat_control_v1_ConnectionMetadata__Output>
         ConnectionSpec: MessageTypeDefinition<_interchat_control_v1_ConnectionSpec, _interchat_control_v1_ConnectionSpec__Output>
@@ -87,6 +94,11 @@ export interface ProtoGrpcType {
         Hub: MessageTypeDefinition<_interchat_control_v1_Hub, _interchat_control_v1_Hub__Output>
         HubActivityLevel: EnumTypeDefinition
         HubAnnouncement: MessageTypeDefinition<_interchat_control_v1_HubAnnouncement, _interchat_control_v1_HubAnnouncement__Output>
+        HubAnnouncementDeliveryState: EnumTypeDefinition
+        HubAnnouncementDesiredState: EnumTypeDefinition
+        HubAnnouncementMetadata: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementMetadata, _interchat_control_v1_HubAnnouncementMetadata__Output>
+        HubAnnouncementSpec: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementSpec, _interchat_control_v1_HubAnnouncementSpec__Output>
+        HubAnnouncementStatus: MessageTypeDefinition<_interchat_control_v1_HubAnnouncementStatus, _interchat_control_v1_HubAnnouncementStatus__Output>
         HubAuditEntry: MessageTypeDefinition<_interchat_control_v1_HubAuditEntry, _interchat_control_v1_HubAuditEntry__Output>
         HubBadgeConfig: MessageTypeDefinition<_interchat_control_v1_HubBadgeConfig, _interchat_control_v1_HubBadgeConfig__Output>
         HubDirectoryItem: MessageTypeDefinition<_interchat_control_v1_HubDirectoryItem, _interchat_control_v1_HubDirectoryItem__Output>
@@ -111,6 +123,8 @@ export interface ProtoGrpcType {
         InfractionStatus: EnumTypeDefinition
         LeaderboardEntry: MessageTypeDefinition<_interchat_control_v1_LeaderboardEntry, _interchat_control_v1_LeaderboardEntry__Output>
         LeaderboardKind: EnumTypeDefinition
+        ListConnectableChannelsRequest: MessageTypeDefinition<_interchat_control_v1_ListConnectableChannelsRequest, _interchat_control_v1_ListConnectableChannelsRequest__Output>
+        ListConnectableChannelsResponse: MessageTypeDefinition<_interchat_control_v1_ListConnectableChannelsResponse, _interchat_control_v1_ListConnectableChannelsResponse__Output>
         ManagedHubSummary: MessageTypeDefinition<_interchat_control_v1_ManagedHubSummary, _interchat_control_v1_ManagedHubSummary__Output>
         NsfwFilter: EnumTypeDefinition
         PatchServerConfigRequest: MessageTypeDefinition<_interchat_control_v1_PatchServerConfigRequest, _interchat_control_v1_PatchServerConfigRequest__Output>
