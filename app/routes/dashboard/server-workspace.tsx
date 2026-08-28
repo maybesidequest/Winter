@@ -16,7 +16,7 @@ import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettings
 import { requireUser } from "~/services/auth.server";
 import { isCapabilityEnabled } from "~/services/capabilities.server";
 import { serverService } from "~/services/server.server";
-import { stateForControlError, type ServerDataState } from "~/services/serverState";
+import { stateForCollection, stateForControlError, type ServerDataState } from "~/services/serverState";
 import type { Route } from "./+types/server-workspace";
 
 export function shouldRevalidate({
@@ -38,7 +38,7 @@ async function loadCollection<T>(enabled: boolean, load: () => Promise<T[]>): Pr
   if (!enabled) return { items: [], state: "not_requested" };
   try {
     const items = await load();
-    return { items, state: items.length === 0 ? "empty" : "ready" };
+    return { items, state: stateForCollection(true, items.length) };
   } catch (error) {
     const failure = stateForControlError(error);
     return { items: [], state: failure.state, error: failure.message };

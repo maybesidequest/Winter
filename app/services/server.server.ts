@@ -178,7 +178,7 @@ export const serverService = {
 
 
   async get(userId: string, serverId: string): Promise<ServerResource> {
-    const cacheKey = `winter:server:${serverId}`;
+    const cacheKey = `winter:server:${userId}:${serverId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
       try {
@@ -234,7 +234,7 @@ export const serverService = {
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
     await assertManageable(userId, serverId, false);
-    const cacheKey = `discord:channels:${serverId}`;
+    const cacheKey = `discord:channels:${userId}:${serverId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
       try {
@@ -277,7 +277,7 @@ export const serverService = {
       idempotencyKey: input.idempotencyKey,
     });
     await Promise.all([
-      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:server:${userId}:${input.serverId}`),
       redis.del(`winter:servers:${userId}`),
       redis.incr(`server:settings:version:${input.serverId}`),
       redis.del(`server:settings:${input.serverId}`),
@@ -297,7 +297,7 @@ export const serverService = {
     });
     const prefixVal = input.prefix ? JSON.stringify(input.prefix) : "false";
     await Promise.all([
-      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:server:${userId}:${input.serverId}`),
       redis.del(`winter:servers:${userId}`),
       redis.set(`server:prefix:${input.serverId}`, prefixVal, "EX", 3600),
       redis.incr(`server:prefix:version:${input.serverId}`),
@@ -306,7 +306,7 @@ export const serverService = {
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
-    const cacheKey = `winter:bridges:${serverId}`;
+    const cacheKey = `winter:bridges:${userId}:${serverId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
       try {
@@ -381,7 +381,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -395,7 +395,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -409,13 +409,13 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 
 
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
-    const cacheKey = `winter:blocklist:${serverId}`;
+    const cacheKey = `winter:blocklist:${userId}:${serverId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
       try {
@@ -452,7 +452,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, id: res.id };
   },
 
@@ -464,7 +464,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 };
