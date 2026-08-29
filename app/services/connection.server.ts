@@ -1,27 +1,6 @@
 import type { HubConnectionResource } from "~/resources/connection";
 import { controlConnectionService } from "~/services/control.server";
-
-function safeControlError(error: unknown, fallback: string): string {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
-  if (code === 5) return "This connection is no longer available.";
-  if (code === 7 || code === 16) return "You do not have permission to manage this connection.";
-  if (code === 6 || code === 9 || code === 10) return "This connection changed while you were editing it. Refresh and try again.";
-  if (code === 4 || code === 14) return "Connection management is temporarily unavailable. Try again shortly.";
-  return fallback;
-}
-
-function controlErrorCode(error: unknown): "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" | "SERVICE_UNAVAILABLE" | "NOT_FOUND" {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
-  if (code === 5) return "NOT_FOUND";
-  if (code === 7 || code === 16) return "FORBIDDEN";
-  if (code === 6 || code === 9 || code === 10) return "CONFLICT";
-  if (code === 4 || code === 14) return "SERVICE_UNAVAILABLE";
-  return "BAD_REQUEST";
-}
+import { classifyConnectionControlError, connectionControlErrorMessage } from "~/services/connectionError";
 
 export const connectionService = {
   async getHubConnections(hubId: string, userId: string): Promise<HubConnectionResource[]> {
@@ -53,7 +32,7 @@ export const connectionService = {
   },
 
 
-  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
+  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof classifyConnectionControlError> }> {
     try {
       const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
         .find((connection) => connection.metadata.id === connectionId);
@@ -68,11 +47,11 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to toggle connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be updated."), errorCode: controlErrorCode(error) };
+      return { success: false, error: connectionControlErrorMessage(error, "This connection could not be updated."), errorCode: classifyConnectionControlError(error) };
     }
   },
 
-  async disconnectConnection(userId: string, connectionId: string, hubId: string, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
+  async disconnectConnection(userId: string, connectionId: string, hubId: string, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof classifyConnectionControlError> }> {
     try {
       const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
         .find((connection) => connection.metadata.id === connectionId);
@@ -86,7 +65,7 @@ export const connectionService = {
       return { success: true };
     } catch (error: unknown) {
       console.error("Failed to disconnect connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be disconnected."), errorCode: controlErrorCode(error) };
+      return { success: false, error: connectionControlErrorMessage(error, "This connection could not be disconnected."), errorCode: classifyConnectionControlError(error) };
     }
   },
 
@@ -98,7 +77,7 @@ export const connectionService = {
     idempotencyKey: string,
     inviteCode?: string,
     customName?: string
-  ): Promise<{ success: boolean; hubId?: string; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
+  ): Promise<{ success: boolean; hubId?: string; error?: string; errorCode?: ReturnType<typeof classifyConnectionControlError> }> {
     try {
       await controlConnectionService.connectChannel({
         actorId: userId,
@@ -112,7 +91,7 @@ export const connectionService = {
       return { success: true, hubId };
     } catch (error: unknown) {
       console.error("Failed to create connection via control plane", error);
-      return { success: false, error: safeControlError(error, "This connection could not be created."), errorCode: controlErrorCode(error) };
+      return { success: false, error: connectionControlErrorMessage(error, "This connection could not be created."), errorCode: classifyConnectionControlError(error) };
     }
   },
 };

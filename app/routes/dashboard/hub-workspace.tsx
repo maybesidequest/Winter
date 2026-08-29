@@ -104,6 +104,10 @@ export default function HubWorkspace() {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
       },
+      onError: async (err) => {
+        message.error(err.message || "Failed to update this bridge.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
+      },
     })
   );
 
@@ -111,6 +115,10 @@ export default function HubWorkspace() {
     orpc.hub.disconnectConnection.mutationOptions({
       onSuccess: async () => {
         message.success("Bridge disconnected successfully.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
+      },
+      onError: async (err) => {
+        message.error(err.message || "Failed to disconnect this bridge.");
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
       },
     })

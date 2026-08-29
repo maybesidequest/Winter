@@ -49,7 +49,10 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
         message.success(variables.enabled ? "Bridge resumed." : "Bridge paused.");
         revalidator.revalidate();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to update this bridge."),
+      onError: (error) => {
+        revalidator.revalidate();
+        message.error(error instanceof Error ? error.message : "Unable to update this bridge.");
+      },
     }),
   );
 
@@ -60,7 +63,10 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
         message.success("Bridge webhooks repaired.");
         revalidator.revalidate();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to repair this bridge."),
+      onError: (error) => {
+        revalidator.revalidate();
+        message.error(error instanceof Error ? error.message : "Unable to repair this bridge.");
+      },
     }),
   );
 
@@ -71,7 +77,10 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
         message.success("Bridge disconnected.");
         revalidator.revalidate();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge."),
+      onError: (error) => {
+        revalidator.revalidate();
+        message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge.");
+      },
     }),
   );
 
