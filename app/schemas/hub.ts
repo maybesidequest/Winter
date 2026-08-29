@@ -216,20 +216,26 @@ export const lockdownHubSchema = z.object({
   hubId: z.string(),
   locked: z.boolean(),
   reason: z.string().max(500).default(""),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type LockdownHubInput = z.infer<typeof lockdownHubSchema>;
 
 export const transferHubOwnershipSchema = z.object({
   hubId: z.string(),
   newOwnerId: z.string().min(1),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type TransferHubOwnershipInput = z.infer<typeof transferHubOwnershipSchema>;
 
 export const deleteHubSchema = z.object({
   hubId: z.string(),
   confirmationName: z.string().min(1),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type DeleteHubInput = z.infer<typeof deleteHubSchema>;

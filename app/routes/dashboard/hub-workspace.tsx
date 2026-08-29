@@ -1,12 +1,19 @@
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router";
+import type { LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel";
 import { HubWorkspaceTabs } from "~/components/dashboard/HubWorkspaceTabs";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { orpc } from "~/lib/orpc";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
+import {
+  classifyLifecycleError,
+  idempotencyAttemptFor,
+  type IdempotencyAttempt,
+  type LifecycleAction,
+} from "~/services/lifecycleIntent";
 
 const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
   overview: { title: "Overview", desc: "Hub status, activity, and identity settings." },
@@ -65,6 +72,29 @@ export default function HubWorkspace() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const patchAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const lifecycleAttemptsRef = useRef<Partial<Record<LifecycleAction, IdempotencyAttempt>>>({});
+  const lifecycleRetryRef = useRef<(() => void) | null>(null);
+  const [lifecycleFailure, setLifecycleFailure] = useState<LifecycleFailure>();
+
+  const recordLifecycleFailure = (action: LifecycleAction, error: unknown) => {
+    setLifecycleFailure({
+      action,
+      recovery: classifyLifecycleError(error),
+      message: error instanceof Error ? error.message : "The lifecycle action failed.",
+    });
+  };
+
+  const clearLifecycleAttempt = (action: LifecycleAction) => {
+    delete lifecycleAttemptsRef.current[action];
+    lifecycleRetryRef.current = null;
+    setLifecycleFailure(undefined);
+  };
+
+  const lifecycleKey = (action: LifecycleAction, fingerprint: string) => {
+    const attempt = idempotencyAttemptFor(lifecycleAttemptsRef.current[action] ?? null, fingerprint);
+    lifecycleAttemptsRef.current[action] = attempt;
+    return attempt.key;
+  };
 
   const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
     orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 })
@@ -127,22 +157,40 @@ export default function HubWorkspace() {
   const deleteHubMutation = useMutation(
     orpc.hub.deleteHub.mutationOptions({
       onSuccess: async () => {
+        clearLifecycleAttempt("delete");
         message.success("Hub deleted successfully.");
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
         navigate("/dashboard/hubs");
       },
-      onError: (err) => message.error(err.message || "Failed to delete hub."),
+      onError: (err) => recordLifecycleFailure("delete", err),
     })
   );
 
   const transferOwnershipMutation = useMutation(
     orpc.hub.transferOwnership.mutationOptions({
       onSuccess: async () => {
+        clearLifecycleAttempt("transfer");
         message.success("Ownership transferred successfully.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
       },
-      onError: (err) => message.error(err.message || "Failed to transfer ownership."),
+      onError: (err) => recordLifecycleFailure("transfer", err),
     })
+  );
+
+  const lockdownMutation = useMutation(
+    orpc.hub.lockdownHub.mutationOptions({
+      onSuccess: async (updatedHub) => {
+        clearLifecycleAttempt("lockdown");
+        message.success(updatedHub.spec.locked ? "Hub lockdown enabled." : "Hub lockdown lifted.");
+        queryClient.setQueryData(
+          orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey,
+          updatedHub,
+        );
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+      },
+      onError: (err) => recordLifecycleFailure("lockdown", err),
+    }),
   );
 
   const patchConfig = (changes: Record<string, unknown>) => {
@@ -160,6 +208,55 @@ export default function HubWorkspace() {
       version: hub.version,
       ...changes,
     });
+  };
+
+  const deleteHub = (confirmationName: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, confirmationName, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      confirmationName,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("delete", fingerprint),
+    };
+    lifecycleRetryRef.current = () => deleteHubMutation.mutate(input);
+    deleteHubMutation.mutate(input);
+  };
+
+  const transferOwnership = (newOwnerId: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, newOwnerId, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      newOwnerId,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("transfer", fingerprint),
+    };
+    lifecycleRetryRef.current = () => transferOwnershipMutation.mutate(input);
+    transferOwnershipMutation.mutate(input);
+  };
+
+  const lockdownHub = (locked: boolean, reason: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, locked, reason, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      locked,
+      reason,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("lockdown", fingerprint),
+    };
+    lifecycleRetryRef.current = () => lockdownMutation.mutate(input);
+    lockdownMutation.mutate(input);
+  };
+
+  const refreshLifecycle = async () => {
+    await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
+    await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+    setLifecycleFailure(undefined);
   };
 
   if (isLoading) {
@@ -227,6 +324,7 @@ export default function HubWorkspace() {
         canEdit={hasPerm("MANAGE_HUB_SETTINGS")}
         canManageConnections={hasPerm("MANAGE_CONNECTIONS")}
         isOwner={hub.metadata.effectiveRole === "OWNER"}
+        canLockdown={hub.metadata.effectiveRole === "OWNER" || hasPerm("LOCKDOWN_HUB")}
         isSaving={patchMutation.isPending}
         saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}
         isRoutePending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
@@ -237,8 +335,22 @@ export default function HubWorkspace() {
           const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
           patchConfig({ settings: updatedSettings });
         }}
-        onDeleteHub={() => deleteHubMutation.mutate({ hubId, confirmationName: hub.metadata.name, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}
-        onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}
+        pendingLifecycleAction={
+          deleteHubMutation.isPending
+            ? "delete"
+            : transferOwnershipMutation.isPending
+              ? "transfer"
+              : lockdownMutation.isPending
+                ? "lockdown"
+                : undefined
+        }
+        lifecycleFailure={lifecycleFailure}
+        onLockdownHub={lockdownHub}
+        onDeleteHub={deleteHub}
+        onTransferOwnership={transferOwnership}
+        onRefreshLifecycle={refreshLifecycle}
+        onRetryLifecycle={() => lifecycleRetryRef.current?.()}
+        onBackToHubs={() => navigate("/dashboard/hubs")}
       />
     </div>
   );

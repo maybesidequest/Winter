@@ -147,7 +147,7 @@ export const hubRouter = base.router({
     .input(deleteHubSchema)
     .handler(async ({ input, context }) => {
       requireCapability("HUB_LIFECYCLE");
-      const result = await hubService.deleteHub(context.user.id, input.hubId, input.idempotencyKey);
+      const result = await hubService.deleteHub(context.user.id, input);
       if (!result.success) {
         throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "Hub could not be deleted." });
       }
@@ -158,7 +158,7 @@ export const hubRouter = base.router({
     .input(transferHubOwnershipSchema)
     .handler(async ({ input, context }) => {
       requireCapability("HUB_LIFECYCLE");
-      const result = await hubService.transferOwnership(context.user.id, input.hubId, input.newOwnerId, input.idempotencyKey);
+      const result = await hubService.transferOwnership(context.user.id, input);
       if (!result.success) {
         throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "Ownership could not be transferred." });
       }
