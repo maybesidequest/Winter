@@ -1,12 +1,12 @@
 import { Typography, Card } from "antd";
 import CytoscapeComponent from "react-cytoscapejs";
-import type { ElementDefinition } from "cytoscape";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 
 const { Title, Paragraph } = Typography;
+type CytoscapeElements = ComponentProps<typeof CytoscapeComponent>["elements"];
 
 export default function StaffRelationships() {
-  const [elements, setElements] = useState<ElementDefinition[]>([]);
+  const [elements, setElements] = useState<CytoscapeElements>([]);
 
   useEffect(() => {
     // Mock data for cytoscape
