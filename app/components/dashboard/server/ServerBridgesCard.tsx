@@ -97,6 +97,7 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       {
         serverId: server.metadata.id,
         connectionId: bridge.id,
+        expectedVersion: bridge.version,
         idempotencyKey: keyFor("repair", bridge.id),
       },
       {
@@ -111,6 +112,7 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       {
         serverId: server.metadata.id,
         connectionId: bridge.id,
+        expectedVersion: bridge.version,
         idempotencyKey: keyFor("disconnect", bridge.id),
       },
       {

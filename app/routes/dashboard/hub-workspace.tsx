@@ -223,8 +223,8 @@ export default function HubWorkspace() {
         saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}
         isRoutePending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
         onSaveConfig={(changes) => patchConfig(changes)}
-        onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected, idempotencyKey: crypto.randomUUID() })}
-        onDisconnectRoute={(conn) => disconnectRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, idempotencyKey: crypto.randomUUID() })}
+        onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected, expectedVersion: conn.version, idempotencyKey: crypto.randomUUID() })}
+        onDisconnectRoute={(conn) => disconnectRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, expectedVersion: conn.version, idempotencyKey: crypto.randomUUID() })}
         onToggleModuleFlag={(flag, enabled) => {
           const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
           patchConfig({ settings: updatedSettings });

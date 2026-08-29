@@ -21,4 +21,5 @@ export type HubConnectionResource = {
   metadata: BaseResourceMetadata;
   spec: HubConnectionSpec;
   status: HubConnectionStatus;
+  version: number;
 };

@@ -89,11 +89,12 @@ export const hubRouter = base.router({
       connectionId: z.string(),
       enabled: z.boolean(),
       hubId: z.string(),
+      expectedVersion: z.number().int().positive(),
       idempotencyKey: z.string().min(1),
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled, input.idempotencyKey);
+      const result = await connectionService.toggleConnection(context.user.id, input.connectionId, input.hubId, input.enabled, input.expectedVersion, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "This connection could not be updated." });
       }
@@ -104,11 +105,12 @@ export const hubRouter = base.router({
     .input(z.object({
       connectionId: z.string(),
       hubId: z.string(),
+      expectedVersion: z.number().int().positive(),
       idempotencyKey: z.string().min(1),
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId, input.idempotencyKey);
+      const result = await connectionService.disconnectConnection(context.user.id, input.connectionId, input.hubId, input.expectedVersion, input.idempotencyKey);
       if (!result.success) {
         throw new ORPCError(result.errorCode ?? "BAD_REQUEST", { message: result.error ?? "This connection could not be disconnected." });
       }

@@ -48,5 +48,6 @@ export const toggleBridgeSchema = serverIdSchema.extend({
 
 export const bridgeActionSchema = serverIdSchema.extend({
   connectionId: z.string().min(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1),
 });

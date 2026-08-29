@@ -342,13 +342,14 @@ export const serverService = {
     return { success: true, connection };
   },
 
-  async repairBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+  async repairBridge(userId: string, input: { serverId: string; connectionId: string; expectedVersion: number; idempotencyKey: string }) {
     await assertManageable(userId, input.serverId, true);
     const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
       .find((connection) => connection.metadata.id === input.connectionId);
     if (!current) throw new Error("Connection not found on this server.");
     const connection = await controlConnectionService.repairConnectionWebhooks({
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
@@ -356,13 +357,14 @@ export const serverService = {
     return { success: true, connection };
   },
 
-  async disconnectBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+  async disconnectBridge(userId: string, input: { serverId: string; connectionId: string; expectedVersion: number; idempotencyKey: string }) {
     await assertManageable(userId, input.serverId, true);
     const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
       .find((connection) => connection.metadata.id === input.connectionId);
     if (!current) throw new Error("Connection not found on this server.");
     await controlConnectionService.disconnectChannel({
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });

@@ -48,11 +48,12 @@ export const connectionService = {
         channelName: `#${conn.metadata.channelId}`,
         lastActive: conn.status.lastRelayedAt || conn.metadata.updatedAt || conn.metadata.createdAt || new Date().toISOString(),
       },
+      version: conn.version,
     }));
   },
 
 
-  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
+  async toggleConnection(userId: string, connectionId: string, hubId: string, enabled: boolean, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
     try {
       const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
         .find((connection) => connection.metadata.id === connectionId);
@@ -60,7 +61,7 @@ export const connectionService = {
       await controlConnectionService.toggleConnection({
         connectionId,
         enabled,
-        expectedVersion: current.version,
+        expectedVersion,
         actorId: userId,
         idempotencyKey,
       });
@@ -71,10 +72,14 @@ export const connectionService = {
     }
   },
 
-  async disconnectConnection(userId: string, connectionId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
+  async disconnectConnection(userId: string, connectionId: string, hubId: string, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: ReturnType<typeof controlErrorCode> }> {
     try {
+      const current = (await controlConnectionService.getConnections({ hubId, actorId: userId }))
+        .find((connection) => connection.metadata.id === connectionId);
+      if (!current) return { success: false, error: "Connection not found.", errorCode: "NOT_FOUND" };
       await controlConnectionService.disconnectChannel({
         connectionId,
+        expectedVersion,
         actorId: userId,
         idempotencyKey,
       });
