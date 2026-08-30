@@ -9,6 +9,7 @@ import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
 import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
+import { HubModerationPanel } from "~/components/dashboard/HubModerationPanel";
 import type { HubConnectionResource } from "~/resources/connection";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
@@ -92,11 +93,7 @@ export function HubWorkspaceTabs({
         />
       );
     case "moderation":
-      return (
-        <div className="flex flex-col gap-6">
-          <HubRulesPanel hub={hub} canEdit={can("MANAGE_RULES")} />
-        </div>
-      );
+      return <HubModerationPanel hub={hub} canEdit={canEdit || can("MANAGE_HUB_SETTINGS")} />;
     case "rules":
       return <HubRulesPanel hub={hub} canEdit={isOwner || can("MANAGE_RULES")} />;
     case "audit":

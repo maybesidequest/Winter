@@ -48,7 +48,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
       path: "moderation",
       label: "Moderation",
       icon: <SafetyCertificateOutlined />,
-      visible: false,
+      visible: enabled("MODERATION") && (hub?.metadata.effectiveRole === "OWNER" || can("VIEW_LOGS", "MANAGE_SANCTIONS")),
     },
     { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_RULES")) },
     {

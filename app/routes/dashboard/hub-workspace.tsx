@@ -38,10 +38,11 @@ const LEGACY_VIEWS: Record<string, string> = {
   members: "team",
 };
 
-const VISIBLE_HUB_VIEWS = new Set(["overview", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
+const VISIBLE_HUB_VIEWS = new Set(["overview", "moderation", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
+  moderation: "MODERATION",
   modules: "HUB_CONFIG",
   rules: "HUB_RULES",
   logging: "HUB_LOGGING",
