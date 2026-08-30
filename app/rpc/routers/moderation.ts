@@ -163,6 +163,7 @@ export const moderationRouter = base.router({
         hubId: z.string(),
         targetUserId: z.string(),
         role: hubRoleSchema,
+        expectedVersion: z.number().int().positive(),
       })
     )
     .handler(async ({ input, context }) => {
@@ -171,7 +172,8 @@ export const moderationRouter = base.router({
         context.user.id,
         input.targetUserId,
         input.hubId,
-        input.role
+        input.role,
+        input.expectedVersion
       );
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });
@@ -184,6 +186,7 @@ export const moderationRouter = base.router({
       z.object({
         hubId: z.string(),
         targetUserId: z.string(),
+        expectedVersion: z.number().int().positive(),
       })
     )
     .handler(async ({ input, context }) => {
@@ -191,7 +194,8 @@ export const moderationRouter = base.router({
       const result = await hubStaffService.removeRole(
         context.user.id,
         input.targetUserId,
-        input.hubId
+        input.hubId,
+        input.expectedVersion
       );
       if (!result.success) {
         throw new ORPCError("BAD_REQUEST", { message: result.error });

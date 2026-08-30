@@ -5,7 +5,8 @@ export const hubStaffService = {
     invokerUserId: string,
     targetUserId: string,
     hubId: string,
-    roleName: string
+    roleName: string,
+    expectedVersion: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await controlHubService.assignStaffRole({
@@ -14,6 +15,7 @@ export const hubStaffService = {
         role: roleName,
         permissionsBitmask: 0,
         actorId: invokerUserId,
+        expectedVersion,
         idempotencyKey: crypto.randomUUID(),
       });
       return { success: true };
@@ -26,13 +28,15 @@ export const hubStaffService = {
   async removeRole(
     invokerUserId: string,
     targetUserId: string,
-    hubId: string
+    hubId: string,
+    expectedVersion: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await controlHubService.removeStaffRole({
         hubId,
         userId: targetUserId,
         actorId: invokerUserId,
+        expectedVersion,
         idempotencyKey: crypto.randomUUID(),
       });
       return { success: true };
@@ -51,4 +55,3 @@ export const hubStaffService = {
     }));
   },
 };
-

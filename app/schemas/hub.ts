@@ -75,7 +75,7 @@ export const createHubRuleSchema = z.object({
   hubId: z.string(),
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required").max(1000),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -84,21 +84,21 @@ export const updateHubRuleSchema = z.object({
   ruleId: z.string(),
   title: z.string().min(1).max(100),
   description: z.string().min(1).max(1000),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const reorderHubRulesSchema = z.object({
   hubId: z.string(),
   ruleIds: z.array(z.string()),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubRuleSchema = z.object({
   hubId: z.string(),
   ruleId: z.string(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -159,7 +159,7 @@ export const patchHubBadgesSchema = z.object({
   ownerBadge: z.string().max(32).optional().nullable(),
   managerBadge: z.string().max(32).optional().nullable(),
   moderatorBadge: z.string().max(32).optional().nullable(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -170,7 +170,7 @@ export const patchHubLogConfigSchema = z.object({
   channelId: z.string().max(32),
   eventFlags: z.number().int().min(0).default(0),
   notificationRoleId: z.string().optional().nullable(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -180,7 +180,7 @@ export const assignHubStaffSchema = z.object({
   role: z.string().min(1),
   permissionsBitmask: z.number().int().default(0),
   roleId: z.string().optional(),
-  expectedVersion: z.number().int().default(0),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -188,7 +188,7 @@ export const removeHubStaffSchema = z.object({
   hubId: z.string(),
   userId: z.string().min(1),
   roleId: z.string().optional(),
-  expectedVersion: z.number().int().default(0),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
