@@ -14,6 +14,7 @@ import type { ServerResource } from "~/resources/server";
 interface ServerSettingsCardProps {
   server: ServerResource;
   botClientId?: string;
+  onServerUpdated?: () => void;
 }
 
 const REQUIRED_PERMISSIONS = [
@@ -27,6 +28,7 @@ const REQUIRED_PERMISSIONS = [
 export function ServerSettingsCard({
   server,
   botClientId = "798748015435055134",
+  onServerUpdated,
 }: ServerSettingsCardProps) {
   const [copied, setCopied] = useState(false);
   const [prefix, setPrefix] = useState(server.spec.prefix || "!");
@@ -70,6 +72,7 @@ export function ServerSettingsCard({
       setSavedPrefix(result.server?.spec.prefix || nextPrefix);
       setVersion(result.server?.version ?? version + 1);
       prefixIdempotencyKey.current = crypto.randomUUID();
+      onServerUpdated?.();
       message.success("Command prefix saved.");
     } catch (err: unknown) {
       message.error(err instanceof Error ? err.message : "Unable to save the command prefix.");
@@ -159,7 +162,7 @@ export function ServerSettingsCard({
             <div className="flex items-center gap-2">
               {isInstalled ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <CheckCircleOutlined /> Active & Installed
+                  <CheckCircleOutlined /> Installed
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">

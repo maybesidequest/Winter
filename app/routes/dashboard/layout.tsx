@@ -36,7 +36,7 @@ export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: servers = [], isLoading: serversLoading } = useQuery(
-    orpc.server.list.queryOptions({ staleTime: 0 })
+    orpc.server.list.queryOptions({ staleTime: 30_000 })
   );
 
   // Keep disabled capabilities quiet in production.  The sidebar uses the

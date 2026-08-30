@@ -1,4 +1,9 @@
 import { redis } from "~/redis.server";
+import {
+  createManageableGuildLoader,
+  DiscordGuildRateLimitError,
+  type DiscordGuild,
+} from "~/services/discordGuilds.server";
 import type {
   DiscordChannelResource,
   ServerBlockResource,
@@ -11,8 +16,6 @@ import { getDiscordAccessToken } from "~/services/oauthToken.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
-
-type DiscordGuild = { id: string; name: string; icon: string | null; owner?: boolean; permissions: string };
 
 function isControlNotFound(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -61,31 +64,49 @@ async function discordFetch(path: string, authorization: string) {
   }
 }
 
-async function manageableGuilds(userId: string, forceRefresh = false): Promise<DiscordGuild[]> {
-  // Guild membership and Manage Server permission are authorization inputs;
-  // never serve them from a stale cache.
-  void forceRefresh;
-
-  const token = await getDiscordAccessToken(userId);
-  const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "");
-    console.error(`Discord API /users/@me/guilds error: HTTP ${response.status} ${response.statusText}`, errorBody);
-    if (response.status === 401) {
-      throw new Error("Discord authorization expired. Sign in again.");
+const manageableGuilds = createManageableGuildLoader({
+  cache: {
+    async get(userId: string): Promise<DiscordGuild[] | undefined> {
+      try {
+        const cached = await redis.get(`discord:guilds:${userId}`);
+        if (!cached) return undefined;
+        const parsed: unknown = JSON.parse(cached);
+        return Array.isArray(parsed) ? parsed as DiscordGuild[] : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    async set(userId: string, guilds: DiscordGuild[], ttlSeconds: number): Promise<void> {
+      try {
+        await redis.set(`discord:guilds:${userId}`, JSON.stringify(guilds), "EX", ttlSeconds);
+      } catch {
+        // Authorization caching is an optimization; Redis availability must
+        // never decide whether a Discord request is allowed to proceed.
+      }
+    },
+  },
+  cacheTtlSeconds: Math.max(15, Number(process.env.DISCORD_GUILD_CACHE_TTL_SECONDS || 60) || 60),
+  fetchGuilds: async (userId: string): Promise<DiscordGuild[]> => {
+    const token = await getDiscordAccessToken(userId);
+    const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Discord authorization expired. Sign in again.");
+      }
+      if (response.status === 429) {
+        const retryAfter = Number(response.headers.get("retry-after"));
+        throw new DiscordGuildRateLimitError(Number.isFinite(retryAfter) ? retryAfter : undefined);
+      }
+      throw new Error("Discord servers could not be loaded.");
     }
-    if (response.status === 429) {
-      throw new Error("Discord API rate limit exceeded. Please wait a moment.");
-    }
-    throw new Error("Discord servers could not be loaded.");
-  }
-  const guilds = (await response.json()) as DiscordGuild[];
-  const manageable = guilds.filter(
-    (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
-  );
+    const guilds = (await response.json()) as DiscordGuild[];
+    const manageable = guilds.filter(
+      (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
+    );
 
-  return manageable;
-}
+    return manageable;
+  },
+});
 
 async function assertManageable(userId: string, serverId: string, forceRefresh = false) {
   const guild = (await manageableGuilds(userId, forceRefresh)).find((item) => item.id === serverId);

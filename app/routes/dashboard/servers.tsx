@@ -15,7 +15,7 @@ import { orpc } from "~/lib/orpc";
 export default function ServersPage() {
   const queryClient = useQueryClient();
   const { data: servers, isLoading, isError } = useQuery(
-    orpc.server.list.queryOptions({ staleTime: 0 })
+    orpc.server.list.queryOptions({ staleTime: 30_000 })
   );
   const serverItems = servers ?? [];
   const [cooldown, setCooldown] = useState(0);
@@ -148,7 +148,7 @@ export default function ServersPage() {
                           className={`w-1.5 h-1.5 rounded-full ${isInstalled ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" : "bg-amber-400"
                             }`}
                         />
-                        {isInstalled ? "Ready" : "Install required"}
+                        {isInstalled ? "Installed" : "Install required"}
                       </span>
                     </div>
 

@@ -33,9 +33,10 @@ const TOGGLES: Array<{
 interface ServerCallSettingsCardProps {
   server: ServerResource;
   channels: DiscordChannelResource[];
+  onServerUpdated?: () => void;
 }
 
-export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsCardProps) {
+export function ServerCallSettingsCard({ server, channels, onServerUpdated }: ServerCallSettingsCardProps) {
   const [spec, setSpec] = useState<CallSpec>(server.spec);
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState(server.version ?? 1);
@@ -73,6 +74,7 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
       setSavedSpec(result.server?.spec ?? spec);
       setVersion(result.server?.version ?? version + 1);
       idempotencyKeyRef.current = crypto.randomUUID();
+      onServerUpdated?.();
       message.success("Call settings saved successfully.");
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : "Failed to save call settings.";
