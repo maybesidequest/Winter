@@ -33,7 +33,7 @@ export function ServerSettingsCard({
   const [copied, setCopied] = useState(false);
   const [prefix, setPrefix] = useState(server.spec.prefix || "!");
   const [savedPrefix, setSavedPrefix] = useState(server.spec.prefix || "!");
-  const [version, setVersion] = useState(server.version ?? 1);
+  const [version, setVersion] = useState<number | null>(server.version ?? null);
   const [savingPrefix, setSavingPrefix] = useState(false);
   const prefixIdempotencyKey = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
@@ -44,7 +44,7 @@ export function ServerSettingsCard({
   useEffect(() => {
     setPrefix(server.spec.prefix || "!");
     setSavedPrefix(server.spec.prefix || "!");
-    setVersion(server.version ?? 1);
+    setVersion(server.version ?? null);
   }, [server]);
 
   const copyServerId = () => {
@@ -60,6 +60,10 @@ export function ServerSettingsCard({
       message.error("Prefix must be between 1 and 10 characters.");
       return;
     }
+    if (!version) {
+      message.error("Canonical server version is unavailable. Refresh before saving.");
+      return;
+    }
     setSavingPrefix(true);
     try {
       const result = await orpc.server.patchPrefix({
@@ -70,7 +74,7 @@ export function ServerSettingsCard({
       });
       setPrefix(result.server?.spec.prefix || nextPrefix);
       setSavedPrefix(result.server?.spec.prefix || nextPrefix);
-      setVersion(result.server?.version ?? version + 1);
+      setVersion(result.server?.version ?? null);
       prefixIdempotencyKey.current = crypto.randomUUID();
       onServerUpdated?.();
       message.success("Command prefix saved.");
@@ -135,7 +139,7 @@ export function ServerSettingsCard({
               <button
                 type="button"
                 onClick={savePrefix}
-                disabled={!isInstalled || savingPrefix || prefix.trim() === savedPrefix}
+                disabled={!isInstalled || !version || savingPrefix || prefix.trim() === savedPrefix}
                 className="dashboard-btn-primary px-3.5 py-2 text-xs"
               >
                 {savingPrefix ? "Saving…" : "Save"}

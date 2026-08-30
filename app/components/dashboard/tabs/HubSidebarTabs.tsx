@@ -43,7 +43,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: false },
+    {
+      path: "connections",
+      label: "Connections",
+      icon: <ApiOutlined />,
+      visible: enabled("CONNECTIONS") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_CONNECTIONS")),
+    },
     {
       path: "moderation",
       label: "Moderation",

@@ -7,7 +7,11 @@ import type { LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel"
 import { HubWorkspaceTabs } from "~/components/dashboard/HubWorkspaceTabs";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { orpc } from "~/lib/orpc";
+import type { HubResource } from "~/resources/hub";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
+import { requireUser } from "~/services/auth.server";
+import { hubService } from "~/services/hub.server";
+import type { Route } from "./+types/hub-workspace";
 import {
   classifyLifecycleError,
   idempotencyAttemptFor,
@@ -38,10 +42,11 @@ const LEGACY_VIEWS: Record<string, string> = {
   members: "team",
 };
 
-const VISIBLE_HUB_VIEWS = new Set(["overview", "moderation", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
+const VISIBLE_HUB_VIEWS = new Set(["overview", "connections", "moderation", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
+  connections: "CONNECTIONS",
   moderation: "MODERATION",
   modules: "HUB_CONFIG",
   rules: "HUB_RULES",
@@ -54,13 +59,31 @@ const VIEW_CAPABILITIES: Record<string, string> = {
   settings: "HUB_CONFIG",
 };
 
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const user = await requireUser(request);
+  const hubId = params.hubId;
+  if (!hubId) {
+    throw new Response("Hub not found", { status: 404 });
+  }
+
+  let hub: HubResource | null = null;
+  try {
+    hub = await hubService.getHub(hubId, user.id);
+  } catch {
+    hub = null;
+  }
+
+  return { initialHub: hub };
+}
+
 type DashboardContext = {
   capabilities?: Record<string, boolean>;
 };
 
-export default function HubWorkspace() {
+export default function HubWorkspace({ loaderData }: Route.ComponentProps) {
   const params = useParams();
-  const { capabilities = {} } = useOutletContext<DashboardContext>();
+  const context = useOutletContext<DashboardContext>() || {};
+  const { capabilities = {} } = context;
   const hubId = params.hubId || "";
   const requestedView = params.view || "overview";
   const requestedTab = LEGACY_VIEWS[requestedView] || requestedView;
@@ -97,13 +120,19 @@ export default function HubWorkspace() {
     return attempt.key;
   };
 
-  const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
-    orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 })
-  );
-  const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }));
-  const hub = hubDetail || hubs.find((h) => h.metadata.id === hubId);
+  const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery({
+    ...orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 }),
+    enabled: Boolean(hubId),
+    initialData: loaderData?.initialHub ?? undefined,
+  });
+  const hubListEnabled = Boolean(capabilities.HUB_LIST || import.meta.env.DEV);
+  const { data: hubs = [] } = useQuery({
+    ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
+    enabled: hubListEnabled,
+  });
+  const hub = hubDetail || loaderData?.initialHub || hubs.find((h) => h.metadata.id === hubId);
   const isLoading = isHubLoading && !hub;
-  const connectionsEnabled = import.meta.env.DEV && activeTab === "connections";
+  const connectionsEnabled = (capabilities.CONNECTIONS || import.meta.env.DEV) && activeTab === "connections";
   const { data: connections = [] } = useQuery({
     ...orpc.hub.getConnections.queryOptions({ input: { hubId } }),
     enabled: connectionsEnabled,

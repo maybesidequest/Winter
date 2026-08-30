@@ -241,7 +241,9 @@ export const serverService = {
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
     const guild = await assertManageable(userId, input.serverId, true);
-    const current = await controlServerService.getServer(input.serverId, userId);
+    if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) {
+      throw new Error("A current canonical server version is required.");
+    }
     const updateMask: string[] = ["call_ping", "call_requeue", "call_nsfw_filter"];
     const callChannelId = input.lobbyChannelIds[0] || "";
     updateMask.push("call_channel_id");
@@ -254,7 +256,7 @@ export const serverService = {
         callNsfwFilter: input.filterNsfw,
       },
       updateMask,
-      expectedVersion: input.expectedVersion || current.version || 1,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });

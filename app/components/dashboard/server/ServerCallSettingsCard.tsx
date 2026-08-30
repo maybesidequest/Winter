@@ -39,7 +39,7 @@ interface ServerCallSettingsCardProps {
 export function ServerCallSettingsCard({ server, channels, onServerUpdated }: ServerCallSettingsCardProps) {
   const [spec, setSpec] = useState<CallSpec>(server.spec);
   const [saving, setSaving] = useState(false);
-  const [version, setVersion] = useState(server.version ?? 1);
+  const [version, setVersion] = useState<number | null>(server.version ?? null);
   const [savedSpec, setSavedSpec] = useState<CallSpec>(server.spec);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
@@ -47,7 +47,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
   useEffect(() => {
     setSpec(server.spec);
     setSavedSpec(server.spec);
-    setVersion(server.version ?? 1);
+    setVersion(server.version ?? null);
   }, [server]);
 
   const updateToggle = (key: EditableCallKey, value: boolean) => {
@@ -59,7 +59,10 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
   };
 
   const handleSave = async () => {
-    if (!isInstalled) return;
+    if (!isInstalled || !version) {
+      message.error("Canonical server version is unavailable. Refresh before saving.");
+      return;
+    }
     setSaving(true);
     try {
       const result = await orpc.server.patchCallConfig({
@@ -72,7 +75,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
         idempotencyKey: idempotencyKeyRef.current,
       });
       setSavedSpec(result.server?.spec ?? spec);
-      setVersion(result.server?.version ?? version + 1);
+      setVersion(result.server?.version ?? null);
       idempotencyKeyRef.current = crypto.randomUUID();
       onServerUpdated?.();
       message.success("Call settings saved successfully.");
@@ -125,7 +128,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
             <button
               type="button"
               onClick={handleSave}
-              disabled={!isInstalled || saving || !isDirty}
+              disabled={!isInstalled || !version || saving || !isDirty}
               className={`dashboard-btn-primary px-5 py-2 text-xs flex-shrink-0 flex items-center gap-1.5 ${!isDirty ? "opacity-50 cursor-not-allowed" : ""
                 }`}
             >

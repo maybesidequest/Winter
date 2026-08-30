@@ -182,7 +182,7 @@ export function ServerBridgeItem({
           {/* Hub Navigation Link */}
           {bridge.hubId && (
             <Link
-              to={`/dashboard/hubs/${bridge.hubId}`}
+              to={`/dashboard/hubs/${bridge.hubId}/overview`}
               className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold text-violet-300 hover:text-white flex items-center gap-1.5"
             >
               <span>Hub</span>

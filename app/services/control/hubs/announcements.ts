@@ -30,6 +30,10 @@ function desiredStateValue(value: HubAnnouncement["desiredState"]): HubAnnouncem
 function toAnnouncement(value: HubAnnouncement__Output): HubAnnouncement {
   const spec = value.spec;
   const status = value.status;
+  const version = Number(value.metadata?.version ?? 0);
+  if (!Number.isInteger(version) || version < 1) {
+    throw new Error("Control Plane returned an announcement without a canonical version.");
+  }
   return {
     id: value.id,
     hubId: value.hubId,
@@ -42,7 +46,7 @@ function toAnnouncement(value: HubAnnouncement__Output): HubAnnouncement {
     repeatIntervalSeconds: Number(spec?.repeatIntervalSeconds || 0),
     timeZone: spec?.timeZone || "UTC",
     desiredState: (spec?.desiredState || "HUB_ANNOUNCEMENT_DESIRED_STATE_DRAFT").replace("HUB_ANNOUNCEMENT_DESIRED_STATE_", "") as HubAnnouncement["desiredState"],
-    version: Number(value.metadata?.version || 1),
+    version,
     nextDelivery: timestamp(status?.nextDelivery),
     latestAttempt: timestamp(status?.latestAttempt),
     latestSuccess: timestamp(status?.latestSuccess),
