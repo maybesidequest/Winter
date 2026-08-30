@@ -1,4 +1,9 @@
 import { redis } from "~/redis.server";
+import {
+  createManageableGuildLoader,
+  DiscordGuildRateLimitError,
+  type DiscordGuild,
+} from "~/services/discordGuilds.server";
 import type {
   DiscordChannelResource,
   ServerBlockResource,
@@ -12,12 +17,16 @@ import { getDiscordAccessToken } from "~/services/oauthToken.server";
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
 
-type DiscordGuild = { id: string; name: string; icon: string | null; owner?: boolean; permissions: string };
-
 function isControlNotFound(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const code = (error as { code?: unknown }).code;
   return code === 5 || code === "NOT_FOUND";
+}
+
+function isControlPermissionDenied(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  return code === 7 || code === "PERMISSION_DENIED";
 }
 
 function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {
@@ -55,47 +64,49 @@ async function discordFetch(path: string, authorization: string) {
   }
 }
 
-async function manageableGuilds(userId: string, forceRefresh = false): Promise<DiscordGuild[]> {
-  const cacheKey = `discord:guilds:${userId}`;
-  if (!forceRefresh) {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
+const manageableGuilds = createManageableGuildLoader({
+  cache: {
+    async get(userId: string): Promise<DiscordGuild[] | undefined> {
       try {
-        return JSON.parse(cached) as DiscordGuild[];
+        const cached = await redis.get(`discord:guilds:${userId}`);
+        if (!cached) return undefined;
+        const parsed: unknown = JSON.parse(cached);
+        return Array.isArray(parsed) ? parsed as DiscordGuild[] : undefined;
       } catch {
-        // invalid JSON in cache
+        return undefined;
       }
-    }
-  }
-
-  const token = await getDiscordAccessToken(userId);
-  const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "");
-    console.error(`Discord API /users/@me/guilds error: HTTP ${response.status} ${response.statusText}`, errorBody);
-    if (response.status === 401) {
-      throw new Error("Discord authorization expired. Sign in again.");
-    }
-    if (response.status === 429) {
-      // If we are rate-limited, fall back to cached guilds if available
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        try {
-          return JSON.parse(cached) as DiscordGuild[];
-        } catch { }
+    },
+    async set(userId: string, guilds: DiscordGuild[], ttlSeconds: number): Promise<void> {
+      try {
+        await redis.set(`discord:guilds:${userId}`, JSON.stringify(guilds), "EX", ttlSeconds);
+      } catch {
+        // Authorization caching is an optimization; Redis availability must
+        // never decide whether a Discord request is allowed to proceed.
       }
-      throw new Error("Discord API rate limit exceeded. Please wait a moment.");
+    },
+  },
+  cacheTtlSeconds: Math.max(15, Number(process.env.DISCORD_GUILD_CACHE_TTL_SECONDS || 60) || 60),
+  fetchGuilds: async (userId: string): Promise<DiscordGuild[]> => {
+    const token = await getDiscordAccessToken(userId);
+    const response = await discordFetch("/users/@me/guilds", `Bearer ${token}`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Discord authorization expired. Sign in again.");
+      }
+      if (response.status === 429) {
+        const retryAfter = Number(response.headers.get("retry-after"));
+        throw new DiscordGuildRateLimitError(Number.isFinite(retryAfter) ? retryAfter : undefined);
+      }
+      throw new Error("Discord servers could not be loaded.");
     }
-    throw new Error("Discord servers could not be loaded.");
-  }
-  const guilds = (await response.json()) as DiscordGuild[];
-  const manageable = guilds.filter(
-    (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
-  );
+    const guilds = (await response.json()) as DiscordGuild[];
+    const manageable = guilds.filter(
+      (guild) => guild.owner || (BigInt(guild.permissions) & (MANAGE_GUILD | ADMINISTRATOR)) !== 0n
+    );
 
-  await redis.set(cacheKey, JSON.stringify(manageable), "EX", 600);
-  return manageable;
-}
+    return manageable;
+  },
+});
 
 async function assertManageable(userId: string, serverId: string, forceRefresh = false) {
   const guild = (await manageableGuilds(userId, forceRefresh)).find((item) => item.id === serverId);
@@ -105,16 +116,6 @@ async function assertManageable(userId: string, serverId: string, forceRefresh =
 
 export const serverService = {
   async list(userId: string, forceRefresh = false): Promise<ServerResource[]> {
-    const cacheKey = `winter:servers:${userId}`;
-    if (!forceRefresh) {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        try {
-          return JSON.parse(cached) as ServerResource[];
-        } catch { }
-      }
-    }
-
     const guilds = await manageableGuilds(userId, forceRefresh);
     if (guilds.length === 0) return [];
 
@@ -128,6 +129,7 @@ export const serverService = {
       }
     } catch (err) {
       console.warn(`[serverService.list] Failed to batch get servers for user ${userId}:`, err);
+      throw new Error("Server configuration is temporarily unavailable. Please try again shortly.", { cause: err });
     }
 
     const result: ServerResource[] = guilds.map((guild) => {
@@ -142,7 +144,7 @@ export const serverService = {
           spec: normalizeServerSpec(server.spec),
           status: {
             ...server.status,
-            botInstalled: true,
+            botInstalled: server.status.botInstalled,
             manageable: true,
           },
           version: server.version,
@@ -171,20 +173,11 @@ export const serverService = {
       };
     });
 
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
     return result;
   },
 
 
   async get(userId: string, serverId: string): Promise<ServerResource> {
-    const cacheKey = `winter:server:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerResource;
-      } catch { }
-    }
-
     const guild = await assertManageable(userId, serverId, false);
     try {
       const res = await controlServerService.getServer(serverId, userId);
@@ -201,11 +194,11 @@ export const serverService = {
         },
         version: res.version,
       };
-      await redis.set(cacheKey, JSON.stringify(server), "EX", 120);
       return server;
     } catch (error) {
       if (!isControlNotFound(error)) {
         console.warn(`[serverService.get] Control Plane failed for server ${serverId}:`, error);
+        throw new Error("Server configuration is temporarily unavailable. Please try again shortly.", { cause: error });
       }
       return {
         metadata: {
@@ -232,45 +225,25 @@ export const serverService = {
 
   async channels(userId: string, serverId: string): Promise<DiscordChannelResource[]> {
     await assertManageable(userId, serverId, false);
-    const botToken = process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN;
-    if (!botToken) {
-      // In environments without a Discord bot token configured, user tokens cannot
-      // query guild channels. Degrade gracefully immediately without waiting on Discord.
-      return [];
-    }
+    const channels = await controlServerService.listConnectableChannels(serverId, userId);
+    const result = channels.map((channel) => ({
+      id: channel.channelId,
+      name: channel.name,
+      type: channel.type,
+      actorPermissions: Number(channel.actorPermissions || 0),
+      botPermissions: Number(channel.botPermissions || 0),
+      connectable: channel.connectable,
+      rejectionReason: channel.rejectionReason || null,
+    }));
 
-    const cacheKey = `discord:channels:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as DiscordChannelResource[];
-      } catch { }
-    }
-
-    const response = await discordFetch(`/guilds/${serverId}/channels`, `Bot ${botToken}`);
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "");
-      console.warn(`[channels] Discord channel fetch failed for server ${serverId}: HTTP ${response.status}`, errorText);
-      if (response.status === 401 || response.status === 403) {
-        return [];
-      }
-      throw new Error("Discord channels could not be loaded. Please try again shortly.");
-    }
-    const channels = (await response.json()) as Array<{ id: string; name: string; type: number }>;
-    const result = channels
-      .filter((channel) => channel.type === 0 || channel.type === 5)
-      // Discord's channel listing does not include the bot's effective
-      // webhook permission. Let the Control Plane perform the authoritative
-      // check instead of advertising a fabricated capability.
-      .map((channel) => ({ ...channel, canCreateWebhook: false }));
-
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
     return result;
   },
 
   async updateCallConfig(userId: string, input: PatchCallConfigInput) {
     const guild = await assertManageable(userId, input.serverId, true);
-    const current = await controlServerService.getServer(input.serverId, userId);
+    if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) {
+      throw new Error("A current canonical server version is required.");
+    }
     const updateMask: string[] = ["call_ping", "call_requeue", "call_nsfw_filter"];
     const callChannelId = input.lobbyChannelIds[0] || "";
     updateMask.push("call_channel_id");
@@ -283,12 +256,12 @@ export const serverService = {
         callNsfwFilter: input.filterNsfw,
       },
       updateMask,
-      expectedVersion: input.expectedVersion || current.version || 1,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
     await Promise.all([
-      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:server:${userId}:${input.serverId}`),
       redis.del(`winter:servers:${userId}`),
       redis.incr(`server:settings:version:${input.serverId}`),
       redis.del(`server:settings:${input.serverId}`),
@@ -308,7 +281,7 @@ export const serverService = {
     });
     const prefixVal = input.prefix ? JSON.stringify(input.prefix) : "false";
     await Promise.all([
-      redis.del(`winter:server:${input.serverId}`),
+      redis.del(`winter:server:${userId}:${input.serverId}`),
       redis.del(`winter:servers:${userId}`),
       redis.set(`server:prefix:${input.serverId}`, prefixVal, "EX", 3600),
       redis.incr(`server:prefix:version:${input.serverId}`),
@@ -317,14 +290,6 @@ export const serverService = {
   },
 
   async bridges(userId: string, serverId: string): Promise<ServerBridgeResource[]> {
-    const cacheKey = `winter:bridges:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerBridgeResource[];
-      } catch { }
-    }
-
     await assertManageable(userId, serverId, false);
     try {
       const [connections, channels] = await Promise.all([
@@ -332,7 +297,7 @@ export const serverService = {
           serverId,
           actorId: userId,
         }),
-        serverService.channels(userId, serverId).catch(() => []),
+        serverService.channels(userId, serverId),
       ]);
 
       const channelMap = new Map(channels.map((c) => [c.id, c.name]));
@@ -341,7 +306,12 @@ export const serverService = {
       const getHubMemoized = (hubId: string) => {
         let p = hubPromises.get(hubId);
         if (!p) {
-          p = controlHubService.getHub(hubId, userId).catch(() => undefined);
+          p = controlHubService.getHub(hubId, userId).catch((error) => {
+            // A deleted/private Hub may be redacted from a bridge row, but a
+            // Control Plane outage must make the whole projection unavailable.
+            if (isControlNotFound(error) || isControlPermissionDenied(error)) return undefined;
+            throw error;
+          });
           hubPromises.set(hubId, p);
         }
         return p;
@@ -366,17 +336,16 @@ export const serverService = {
           connected: conn.spec.connected,
           pausedByBot: !conn.status.healthy,
           pauseReason: conn.status.statusMessage || null,
-          createdAt: conn.metadata.createdAt || new Date().toISOString(),
+          createdAt: conn.metadata.createdAt || null,
           version: conn.version,
           webhookProvisioned: conn.status.webhookProvisioned,
         };
       }));
 
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
       return result;
     } catch (err) {
       console.warn(`[serverService.bridges] Could not fetch connections for server ${serverId}:`, err);
-      return [];
+      throw new Error("Server bridges are temporarily unavailable. Please try again shortly.", { cause: err });
     }
   },
 
@@ -392,63 +361,58 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
-  async repairBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+  async repairBridge(userId: string, input: { serverId: string; connectionId: string; expectedVersion: number; idempotencyKey: string }) {
     await assertManageable(userId, input.serverId, true);
     const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
       .find((connection) => connection.metadata.id === input.connectionId);
     if (!current) throw new Error("Connection not found on this server.");
     const connection = await controlConnectionService.repairConnectionWebhooks({
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
-  async disconnectBridge(userId: string, input: { serverId: string; connectionId: string; idempotencyKey: string }) {
+  async disconnectBridge(userId: string, input: { serverId: string; connectionId: string; expectedVersion: number; idempotencyKey: string }) {
     await assertManageable(userId, input.serverId, true);
     const current = (await controlConnectionService.getConnections({ serverId: input.serverId, actorId: userId }))
       .find((connection) => connection.metadata.id === input.connectionId);
     if (!current) throw new Error("Connection not found on this server.");
     await controlConnectionService.disconnectChannel({
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 
 
   async blocklist(userId: string, serverId: string): Promise<ServerBlockResource[]> {
-    const cacheKey = `winter:blocklist:${serverId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as ServerBlockResource[];
-      } catch { }
-    }
-
     await assertManageable(userId, serverId, false);
     try {
       const blocks = await controlServerService.getBlocklist(serverId, userId);
 
       const result: ServerBlockResource[] = blocks.map((b) => ({
         id: b.id,
-        targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : "server",
+        targetType: b.targetType === "BLOCK_TARGET_TYPE_USER" ? "user" : b.targetType === "BLOCK_TARGET_TYPE_SERVER" ? "server" : (() => { throw new Error("Control Plane returned an unknown block target type."); })(),
         targetId: b.targetId,
-        createdAt: b.createdAt || new Date().toISOString(),
+        reason: b.reason,
+        authorId: b.authorId,
+        createdAt: b.createdAt || null,
       }));
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
       return result;
     } catch (err) {
       console.warn(`[serverService.blocklist] Could not fetch blocklist for server ${serverId}:`, err);
-      return [];
+      throw new Error("Server blocklist is temporarily unavailable. Please try again shortly.", { cause: err });
     }
   },
 
@@ -463,7 +427,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, id: res.id };
   },
 
@@ -475,7 +439,7 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${input.serverId}`).catch(() => { });
+    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 };

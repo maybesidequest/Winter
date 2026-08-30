@@ -1,12 +1,23 @@
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router";
+import type { LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel";
 import { HubWorkspaceTabs } from "~/components/dashboard/HubWorkspaceTabs";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { orpc } from "~/lib/orpc";
+import type { HubResource } from "~/resources/hub";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
+import { requireUser } from "~/services/auth.server";
+import { hubService } from "~/services/hub.server";
+import type { Route } from "./+types/hub-workspace";
+import {
+  classifyLifecycleError,
+  idempotencyAttemptFor,
+  type IdempotencyAttempt,
+  type LifecycleAction,
+} from "~/services/lifecycleIntent";
 
 const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
   overview: { title: "Overview", desc: "Hub status, activity, and identity settings." },
@@ -31,10 +42,12 @@ const LEGACY_VIEWS: Record<string, string> = {
   members: "team",
 };
 
-const VISIBLE_HUB_VIEWS = new Set(["overview", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
+const VISIBLE_HUB_VIEWS = new Set(["overview", "connections", "moderation", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
+  connections: "CONNECTIONS",
+  moderation: "MODERATION",
   modules: "HUB_CONFIG",
   rules: "HUB_RULES",
   logging: "HUB_LOGGING",
@@ -46,13 +59,31 @@ const VIEW_CAPABILITIES: Record<string, string> = {
   settings: "HUB_CONFIG",
 };
 
+export async function loader({ request, params }: Route.LoaderArgs) {
+  const user = await requireUser(request);
+  const hubId = params.hubId;
+  if (!hubId) {
+    throw new Response("Hub not found", { status: 404 });
+  }
+
+  let hub: HubResource | null = null;
+  try {
+    hub = await hubService.getHub(hubId, user.id);
+  } catch {
+    hub = null;
+  }
+
+  return { initialHub: hub };
+}
+
 type DashboardContext = {
   capabilities?: Record<string, boolean>;
 };
 
-export default function HubWorkspace() {
+export default function HubWorkspace({ loaderData }: Route.ComponentProps) {
   const params = useParams();
-  const { capabilities = {} } = useOutletContext<DashboardContext>();
+  const context = useOutletContext<DashboardContext>() || {};
+  const { capabilities = {} } = context;
   const hubId = params.hubId || "";
   const requestedView = params.view || "overview";
   const requestedTab = LEGACY_VIEWS[requestedView] || requestedView;
@@ -65,14 +96,43 @@ export default function HubWorkspace() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const patchAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const lifecycleAttemptsRef = useRef<Partial<Record<LifecycleAction, IdempotencyAttempt>>>({});
+  const lifecycleRetryRef = useRef<(() => void) | null>(null);
+  const [lifecycleFailure, setLifecycleFailure] = useState<LifecycleFailure>();
 
-  const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery(
-    orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 })
-  );
-  const { data: hubs = [] } = useQuery(orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }));
-  const hub = hubDetail || hubs.find((h) => h.metadata.id === hubId);
+  const recordLifecycleFailure = (action: LifecycleAction, error: unknown) => {
+    setLifecycleFailure({
+      action,
+      recovery: classifyLifecycleError(error),
+      message: error instanceof Error ? error.message : "The lifecycle action failed.",
+    });
+  };
+
+  const clearLifecycleAttempt = (action: LifecycleAction) => {
+    delete lifecycleAttemptsRef.current[action];
+    lifecycleRetryRef.current = null;
+    setLifecycleFailure(undefined);
+  };
+
+  const lifecycleKey = (action: LifecycleAction, fingerprint: string) => {
+    const attempt = idempotencyAttemptFor(lifecycleAttemptsRef.current[action] ?? null, fingerprint);
+    lifecycleAttemptsRef.current[action] = attempt;
+    return attempt.key;
+  };
+
+  const { data: hubDetail, isLoading: isHubLoading, isError } = useQuery({
+    ...orpc.hub.getHub.queryOptions({ input: { hubId }, staleTime: 60_000 }),
+    enabled: Boolean(hubId),
+    initialData: loaderData?.initialHub ?? undefined,
+  });
+  const hubListEnabled = Boolean(capabilities.HUB_LIST || import.meta.env.DEV);
+  const { data: hubs = [] } = useQuery({
+    ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
+    enabled: hubListEnabled,
+  });
+  const hub = hubDetail || loaderData?.initialHub || hubs.find((h) => h.metadata.id === hubId);
   const isLoading = isHubLoading && !hub;
-  const connectionsEnabled = import.meta.env.DEV && activeTab === "connections";
+  const connectionsEnabled = (capabilities.CONNECTIONS || import.meta.env.DEV) && activeTab === "connections";
   const { data: connections = [] } = useQuery({
     ...orpc.hub.getConnections.queryOptions({ input: { hubId } }),
     enabled: connectionsEnabled,
@@ -104,6 +164,10 @@ export default function HubWorkspace() {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
       },
+      onError: async (err) => {
+        message.error(err.message || "Failed to update this bridge.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
+      },
     })
   );
 
@@ -113,41 +177,116 @@ export default function HubWorkspace() {
         message.success("Bridge disconnected successfully.");
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
       },
+      onError: async (err) => {
+        message.error(err.message || "Failed to disconnect this bridge.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getConnections.queryOptions({ input: { hubId } }).queryKey });
+      },
     })
   );
 
   const deleteHubMutation = useMutation(
     orpc.hub.deleteHub.mutationOptions({
       onSuccess: async () => {
+        clearLifecycleAttempt("delete");
         message.success("Hub deleted successfully.");
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
         navigate("/dashboard/hubs");
       },
-      onError: (err) => message.error(err.message || "Failed to delete hub."),
+      onError: (err) => recordLifecycleFailure("delete", err),
     })
   );
 
   const transferOwnershipMutation = useMutation(
     orpc.hub.transferOwnership.mutationOptions({
       onSuccess: async () => {
+        clearLifecycleAttempt("transfer");
         message.success("Ownership transferred successfully.");
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
         await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
       },
-      onError: (err) => message.error(err.message || "Failed to transfer ownership."),
+      onError: (err) => recordLifecycleFailure("transfer", err),
     })
   );
 
+  const lockdownMutation = useMutation(
+    orpc.hub.lockdownHub.mutationOptions({
+      onSuccess: async (updatedHub) => {
+        clearLifecycleAttempt("lockdown");
+        message.success(updatedHub.spec.locked ? "Hub lockdown enabled." : "Hub lockdown lifted.");
+        queryClient.setQueryData(
+          orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey,
+          updatedHub,
+        );
+        await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+      },
+      onError: (err) => recordLifecycleFailure("lockdown", err),
+    }),
+  );
+
   const patchConfig = (changes: Record<string, unknown>) => {
-    const fingerprint = JSON.stringify({ hubId, version: hub?.version, changes });
+    if (!hub?.version) {
+      message.error("Hub version is unavailable. Refresh before saving.");
+      return;
+    }
+    const fingerprint = JSON.stringify({ hubId, version: hub.version, changes });
     if (!patchAttemptRef.current || patchAttemptRef.current.fingerprint !== fingerprint) {
       patchAttemptRef.current = { fingerprint, key: crypto.randomUUID() };
     }
     patchMutation.mutate({
       hubId,
       idempotencyKey: patchAttemptRef.current.key,
-      version: hub?.version,
+      version: hub.version,
       ...changes,
     });
+  };
+
+  const deleteHub = (confirmationName: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, confirmationName, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      confirmationName,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("delete", fingerprint),
+    };
+    lifecycleRetryRef.current = () => deleteHubMutation.mutate(input);
+    deleteHubMutation.mutate(input);
+  };
+
+  const transferOwnership = (newOwnerId: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, newOwnerId, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      newOwnerId,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("transfer", fingerprint),
+    };
+    lifecycleRetryRef.current = () => transferOwnershipMutation.mutate(input);
+    transferOwnershipMutation.mutate(input);
+  };
+
+  const lockdownHub = (locked: boolean, reason: string) => {
+    if (!hub) return;
+    setLifecycleFailure(undefined);
+    const fingerprint = JSON.stringify({ hubId, locked, reason, expectedVersion: hub.version });
+    const input = {
+      hubId,
+      locked,
+      reason,
+      expectedVersion: hub.version,
+      idempotencyKey: lifecycleKey("lockdown", fingerprint),
+    };
+    lifecycleRetryRef.current = () => lockdownMutation.mutate(input);
+    lockdownMutation.mutate(input);
+  };
+
+  const refreshLifecycle = async () => {
+    await queryClient.invalidateQueries({ queryKey: orpc.hub.getHub.queryOptions({ input: { hubId } }).queryKey });
+    await queryClient.invalidateQueries({ queryKey: orpc.hub.getUserHubs.queryOptions().queryKey });
+    setLifecycleFailure(undefined);
   };
 
   if (isLoading) {
@@ -215,18 +354,33 @@ export default function HubWorkspace() {
         canEdit={hasPerm("MANAGE_HUB_SETTINGS")}
         canManageConnections={hasPerm("MANAGE_CONNECTIONS")}
         isOwner={hub.metadata.effectiveRole === "OWNER"}
+        canLockdown={hub.metadata.effectiveRole === "OWNER" || hasPerm("LOCKDOWN_HUB")}
         isSaving={patchMutation.isPending}
         saveError={patchMutation.error instanceof Error ? patchMutation.error.message : undefined}
         isRoutePending={toggleRouteMutation.isPending || disconnectRouteMutation.isPending}
         onSaveConfig={(changes) => patchConfig(changes)}
-        onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected, idempotencyKey: crypto.randomUUID() })}
-        onDisconnectRoute={(conn) => disconnectRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, idempotencyKey: crypto.randomUUID() })}
+        onToggleRoute={(conn) => toggleRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, enabled: !conn.spec.connected, expectedVersion: conn.version, idempotencyKey: crypto.randomUUID() })}
+        onDisconnectRoute={(conn) => disconnectRouteMutation.mutate({ hubId, connectionId: conn.metadata.id, expectedVersion: conn.version, idempotencyKey: crypto.randomUUID() })}
         onToggleModuleFlag={(flag, enabled) => {
           const updatedSettings = toggleSettingsFlag(hub.spec.settings, flag as HubSettingsFlag, enabled);
           patchConfig({ settings: updatedSettings });
         }}
-        onDeleteHub={() => deleteHubMutation.mutate({ hubId, confirmationName: hub.metadata.name, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}
-        onTransferOwnership={(newOwnerId) => transferOwnershipMutation.mutate({ hubId, newOwnerId, expectedVersion: hub.version, idempotencyKey: crypto.randomUUID() })}
+        pendingLifecycleAction={
+          deleteHubMutation.isPending
+            ? "delete"
+            : transferOwnershipMutation.isPending
+              ? "transfer"
+              : lockdownMutation.isPending
+                ? "lockdown"
+                : undefined
+        }
+        lifecycleFailure={lifecycleFailure}
+        onLockdownHub={lockdownHub}
+        onDeleteHub={deleteHub}
+        onTransferOwnership={transferOwnership}
+        onRefreshLifecycle={refreshLifecycle}
+        onRetryLifecycle={() => lifecycleRetryRef.current?.()}
+        onBackToHubs={() => navigate("/dashboard/hubs")}
       />
     </div>
   );

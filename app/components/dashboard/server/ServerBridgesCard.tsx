@@ -4,10 +4,10 @@ import {
   CompassOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import { useMemo, useRef, useState } from "react";
-import { Link, useRevalidator } from "react-router";
+import { Link } from "react-router";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpc } from "~/lib/orpc";
 import type { DiscordChannelResource, ServerBridgeResource, ServerResource } from "~/resources/server";
@@ -17,10 +17,11 @@ interface ServerBridgesCardProps {
   server: ServerResource;
   bridges: ServerBridgeResource[];
   channels?: DiscordChannelResource[];
+  onServerUpdated?: () => void;
 }
 
-export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBridgesCardProps) {
-  const revalidator = useRevalidator();
+export function ServerBridgesCard({ server, bridges, channels = [], onServerUpdated }: ServerBridgesCardProps) {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
   const [pendingAction, setPendingAction] = useState<{
@@ -42,14 +43,23 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
     return new Map(channels.map((c) => [c.id, c.name]));
   }, [channels]);
 
+  const refreshBridges = () => {
+    void queryClient.invalidateQueries({
+      queryKey: orpc.server.bridges.queryOptions({ input: { serverId: server.metadata.id } }).queryKey,
+    });
+  };
+
   const toggleMutation = useMutation(
     orpc.server.toggleBridge.mutationOptions({
       onSuccess: (_result, variables) => {
         actionKeysRef.current.delete(`toggle:${variables.connectionId}`);
         message.success(variables.enabled ? "Bridge resumed." : "Bridge paused.");
-        revalidator.revalidate();
+        refreshBridges();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to update this bridge."),
+      onError: (error) => {
+        refreshBridges();
+        message.error(error instanceof Error ? error.message : "Unable to update this bridge.");
+      },
     }),
   );
 
@@ -58,9 +68,12 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       onSuccess: (_result, variables) => {
         actionKeysRef.current.delete(`repair:${variables.connectionId}`);
         message.success("Bridge webhooks repaired.");
-        revalidator.revalidate();
+        refreshBridges();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to repair this bridge."),
+      onError: (error) => {
+        refreshBridges();
+        message.error(error instanceof Error ? error.message : "Unable to repair this bridge.");
+      },
     }),
   );
 
@@ -69,9 +82,13 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       onSuccess: (_result, variables) => {
         actionKeysRef.current.delete(`disconnect:${variables.connectionId}`);
         message.success("Bridge disconnected.");
-        revalidator.revalidate();
+        refreshBridges();
+        onServerUpdated?.();
       },
-      onError: (error) => message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge."),
+      onError: (error) => {
+        refreshBridges();
+        message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge.");
+      },
     }),
   );
 
@@ -97,6 +114,7 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       {
         serverId: server.metadata.id,
         connectionId: bridge.id,
+        expectedVersion: bridge.version,
         idempotencyKey: keyFor("repair", bridge.id),
       },
       {
@@ -111,6 +129,7 @@ export function ServerBridgesCard({ server, bridges, channels = [] }: ServerBrid
       {
         serverId: server.metadata.id,
         connectionId: bridge.id,
+        expectedVersion: bridge.version,
         idempotencyKey: keyFor("disconnect", bridge.id),
       },
       {

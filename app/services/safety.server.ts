@@ -1,6 +1,7 @@
 import type { SafetyItemResource, SafetyItemType } from "~/resources/safety";
 import { permissionService } from "./permission.server";
 import { polarizerClient } from "./polarizer.server";
+import { moderationService } from "./control/moderation";
 
 function timestamp(value: any): string | null {
   if (!value?.seconds) return null;
@@ -22,12 +23,34 @@ function normalize(type: SafetyItemType, item: any): SafetyItemResource {
 
 export const safetyService = {
   async list(actorId: string, input: { hubId: string; type: SafetyItemType; cursor?: string }) {
+    // Infractions and appeals are canonical Control Plane resources. Polarizer
+    // only owns message-review evidence and must never supply their state.
+    if (input.type === "infraction") {
+      const page = await moderationService.listInfractions({ hubId: input.hubId, actorId, cursor: input.cursor });
+      return {
+        items: page.items.map((item) => ({
+          metadata: { id: item.id, createdAt: item.createdAt, version: item.version },
+          spec: { type: "infraction" as const, summary: item.reason, reasonCodes: [], subject: item.subject || { userId: item.userId } },
+          status: { state: item.lifecycleState, assignedTo: undefined, resolvedBy: item.revokedBy || undefined },
+        })),
+        nextCursor: page.nextCursor,
+      };
+    }
+    if (input.type === "appeal") {
+      const page = await moderationService.listHubAppeals({ hubId: input.hubId, actorId, cursor: input.cursor });
+      return {
+        items: page.items.map((item) => ({
+          metadata: { id: item.id, createdAt: item.createdAt, version: item.version },
+          spec: { type: "appeal" as const, summary: item.reason, reasonCodes: [], subject: { userId: item.userId } },
+          status: { state: item.appealStatus, assignedTo: item.reviewerId || undefined, resolvedBy: item.reviewerId || undefined },
+        })),
+        nextCursor: page.nextCursor,
+      };
+    }
     await permissionService.assertCanPerform(actorId, input.hubId, "VIEW_LOGS");
     const methods = {
       review: polarizerClient.listReviews,
       report: polarizerClient.listReports,
-      appeal: polarizerClient.listAppeals,
-      infraction: polarizerClient.listInfractions,
       restriction: polarizerClient.listRestrictions,
     };
     const response = await methods[input.type](actorId, input.hubId, input.cursor);
@@ -41,4 +64,3 @@ export const safetyService = {
     return { state: result.state, version: Number(result.version), deliveryPending: input.resolution === "APPROVE" };
   },
 };
-

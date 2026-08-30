@@ -13,6 +13,7 @@ import {
   createHubAnnouncementSchema,
   updateHubAnnouncementSchema,
   deleteHubAnnouncementSchema,
+  transitionHubAnnouncementSchema,
   patchHubBadgesSchema,
   patchHubLogConfigSchema,
   assignHubStaffSchema,
@@ -167,6 +168,13 @@ export const hubFeaturesRouter = protectedBase.router({
       requireCapability("HUB_ANNOUNCEMENTS");
       await controlCall(() => hubService.deleteAnnouncement(context.user.id, input));
       return { success: true };
+    }),
+
+  transitionAnnouncement: protectedBase
+    .input(transitionHubAnnouncementSchema)
+    .handler(async ({ input, context }) => {
+      requireCapability("HUB_ANNOUNCEMENTS");
+      return controlCall(() => hubService.transitionAnnouncement(context.user.id, input));
     }),
 
   listStaff: protectedBase

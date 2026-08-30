@@ -14,9 +14,10 @@ import { orpc } from "~/lib/orpc";
 
 export default function ServersPage() {
   const queryClient = useQueryClient();
-  const { data: servers = [], isLoading, isError } = useQuery(
-    orpc.server.list.queryOptions({ staleTime: 300_000 })
+  const { data: servers, isLoading, isError } = useQuery(
+    orpc.server.list.queryOptions({ staleTime: 30_000 })
   );
+  const serverItems = servers ?? [];
   const [cooldown, setCooldown] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -69,13 +70,6 @@ export default function ServersPage() {
         }
       />
 
-      {isError && (
-        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200 text-sm flex items-center gap-3">
-          <ExclamationCircleOutlined className="text-red-400 text-base flex-shrink-0" />
-          <span>Discord server access could not be refreshed. Sign in again if this continues.</span>
-        </div>
-      )}
-
       <div
         className="rounded-2xl border overflow-hidden flex flex-col"
         style={dashboardGlassCardStyle}
@@ -96,9 +90,15 @@ export default function ServersPage() {
               </div>
             ))}
           </div>
-        ) : servers.length > 0 ? (
+        ) : isError ? (
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-3" role="alert">
+            <ExclamationCircleOutlined className="text-red-400 text-2xl" />
+            <h3 className="text-base font-bold text-white font-['Sora']">Server data unavailable</h3>
+            <p className="text-xs text-white/60 max-w-sm">Discord or the Control Plane could not return your server inventory. Retry when the service is available.</p>
+          </div>
+        ) : serverItems.length > 0 ? (
           <div className="flex flex-col divide-y divide-white/[0.06]">
-            {servers.map((server) => {
+            {serverItems.map((server) => {
               const isInstalled = server.status.botInstalled;
               return (
                 <div
@@ -148,7 +148,7 @@ export default function ServersPage() {
                           className={`w-1.5 h-1.5 rounded-full ${isInstalled ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" : "bg-amber-400"
                             }`}
                         />
-                        {isInstalled ? "Ready" : "Install required"}
+                        {isInstalled ? "Installed" : "Install required"}
                       </span>
                     </div>
 

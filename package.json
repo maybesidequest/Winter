@@ -7,6 +7,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "bun run server.ts",
+    "test": "bun test",
     "smoke:docker": "bash scripts/docker-smoke.sh",
     "validate:phase2": "bun run scripts/validate-phase2-matrix.ts",
     "typecheck": "react-router typegen && tsc",

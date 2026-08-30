@@ -1,7 +1,7 @@
 import { ArrowRightOutlined, ExclamationCircleOutlined, PlusOutlined, TeamOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate, useOutletContext } from "react-router";
+import { Link, useNavigate, useOutletContext } from "react-router";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
@@ -17,7 +17,36 @@ export default function HubsPage() {
     ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
     enabled: capabilities.HUB_LIST || import.meta.env.DEV,
   });
-  if (!capabilities.HUB_LIST && !import.meta.env.DEV) return <Navigate to="/dashboard" replace />;
+  if (!capabilities.HUB_LIST && !import.meta.env.DEV) {
+    return (
+      <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
+        <PageHeader
+          eyebrow="Places"
+          title="Hubs"
+          description="Persistent spaces where connected Discord communities share conversation, rules, and a moderation team."
+        />
+        <div
+          className="p-10 rounded-2xl border flex flex-col items-center justify-center text-center gap-4"
+          style={dashboardGlassCardStyle}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+            <TeamOutlined />
+          </div>
+          <div className="flex flex-col gap-1.5 max-w-md">
+            <h3 className="text-base font-bold text-white font-['Sora'] m-0">
+              Hub Management Restricted
+            </h3>
+            <p className="text-xs text-white/60 m-0">
+              Personal Hub management is currently restricted or undergoing rollout in this environment. If you believe this is an error, please verify that the Hub capability flag is enabled.
+            </p>
+          </div>
+          <Link to="/dashboard" className="dashboard-btn-secondary px-5 py-2 text-xs font-bold mt-2">
+            Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
   const filteredHubs = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     if (!query) return hubs;

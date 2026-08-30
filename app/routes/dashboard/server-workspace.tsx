@@ -5,8 +5,9 @@ import {
   SettingOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { Link, useLoaderData, useOutletContext, useParams, type ShouldRevalidateFunctionArgs } from "react-router";
+import { Link, useLoaderData, useNavigation, useOutletContext, useParams, useRevalidator, type ShouldRevalidateFunctionArgs } from "react-router";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
@@ -14,8 +15,10 @@ import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCall
 import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
 import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
 import { requireUser } from "~/services/auth.server";
-import { isCapabilityEnabled } from "~/services/capabilities.server";
 import { serverService } from "~/services/server.server";
+import { shouldRevalidateServerWorkspace } from "~/services/serverWorkspaceNavigation";
+import { stateForCollection, stateForControlError, type ServerDataState } from "~/services/serverState";
+import { orpc } from "~/lib/orpc";
 import type { Route } from "./+types/server-workspace";
 
 export function shouldRevalidate({
@@ -24,13 +27,12 @@ export function shouldRevalidate({
   formMethod,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) {
-  // Revalidate on mutations (e.g. updating prefix, call config, bridges) or revalidator.revalidate()
-  if (formMethod || defaultShouldRevalidate) return true;
-  // Revalidate if navigating to a different server
-  if (currentParams.serverId !== nextParams.serverId) return true;
-  // Revalidate if switching views so the loader fetches the required view data
-  if (currentParams.view !== nextParams.view) return true;
-  return false;
+  return shouldRevalidateServerWorkspace({
+    currentParams,
+    nextParams,
+    formMethod,
+    defaultShouldRevalidate,
+  });
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -40,60 +42,31 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw new Response("Server not found", { status: 404 });
   }
 
-  const server = await serverService.get(user.id, serverId);
-  const requestedView = params.view || "overview";
-
-  // Performance optimization: only load supplementary data when on the respective view
-  const shouldLoadChannels =
-    server.status.botInstalled &&
-    isCapabilityEnabled("CONNECTIONS") &&
-    (requestedView === "calls" || requestedView === "bridges");
-
-  const shouldLoadBridges =
-    server.status.botInstalled &&
-    isCapabilityEnabled("CONNECTIONS") &&
-    requestedView === "bridges";
-
-  const shouldLoadBlocks =
-    server.status.botInstalled &&
-    isCapabilityEnabled("SERVER_BLOCKLIST") &&
-    (requestedView === "safety" || requestedView === "blocklist");
-
-  const [channels, bridges, blocks] = await Promise.all([
-    shouldLoadChannels
-      ? serverService.channels(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Channels fetch failed for ${serverId}:`, err);
-        return [];
-      })
-      : Promise.resolve([]),
-    shouldLoadBridges
-      ? serverService.bridges(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Bridges fetch failed for ${serverId}:`, err);
-        return [];
-      })
-      : Promise.resolve([]),
-    shouldLoadBlocks
-      ? serverService.blocklist(user.id, serverId).catch((err) => {
-        console.warn(`[server-workspace] Blocklist fetch failed for ${serverId}:`, err);
-        return [];
-      })
-      : Promise.resolve([]),
-  ]);
+  let server: Awaited<ReturnType<typeof serverService.get>>;
+  try {
+    server = await serverService.get(user.id, serverId);
+  } catch (error) {
+    const failure = stateForControlError(error);
+    return {
+      server: null,
+      serverState: failure.state,
+      serverError: failure.message,
+    };
+  }
 
   return {
     server,
-    channels,
-    bridges,
-    blocks,
+    serverState: "ready" as const,
+    serverError: null,
   };
 }
 
 const VISIBLE_SERVER_VIEWS = new Set(["overview", "bridges", "calls", "safety", "settings"]);
-const VIEW_CAPABILITIES: Record<string, string> = {
-  bridges: "CONNECTIONS",
-  calls: "SERVER_CONFIG",
-  safety: "SERVER_BLOCKLIST",
-  settings: "SERVER_CONFIG",
+const VIEW_CAPABILITIES: Record<string, readonly string[]> = {
+  bridges: ["CONNECTIONS"],
+  calls: ["SERVER_CONFIG", "CONNECTIONS"],
+  safety: ["SERVER_BLOCKLIST"],
+  settings: ["SERVER_CONFIG"],
 };
 const LEGACY_VIEWS: Record<string, string> = { blocklist: "safety" };
 
@@ -101,14 +74,109 @@ type DashboardContext = {
   capabilities?: Record<string, boolean>;
 };
 
+function collectionStateForQuery(
+  enabled: boolean,
+  query: { isPending: boolean; isError: boolean; error: unknown; data?: unknown[] },
+): { state: ServerDataState; error?: string } {
+  if (!enabled) return { state: "not_requested" };
+  if (query.isPending) return { state: "loading" };
+  if (query.isError) {
+    const failure = stateForControlError(query.error);
+    return { state: failure.state, error: failure.message };
+  }
+  return { state: stateForCollection(true, query.data?.length ?? 0) };
+}
+
 export default function ServerWorkspace() {
-  const { server, channels, bridges, blocks } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  const revalidator = useRevalidator();
+  const queryClient = useQueryClient();
   const { capabilities = {} } = useOutletContext<DashboardContext>();
   const params = useParams();
+  const serverId = params.serverId || "";
   const requestedView = LEGACY_VIEWS[params.view || "overview"] || params.view || "overview";
-  const requestedCapability = VIEW_CAPABILITIES[requestedView];
-  const viewEnabled = !requestedCapability || capabilities[requestedCapability] === true;
+  const requestedCapabilities = VIEW_CAPABILITIES[requestedView];
+  const viewEnabled = !requestedCapabilities || requestedCapabilities.every((capability) => capabilities[capability] === true);
   const view = VISIBLE_SERVER_VIEWS.has(requestedView) && viewEnabled ? requestedView : "overview";
+  const server = data.server;
+
+  const shouldLoadChannels = Boolean(
+    server?.status.botInstalled &&
+    capabilities.CONNECTIONS === true &&
+    view === "calls",
+  );
+  const shouldLoadBridges = Boolean(
+    server?.status.botInstalled &&
+    capabilities.CONNECTIONS === true &&
+    view === "bridges",
+  );
+  const shouldLoadBlocks = Boolean(
+    server?.status.botInstalled &&
+    capabilities.SERVER_BLOCKLIST === true &&
+    view === "safety",
+  );
+
+  const channelsQuery = useQuery({
+    ...orpc.server.channels.queryOptions({ input: { serverId } }),
+    enabled: shouldLoadChannels,
+    staleTime: 30_000,
+  });
+  const bridgesQuery = useQuery({
+    ...orpc.server.bridges.queryOptions({ input: { serverId } }),
+    enabled: shouldLoadBridges,
+    staleTime: 30_000,
+  });
+  const blocksQuery = useQuery({
+    ...orpc.server.blocklist.queryOptions({ input: { serverId } }),
+    enabled: shouldLoadBlocks,
+    staleTime: 30_000,
+  });
+
+  const refreshServerProjection = () => {
+    void queryClient.invalidateQueries({
+      queryKey: orpc.server.list.queryOptions().queryKey,
+    });
+    revalidator.revalidate();
+  };
+
+  const serverPath = `/dashboard/servers/${serverId}`;
+  const serverDataIsForCurrentRoute = !server || server.metadata.id === serverId;
+  const isSameServerNavigation = Boolean(
+    navigation.state !== "idle" &&
+    navigation.location &&
+    (navigation.location.pathname === serverPath || navigation.location.pathname.startsWith(`${serverPath}/`)),
+  );
+  if (navigation.state !== "idle" && (!isSameServerNavigation || !serverDataIsForCurrentRoute)) {
+    return (
+      <main className="max-w-2xl mx-auto p-6" aria-busy="true">
+        <div className="dashboard-alert" role="status">Loading server data…</div>
+      </main>
+    );
+  }
+  if (!server) {
+    const denied = data.serverState === "permission_denied";
+    return (
+      <main className="max-w-2xl mx-auto p-6">
+        <div className="dashboard-alert" role="alert">
+          <h1 className="text-lg font-bold">{denied ? "Server access denied" : "Server controls unavailable"}</h1>
+          <p>{data.serverError}</p>
+          {!denied && (
+            <button className="dashboard-button dashboard-button--primary mt-4" onClick={() => revalidator.revalidate()} disabled={revalidator.state !== "idle"}>
+              {revalidator.state === "idle" ? "Retry" : "Retrying…"}
+            </button>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  const channels = channelsQuery.data ?? [];
+  const bridges = bridgesQuery.data ?? [];
+  const blocks = blocksQuery.data ?? [];
+  const channelsState = collectionStateForQuery(shouldLoadChannels, channelsQuery);
+  const bridgesState = collectionStateForQuery(shouldLoadBridges, bridgesQuery);
+  const blocksState = collectionStateForQuery(shouldLoadBlocks, blocksQuery);
 
   const viewTitles: Record<string, { title: string; desc: string; icon: ReactNode }> = {
     overview: {
@@ -144,6 +212,31 @@ export default function ServerWorkspace() {
   };
 
   const currentView = viewTitles[view] || viewTitles.overview;
+  const viewDataState = view === "calls"
+    ? channelsState
+    : view === "bridges"
+      ? bridgesState
+      : view === "safety" || view === "blocklist"
+        ? blocksState
+        : null;
+  const viewUnavailable = viewDataState && (viewDataState.state === "permission_denied" || viewDataState.state === "unavailable");
+  const viewNotRequested = viewDataState?.state === "not_requested";
+  const viewLoading = viewDataState?.state === "loading";
+  const viewNeedsAttention = Boolean(viewUnavailable || viewNotRequested || viewLoading || (!server.status.botInstalled && view !== "overview"));
+  const viewQuery = view === "calls"
+    ? channelsQuery
+    : view === "bridges"
+      ? bridgesQuery
+      : view === "safety" || view === "blocklist"
+        ? blocksQuery
+        : null;
+  const viewAttentionMessage = !server.status.botInstalled && view !== "overview"
+    ? "Install InterChat in this Discord server before managing this data."
+    : viewNotRequested
+      ? "This data was not requested for the current server state."
+      : viewLoading
+        ? `Loading ${currentView.title.toLowerCase()} data…`
+        : viewDataState?.error;
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
@@ -167,11 +260,11 @@ export default function ServerWorkspace() {
       <div className="flex items-center gap-1.5 p-1.5 rounded-xl border border-white/[0.08] bg-[#1e1f2b] shadow-[0_2px_0_0_rgba(10,8,23,0.75)] overflow-x-auto md:hidden">
         {[
           { key: "overview", label: "Overview", icon: <CloudServerOutlined /> },
-          { key: "bridges", label: "Hubs", icon: <ApartmentOutlined />, count: bridges.length, capability: "CONNECTIONS" },
-          { key: "calls", label: "Calls", icon: <ThunderboltOutlined />, count: server.spec.lobbyChannelIds.length > 0 ? server.spec.lobbyChannelIds.length : undefined, capability: "SERVER_CONFIG" },
-          { key: "safety", label: "Blocklist", icon: <SafetyCertificateOutlined />, count: blocks.length, capability: "SERVER_BLOCKLIST" },
-          { key: "settings", label: "Settings", icon: <SettingOutlined />, capability: "SERVER_CONFIG" },
-        ].filter((tab) => !tab.capability || capabilities[tab.capability] === true).map((tab) => {
+          { key: "bridges", label: "Hubs", icon: <ApartmentOutlined />, count: server.status.connectionCount, capabilities: ["CONNECTIONS"] },
+          { key: "calls", label: "Calls", icon: <ThunderboltOutlined />, count: server.spec.lobbyChannelIds.length > 0 ? server.spec.lobbyChannelIds.length : undefined, capabilities: ["SERVER_CONFIG", "CONNECTIONS"] },
+          { key: "safety", label: "Blocklist", icon: <SafetyCertificateOutlined />, count: view === "safety" ? blocks.length : undefined, capabilities: ["SERVER_BLOCKLIST"] },
+          { key: "settings", label: "Settings", icon: <SettingOutlined />, capabilities: ["SERVER_CONFIG"] },
+        ].filter((tab) => !tab.capabilities || tab.capabilities.every((capability) => capabilities[capability] === true)).map((tab) => {
           const isActive = view === tab.key;
           return (
             <Link
@@ -198,16 +291,53 @@ export default function ServerWorkspace() {
       {view === "overview" && (
         <ServerOverviewCard
           server={server}
-          bridgesCount={server.status.connectionCount ?? bridges.length}
-          blocksCount={blocks.length > 0 ? blocks.length : undefined}
+          bridgesCount={server.status.connectionCount}
         />
       )}
-      {view === "bridges" && <ServerBridgesCard server={server} bridges={bridges} channels={channels} />}
-      {view === "calls" && <ServerCallSettingsCard server={server} channels={channels} />}
-      {(view === "safety" || view === "blocklist") && (
+      {viewNeedsAttention && (
+        <div className="dashboard-alert" role="alert">
+          <p>{viewAttentionMessage}</p>
+          {viewDataState?.state === "unavailable" && (
+            <button
+              className="dashboard-button dashboard-button--primary mt-3"
+              onClick={() => {
+                if (viewQuery) {
+                  void viewQuery.refetch();
+                } else {
+                  revalidator.revalidate();
+                }
+              }}
+              disabled={viewQuery ? viewQuery.isFetching : revalidator.state !== "idle"}
+            >
+              {viewQuery?.isFetching || revalidator.state !== "idle" ? "Retrying…" : "Retry"}
+            </button>
+          )}
+        </div>
+      )}
+      {view === "bridges" && !viewNeedsAttention && (
+        <ServerBridgesCard
+          server={server}
+          bridges={bridges}
+          channels={channels}
+          onServerUpdated={refreshServerProjection}
+        />
+      )}
+      {view === "calls" && !viewNeedsAttention && (
+        <ServerCallSettingsCard
+          server={server}
+          channels={channels}
+          onServerUpdated={refreshServerProjection}
+        />
+      )}
+      {(view === "safety" || view === "blocklist") && !viewNeedsAttention && (
         <ServerBlocklistCard server={server} blocks={blocks} />
       )}
-      {view === "settings" && <ServerSettingsCard server={server} />}
+      {view === "settings" && !viewNeedsAttention && (
+        <ServerSettingsCard
+          server={server}
+          onServerUpdated={refreshServerProjection}
+        />
+      )}
     </div>
   );
 }

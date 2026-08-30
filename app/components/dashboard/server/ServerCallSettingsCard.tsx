@@ -33,18 +33,21 @@ const TOGGLES: Array<{
 interface ServerCallSettingsCardProps {
   server: ServerResource;
   channels: DiscordChannelResource[];
+  onServerUpdated?: () => void;
 }
 
-export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsCardProps) {
+export function ServerCallSettingsCard({ server, channels, onServerUpdated }: ServerCallSettingsCardProps) {
   const [spec, setSpec] = useState<CallSpec>(server.spec);
   const [saving, setSaving] = useState(false);
-  const [version, setVersion] = useState(server.version ?? 1);
+  const [version, setVersion] = useState<number | null>(server.version ?? null);
+  const [savedSpec, setSavedSpec] = useState<CallSpec>(server.spec);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
 
   useEffect(() => {
     setSpec(server.spec);
-    setVersion(server.version ?? 1);
+    setSavedSpec(server.spec);
+    setVersion(server.version ?? null);
   }, [server]);
 
   const updateToggle = (key: EditableCallKey, value: boolean) => {
@@ -56,7 +59,10 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
   };
 
   const handleSave = async () => {
-    if (!isInstalled) return;
+    if (!isInstalled || !version) {
+      message.error("Canonical server version is unavailable. Refresh before saving.");
+      return;
+    }
     setSaving(true);
     try {
       const result = await orpc.server.patchCallConfig({
@@ -68,8 +74,10 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
         expectedVersion: version,
         idempotencyKey: idempotencyKeyRef.current,
       });
-      setVersion(result.server?.version ?? version + 1);
+      setSavedSpec(result.server?.spec ?? spec);
+      setVersion(result.server?.version ?? null);
       idempotencyKeyRef.current = crypto.randomUUID();
+      onServerUpdated?.();
       message.success("Call settings saved successfully.");
     } catch (err: unknown) {
       const detail = err instanceof Error ? err.message : "Failed to save call settings.";
@@ -80,10 +88,10 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
   };
 
   const isDirty =
-    spec.pingOnMatch !== server.spec.pingOnMatch ||
-    spec.autoRequeueOnSkip !== server.spec.autoRequeueOnSkip ||
-    spec.filterNsfw !== server.spec.filterNsfw ||
-    JSON.stringify(spec.lobbyChannelIds) !== JSON.stringify(server.spec.lobbyChannelIds);
+    spec.pingOnMatch !== savedSpec.pingOnMatch ||
+    spec.autoRequeueOnSkip !== savedSpec.autoRequeueOnSkip ||
+    spec.filterNsfw !== savedSpec.filterNsfw ||
+    JSON.stringify(spec.lobbyChannelIds) !== JSON.stringify(savedSpec.lobbyChannelIds);
 
   return (
     <div className="flex flex-col gap-6 w-full relative">
@@ -110,7 +118,7 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
             {isDirty && (
               <button
                 type="button"
-                onClick={() => setSpec(server.spec)}
+                onClick={() => setSpec(savedSpec)}
                 disabled={saving}
                 className="dashboard-btn-secondary px-3.5 py-2 text-xs"
               >
@@ -120,7 +128,7 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
             <button
               type="button"
               onClick={handleSave}
-              disabled={!isInstalled || saving || !isDirty}
+              disabled={!isInstalled || !version || saving || !isDirty}
               className={`dashboard-btn-primary px-5 py-2 text-xs flex-shrink-0 flex items-center gap-1.5 ${!isDirty ? "opacity-50 cursor-not-allowed" : ""
                 }`}
             >
@@ -145,13 +153,15 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
             className="w-full custom-glass-select"
             options={channels.map((ch) => ({
               value: ch.id,
-              label: `#${ch.name}`,
+              label: ch.connectable ? `#${ch.name}` : `#${ch.name} — ${ch.rejectionReason || "Unavailable"}`,
+              disabled: !ch.connectable,
             }))}
             style={{ width: "100%" }}
           />
           <span className="text-xs text-white/60">
             Restricts <code>/call</code> and <code>/groupcall</code> commands to the selected channels. If empty, calls can be initiated in any accessible channel.
           </span>
+          {channels.length === 0 && <span className="text-xs text-amber-300">No connectable text channels were returned for this server.</span>}
         </div>
 
         <div className="h-[1px] bg-white/[0.08] w-full" />
@@ -197,7 +207,7 @@ export function ServerCallSettingsCard({ server, channels }: ServerCallSettingsC
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setSpec(server.spec)}
+              onClick={() => setSpec(savedSpec)}
               disabled={saving}
               className="dashboard-btn-secondary px-3 py-1.5 text-xs"
             >

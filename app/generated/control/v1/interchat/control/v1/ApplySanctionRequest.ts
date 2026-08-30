@@ -2,6 +2,7 @@
 
 import type { RequestContext as _interchat_control_v1_RequestContext, RequestContext__Output as _interchat_control_v1_RequestContext__Output } from '../../../interchat/control/v1/RequestContext';
 import type { SanctionType as _interchat_control_v1_SanctionType, SanctionType__Output as _interchat_control_v1_SanctionType__Output } from '../../../interchat/control/v1/SanctionType';
+import type { ModerationSubject as _interchat_control_v1_ModerationSubject, ModerationSubject__Output as _interchat_control_v1_ModerationSubject__Output } from '../../../interchat/control/v1/ModerationSubject';
 
 export interface ApplySanctionRequest {
   'context'?: (_interchat_control_v1_RequestContext | null);
@@ -10,6 +11,7 @@ export interface ApplySanctionRequest {
   'type'?: (_interchat_control_v1_SanctionType);
   'reason'?: (string);
   'durationSeconds'?: (number);
+  'subject'?: (_interchat_control_v1_ModerationSubject | null);
 }
 
 export interface ApplySanctionRequest__Output {
@@ -19,4 +21,5 @@ export interface ApplySanctionRequest__Output {
   'type': (_interchat_control_v1_SanctionType__Output);
   'reason': (string);
   'durationSeconds': (number);
+  'subject': (_interchat_control_v1_ModerationSubject__Output | null);
 }

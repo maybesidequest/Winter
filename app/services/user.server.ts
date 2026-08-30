@@ -93,7 +93,10 @@ export const userService = {
       controlUserService.getUserActivity(userId, userId),
     ]);
 
-    const isStaff = await permissionService.checkIsStaff(userId).catch(() => false);
+    // An Iris outage is not an authorization denial. Let the failure reach
+    // the route so the UI can render an unavailable state instead of silently
+    // treating a staff member as an ordinary user.
+    const isStaff = await permissionService.checkIsStaff(userId);
     const dashboardPrefs = (await this.getDashboardPreference(userId)) || {};
 
     return {

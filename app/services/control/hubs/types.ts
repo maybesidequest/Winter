@@ -54,6 +54,17 @@ export interface HubAnnouncement {
   scheduledFor?: string;
   sentAt?: string;
   createdAt?: string;
+  title: string;
+  repeatIntervalSeconds: number;
+  timeZone: string;
+  desiredState: "DRAFT" | "SCHEDULED" | "PAUSED";
+  version: number;
+  nextDelivery?: string;
+  latestAttempt?: string;
+  latestSuccess?: string;
+  deliveryState: "PENDING" | "SUCCEEDED" | "PARTIAL" | "FAILED";
+  lastError: string;
+  completed: boolean;
 }
 
 export interface HubStaffMember {

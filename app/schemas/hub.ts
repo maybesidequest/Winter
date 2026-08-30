@@ -66,7 +66,7 @@ export const patchHubConfigSchema = z.object({
   appealCooldownHours: z.number().min(0).max(8760).optional(),
   welcomeMessage: z.string().max(2000).optional().nullable(),
   settings: z.number().int().min(0).optional(),
-  version: z.number().int().min(1).optional(),
+  version: z.number().int().min(1),
 });
 
 export type PatchHubConfigInput = z.infer<typeof patchHubConfigSchema>;
@@ -75,7 +75,7 @@ export const createHubRuleSchema = z.object({
   hubId: z.string(),
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required").max(1000),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -84,21 +84,21 @@ export const updateHubRuleSchema = z.object({
   ruleId: z.string(),
   title: z.string().min(1).max(100),
   description: z.string().min(1).max(1000),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const reorderHubRulesSchema = z.object({
   hubId: z.string(),
   ruleIds: z.array(z.string()),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubRuleSchema = z.object({
   hubId: z.string(),
   ruleId: z.string(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -117,20 +117,40 @@ export const revokeHubInviteSchema = z.object({
 
 export const createHubAnnouncementSchema = z.object({
   hubId: z.string(),
-  content: z.string().min(1, "Content is required").max(2000),
+  content: z.string().trim().min(3, "Content must be at least 3 characters").max(2000),
+  title: z.string().trim().min(1).max(200).default("Announcement"),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
+  repeatIntervalSeconds: z.number().int().min(0).max(31_536_000).default(0),
+  timeZone: z.string().min(1).max(64).default("UTC"),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]).default("DRAFT"),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const updateHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
-  content: z.string().min(1, "Content is required").max(2000),
+  content: z.string().trim().min(3, "Content must be at least 3 characters").max(2000),
+  title: z.string().trim().min(1).max(200).optional(),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
+  repeatIntervalSeconds: z.number().int().min(0).max(31_536_000).optional(),
+  timeZone: z.string().min(1).max(64).optional(),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]).optional(),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
 export const deleteHubAnnouncementSchema = z.object({
   hubId: z.string(),
   announcementId: z.string(),
+  expectedVersion: z.number().int().positive(),
+  idempotencyKey: z.string().min(1, "A retry key is required."),
+});
+
+export const transitionHubAnnouncementSchema = z.object({
+  hubId: z.string(),
+  announcementId: z.string(),
+  desiredState: z.enum(["DRAFT", "SCHEDULED", "PAUSED"]),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -139,7 +159,7 @@ export const patchHubBadgesSchema = z.object({
   ownerBadge: z.string().max(32).optional().nullable(),
   managerBadge: z.string().max(32).optional().nullable(),
   moderatorBadge: z.string().max(32).optional().nullable(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -150,7 +170,7 @@ export const patchHubLogConfigSchema = z.object({
   channelId: z.string().max(32),
   eventFlags: z.number().int().min(0).default(0),
   notificationRoleId: z.string().optional().nullable(),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -160,7 +180,7 @@ export const assignHubStaffSchema = z.object({
   role: z.string().min(1),
   permissionsBitmask: z.number().int().default(0),
   roleId: z.string().optional(),
-  expectedVersion: z.number().int().default(0),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -168,7 +188,7 @@ export const removeHubStaffSchema = z.object({
   hubId: z.string(),
   userId: z.string().min(1),
   roleId: z.string().optional(),
-  expectedVersion: z.number().int().default(0),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
 
@@ -196,20 +216,26 @@ export const lockdownHubSchema = z.object({
   hubId: z.string(),
   locked: z.boolean(),
   reason: z.string().max(500).default(""),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type LockdownHubInput = z.infer<typeof lockdownHubSchema>;
 
 export const transferHubOwnershipSchema = z.object({
   hubId: z.string(),
   newOwnerId: z.string().min(1),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type TransferHubOwnershipInput = z.infer<typeof transferHubOwnershipSchema>;
 
 export const deleteHubSchema = z.object({
   hubId: z.string(),
   confirmationName: z.string().min(1),
-  expectedVersion: z.number().int().default(1),
+  expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
 });
+
+export type DeleteHubInput = z.infer<typeof deleteHubSchema>;

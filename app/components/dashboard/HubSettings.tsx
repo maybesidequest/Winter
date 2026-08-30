@@ -1,39 +1,47 @@
 import { useEffect, useState } from "react";
-import {
-  SettingOutlined,
-  GlobalOutlined,
-  WarningOutlined,
-  CheckOutlined,
-  UserSwitchOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { GlobalOutlined, CheckOutlined } from "@ant-design/icons";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { HubLifecyclePanel, type LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput, HubVisibilityType } from "~/schemas/hub";
+import type { LifecycleAction } from "~/services/lifecycleIntent";
 
 interface HubSettingsProps {
   hub: HubResource;
   canEdit: boolean;
   isOwner?: boolean;
+  canLockdown: boolean;
   saving: boolean;
   onSave: (changes: Partial<PatchHubConfigInput>) => void;
-  onDeleteHub?: () => void;
+  pendingLifecycleAction?: LifecycleAction;
+  lifecycleFailure?: LifecycleFailure;
+  onLockdownHub: (locked: boolean, reason: string) => void;
+  onDeleteHub?: (confirmationName: string) => void;
   onTransferOwnership?: (newOwnerId: string) => void;
+  onRefreshLifecycle: () => void;
+  onRetryLifecycle: () => void;
+  onBackToHubs: () => void;
 }
 
 export function HubSettings({
   hub,
   canEdit,
   isOwner = false,
+  canLockdown,
   saving,
   onSave,
   onDeleteHub,
   onTransferOwnership,
+  pendingLifecycleAction,
+  lifecycleFailure,
+  onLockdownHub,
+  onRefreshLifecycle,
+  onRetryLifecycle,
+  onBackToHubs,
 }: HubSettingsProps) {
   const [visibility, setVisibility] = useState<HubVisibilityType>(hub.spec.visibility);
   const [language, setLanguage] = useState(hub.spec.language || "English");
   const [region, setRegion] = useState(hub.spec.region || "Global");
-  const [transferTarget, setTransferTarget] = useState("");
 
   useEffect(() => {
     setVisibility(hub.spec.visibility);
@@ -126,75 +134,21 @@ export function HubSettings({
         )}
       </form>
 
-      {/* Ownership Transfer */}
-      {isOwner && onTransferOwnership && (
-        <div className="rounded-2xl p-6 border flex flex-col gap-4" style={dashboardGlassCardStyle}>
-          <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.06]">
-            <UserSwitchOutlined className="text-amber-400 text-base" />
-            <h3 className="text-base font-bold text-white font-['Sora'] m-0">Transfer Ownership</h3>
-          </div>
-          <p className="text-xs text-white/60 m-0">
-            Transfer primary ownership of this Hub to another Discord user. This action cannot be undone.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 pt-1">
-            <input
-              type="text"
-              placeholder="Target Discord User ID..."
-              value={transferTarget}
-              onChange={(e) => setTransferTarget(e.target.value)}
-              className="dashboard-input text-xs flex-1"
-            />
-            <button
-              type="button"
-              disabled={!transferTarget.trim()}
-              onClick={() => {
-                if (confirm(`Transfer full ownership of "${hub.metadata.name}" to user ${transferTarget}?`)) {
-                  onTransferOwnership(transferTarget.trim());
-                }
-              }}
-              className="dashboard-btn-secondary px-4 py-2 text-xs font-bold text-amber-300 border-amber-500/30"
-            >
-              Transfer Ownership
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Danger Zone */}
-      {canEdit && (
-        <div
-          className="rounded-2xl p-6 border flex flex-col gap-4"
-          style={{
-            background: "rgba(239, 68, 68, 0.04)",
-            borderColor: "rgba(239, 68, 68, 0.2)",
-          }}
-        >
-          <div className="flex items-center gap-2.5 pb-3 border-b border-red-500/20">
-            <WarningOutlined className="text-red-400 text-base" />
-            <h3 className="text-base font-bold text-red-300 font-['Sora'] m-0">Danger Zone</h3>
-          </div>
-
-          {isOwner && onDeleteHub && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-              <div>
-                <strong className="text-xs font-bold text-white block">Delete Hub Permanently</strong>
-                <small className="text-[11px] text-white/50 block">Destroys all server connections, custom rules, and audit logs.</small>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm(`Permanently delete "${hub.metadata.name}"? This cannot be undone.`)) {
-                    onDeleteHub();
-                  }
-                }}
-                className="dashboard-btn-danger px-4 py-1.5 text-xs font-bold flex-shrink-0"
-              >
-                <DeleteOutlined />
-                <span>Delete Hub</span>
-              </button>
-            </div>
-          )}
-        </div>
+      {onDeleteHub && onTransferOwnership && (
+        <HubLifecyclePanel
+          hubName={hub.metadata.name}
+          locked={hub.spec.locked}
+          isOwner={isOwner}
+          canLockdown={canLockdown}
+          pendingAction={pendingLifecycleAction}
+          failure={lifecycleFailure}
+          onLockdown={onLockdownHub}
+          onDeleteHub={onDeleteHub}
+          onTransferOwnership={onTransferOwnership}
+          onRefresh={onRefreshLifecycle}
+          onRetry={onRetryLifecycle}
+          onBackToHubs={onBackToHubs}
+        />
       )}
     </div>
   );

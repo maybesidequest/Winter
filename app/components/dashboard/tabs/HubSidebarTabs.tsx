@@ -43,12 +43,17 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
 
   const hubItems = [
     { path: "overview", label: "Overview", icon: <ClusterOutlined /> },
-    { path: "connections", label: "Connections", icon: <ApiOutlined />, visible: false },
+    {
+      path: "connections",
+      label: "Connections",
+      icon: <ApiOutlined />,
+      visible: enabled("CONNECTIONS") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_CONNECTIONS")),
+    },
     {
       path: "moderation",
       label: "Moderation",
       icon: <SafetyCertificateOutlined />,
-      visible: false,
+      visible: enabled("MODERATION") && (hub?.metadata.effectiveRole === "OWNER" || can("VIEW_LOGS", "MANAGE_SANCTIONS")),
     },
     { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_RULES")) },
     {

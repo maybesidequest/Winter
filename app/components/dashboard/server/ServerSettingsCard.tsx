@@ -14,6 +14,7 @@ import type { ServerResource } from "~/resources/server";
 interface ServerSettingsCardProps {
   server: ServerResource;
   botClientId?: string;
+  onServerUpdated?: () => void;
 }
 
 const REQUIRED_PERMISSIONS = [
@@ -27,10 +28,12 @@ const REQUIRED_PERMISSIONS = [
 export function ServerSettingsCard({
   server,
   botClientId = "798748015435055134",
+  onServerUpdated,
 }: ServerSettingsCardProps) {
   const [copied, setCopied] = useState(false);
   const [prefix, setPrefix] = useState(server.spec.prefix || "!");
-  const [version, setVersion] = useState(server.version ?? 1);
+  const [savedPrefix, setSavedPrefix] = useState(server.spec.prefix || "!");
+  const [version, setVersion] = useState<number | null>(server.version ?? null);
   const [savingPrefix, setSavingPrefix] = useState(false);
   const prefixIdempotencyKey = useRef(crypto.randomUUID());
   const isInstalled = server.status.botInstalled;
@@ -40,7 +43,8 @@ export function ServerSettingsCard({
 
   useEffect(() => {
     setPrefix(server.spec.prefix || "!");
-    setVersion(server.version ?? 1);
+    setSavedPrefix(server.spec.prefix || "!");
+    setVersion(server.version ?? null);
   }, [server]);
 
   const copyServerId = () => {
@@ -56,6 +60,10 @@ export function ServerSettingsCard({
       message.error("Prefix must be between 1 and 10 characters.");
       return;
     }
+    if (!version) {
+      message.error("Canonical server version is unavailable. Refresh before saving.");
+      return;
+    }
     setSavingPrefix(true);
     try {
       const result = await orpc.server.patchPrefix({
@@ -65,8 +73,10 @@ export function ServerSettingsCard({
         idempotencyKey: prefixIdempotencyKey.current,
       });
       setPrefix(result.server?.spec.prefix || nextPrefix);
-      setVersion(result.server?.version ?? version + 1);
+      setSavedPrefix(result.server?.spec.prefix || nextPrefix);
+      setVersion(result.server?.version ?? null);
       prefixIdempotencyKey.current = crypto.randomUUID();
+      onServerUpdated?.();
       message.success("Command prefix saved.");
     } catch (err: unknown) {
       message.error(err instanceof Error ? err.message : "Unable to save the command prefix.");
@@ -129,7 +139,7 @@ export function ServerSettingsCard({
               <button
                 type="button"
                 onClick={savePrefix}
-                disabled={!isInstalled || savingPrefix || prefix.trim() === (server.spec.prefix || "!")}
+                disabled={!isInstalled || !version || savingPrefix || prefix.trim() === savedPrefix}
                 className="dashboard-btn-primary px-3.5 py-2 text-xs"
               >
                 {savingPrefix ? "Saving…" : "Save"}
@@ -156,7 +166,7 @@ export function ServerSettingsCard({
             <div className="flex items-center gap-2">
               {isInstalled ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <CheckCircleOutlined /> Active & Installed
+                  <CheckCircleOutlined /> Installed
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">

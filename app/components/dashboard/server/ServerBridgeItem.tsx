@@ -38,11 +38,13 @@ export function ServerBridgeItem({
   const isRepairPending = isBridgePending && pendingAction.action === "repair";
   const isDisconnectPending = isBridgePending && pendingAction.action === "disconnect";
 
-  const formattedDate = new Date(bridge.createdAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const formattedDate = bridge.createdAt
+    ? new Date(bridge.createdAt).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+    : "Unknown date";
 
   return (
     <div
@@ -180,7 +182,7 @@ export function ServerBridgeItem({
           {/* Hub Navigation Link */}
           {bridge.hubId && (
             <Link
-              to={`/dashboard/hubs/${bridge.hubId}`}
+              to={`/dashboard/hubs/${bridge.hubId}/overview`}
               className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold text-violet-300 hover:text-white flex items-center gap-1.5"
             >
               <span>Hub</span>

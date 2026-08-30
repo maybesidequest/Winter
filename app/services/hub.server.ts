@@ -5,7 +5,13 @@ import {
   type PermissionAction,
 } from "~/permissions/config";
 import type { HubResource } from "~/resources/hub";
-import type { CreateHubInput, PatchHubConfigInput } from "~/schemas/hub";
+import type {
+  CreateHubInput,
+  DeleteHubInput,
+  LockdownHubInput,
+  PatchHubConfigInput,
+  TransferHubOwnershipInput,
+} from "~/schemas/hub";
 import { isCapabilityEnabled } from "~/services/capabilities.server";
 import { controlHubService } from "~/services/control.server";
 import { hubFeaturesService } from "~/services/hubFeatures.server";
@@ -58,8 +64,58 @@ function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
   return record;
 }
 
+type LifecycleControlService = Pick<
+  typeof controlHubService,
+  "deleteHub" | "lockdownHub" | "transferOwnership"
+>;
+
+export function createHubLifecycleService(control: LifecycleControlService = controlHubService) {
+  return {
+    async deleteHub(
+      userId: string,
+      input: DeleteHubInput,
+    ): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
+      try {
+        await control.deleteHub({ ...input, actorId: userId });
+        return { success: true };
+      } catch (error: unknown) {
+        console.error("Failed to delete hub", error);
+        return {
+          success: false,
+          error: controlErrorMessage(error, "Failed to delete hub."),
+          errorCode: controlErrorCode(error),
+        };
+      }
+    },
+
+    async transferOwnership(
+      userId: string,
+      input: TransferHubOwnershipInput,
+    ): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
+      try {
+        await control.transferOwnership({ ...input, actorId: userId });
+        return { success: true };
+      } catch (error: unknown) {
+        console.error("Failed to transfer hub ownership", error);
+        return {
+          success: false,
+          error: controlErrorMessage(error, "Failed to transfer hub ownership."),
+          errorCode: controlErrorCode(error),
+        };
+      }
+    },
+
+    async lockdownHub(userId: string, input: LockdownHubInput) {
+      return control.lockdownHub({ ...input, actorId: userId });
+    },
+  };
+}
+
+const hubLifecycleService = createHubLifecycleService();
+
 export const hubService = {
   ...hubFeaturesService,
+  ...hubLifecycleService,
 
   async getUserHubs(userId: string): Promise<HubResource[]> {
     const res = await controlHubService.listMyHubs(userId);
@@ -151,18 +207,12 @@ export const hubService = {
 
       if (updateMask.length === 0) return { success: true };
 
-      let expectedVersion = input.version;
-      if (!expectedVersion) {
-        const current = await controlHubService.getHub(input.hubId, userId);
-        expectedVersion = current.version;
-      }
-
       const updated = await controlHubService.patchHub({
         actorId: userId,
         hubId: input.hubId,
         spec,
         updateMask,
-        expectedVersion,
+        expectedVersion: input.version,
         idempotencyKey: input.idempotencyKey,
       });
 
@@ -175,44 +225,6 @@ export const hubService = {
         errorCode: controlErrorCode(error),
       };
     }
-  },
-
-  async deleteHub(userId: string, hubId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
-    try {
-      const current = await controlHubService.getHub(hubId, userId);
-      await controlHubService.deleteHub({
-        actorId: userId,
-        hubId,
-        confirmationName: current.metadata.name,
-        expectedVersion: current.version,
-        idempotencyKey,
-      });
-      return { success: true };
-    } catch (error: unknown) {
-      console.error("Failed to delete hub", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to delete hub."), errorCode: controlErrorCode(error) };
-    }
-  },
-
-  async transferOwnership(userId: string, hubId: string, newOwnerId: string, idempotencyKey: string): Promise<{ success: boolean; error?: string; errorCode?: HubUpdateErrorCode }> {
-    try {
-      const current = await controlHubService.getHub(hubId, userId);
-      await controlHubService.transferOwnership({
-        actorId: userId,
-        hubId,
-        newOwnerId,
-        expectedVersion: current.version,
-        idempotencyKey,
-      });
-      return { success: true };
-    } catch (error: unknown) {
-      console.error("Failed to transfer hub ownership", error);
-      return { success: false, error: controlErrorMessage(error, "Failed to transfer hub ownership."), errorCode: controlErrorCode(error) };
-    }
-  },
-
-  async lockdownHub(userId: string, input: { hubId: string; locked: boolean; reason: string; expectedVersion: number; idempotencyKey: string }) {
-    return controlHubService.lockdownHub({ ...input, actorId: userId });
   },
 
   async listRules(userId: string, hubId: string) {

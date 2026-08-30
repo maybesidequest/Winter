@@ -9,9 +9,12 @@ import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
 import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
 import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
+import { HubModerationPanel } from "~/components/dashboard/HubModerationPanel";
 import type { HubConnectionResource } from "~/resources/connection";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
+import type { LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel";
+import type { LifecycleAction } from "~/services/lifecycleIntent";
 
 interface HubWorkspaceTabsProps {
   activeTab: string;
@@ -20,6 +23,7 @@ interface HubWorkspaceTabsProps {
   canEdit: boolean;
   canManageConnections: boolean;
   isOwner: boolean;
+  canLockdown: boolean;
   isSaving: boolean;
   saveError?: string;
   isRoutePending: boolean;
@@ -27,8 +31,14 @@ interface HubWorkspaceTabsProps {
   onToggleRoute: (conn: HubConnectionResource) => void;
   onDisconnectRoute: (conn: HubConnectionResource) => void;
   onToggleModuleFlag: (flag: string, enabled: boolean) => void;
-  onDeleteHub: () => void;
+  pendingLifecycleAction?: LifecycleAction;
+  lifecycleFailure?: LifecycleFailure;
+  onLockdownHub: (locked: boolean, reason: string) => void;
+  onDeleteHub: (confirmationName: string) => void;
   onTransferOwnership: (newOwnerId: string) => void;
+  onRefreshLifecycle: () => void;
+  onRetryLifecycle: () => void;
+  onBackToHubs: () => void;
 }
 
 export function HubWorkspaceTabs({
@@ -38,6 +48,7 @@ export function HubWorkspaceTabs({
   canEdit,
   canManageConnections,
   isOwner,
+  canLockdown,
   isSaving,
   saveError,
   isRoutePending,
@@ -47,6 +58,12 @@ export function HubWorkspaceTabs({
   onToggleModuleFlag,
   onDeleteHub,
   onTransferOwnership,
+  pendingLifecycleAction,
+  lifecycleFailure,
+  onLockdownHub,
+  onRefreshLifecycle,
+  onRetryLifecycle,
+  onBackToHubs,
 }: HubWorkspaceTabsProps) {
   const can = (...actions: string[]) => {
     const perms = hub.metadata.permissions as any;
@@ -76,11 +93,7 @@ export function HubWorkspaceTabs({
         />
       );
     case "moderation":
-      return (
-        <div className="flex flex-col gap-6">
-          <HubRulesPanel hub={hub} canEdit={can("MANAGE_RULES")} />
-        </div>
-      );
+      return <HubModerationPanel hub={hub} canEdit={canEdit || can("MANAGE_HUB_SETTINGS")} />;
     case "rules":
       return <HubRulesPanel hub={hub} canEdit={isOwner || can("MANAGE_RULES")} />;
     case "audit":
@@ -97,10 +110,17 @@ export function HubWorkspaceTabs({
           hub={hub}
           canEdit={canEdit}
           isOwner={isOwner}
+          canLockdown={canLockdown}
           saving={isSaving}
           onSave={onSaveConfig}
           onDeleteHub={onDeleteHub}
           onTransferOwnership={onTransferOwnership}
+          pendingLifecycleAction={pendingLifecycleAction}
+          lifecycleFailure={lifecycleFailure}
+          onLockdownHub={onLockdownHub}
+          onRefreshLifecycle={onRefreshLifecycle}
+          onRetryLifecycle={onRetryLifecycle}
+          onBackToHubs={onBackToHubs}
         />
       );
     case "logging":

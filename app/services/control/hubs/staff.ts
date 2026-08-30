@@ -39,7 +39,7 @@ export const hubStaffService = {
     actorId: string;
     idempotencyKey: string;
     roleId?: string;
-    expectedVersion?: number;
+    expectedVersion: number;
   }): Promise<HubStaffMember> {
     const clients = getServiceClients();
     const response = await invokeUnary<AssignHubStaffRoleRequest, HubStaffMember__Output>(clients.hubClient.AssignStaffRole.bind(clients.hubClient), {
@@ -49,7 +49,7 @@ export const hubStaffService = {
       role: input.role,
       permissionsBitmask: input.permissionsBitmask,
       roleId: input.roleId ?? "",
-      expectedVersion: input.expectedVersion ?? 0,
+      expectedVersion: input.expectedVersion,
     });
     return toStaffMember(response);
   },
@@ -60,7 +60,7 @@ export const hubStaffService = {
     actorId: string;
     idempotencyKey: string;
     roleId?: string;
-    expectedVersion?: number;
+    expectedVersion: number;
   }): Promise<void> {
     const clients = getServiceClients();
     await invokeUnary<RemoveHubStaffRoleRequest, EmptyResponse__Output>(clients.hubClient.RemoveStaffRole.bind(clients.hubClient), {
@@ -68,7 +68,7 @@ export const hubStaffService = {
       hubId: input.hubId,
       userId: input.userId,
       roleId: input.roleId ?? "",
-      expectedVersion: input.expectedVersion ?? 0,
+      expectedVersion: input.expectedVersion,
     });
   },
 };

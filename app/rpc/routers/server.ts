@@ -12,7 +12,14 @@ import {
   toggleBridgeSchema,
 } from "~/schemas/server";
 import { serverService } from "~/services/server.server";
+import { classifyConnectionControlError, connectionControlErrorMessage } from "~/services/connectionError";
 import { base, protectedBase } from "../context";
+
+function throwConnectionMutationError(error: unknown): never {
+  throw new ORPCError(classifyConnectionControlError(error), {
+    message: connectionControlErrorMessage(error, "This connection action could not be completed."),
+  });
+}
 
 export const serverRouter = base.router({
   list: protectedBase
@@ -82,20 +89,32 @@ export const serverRouter = base.router({
     }),
   toggleBridge: protectedBase
     .input(toggleBridgeSchema)
-    .handler(({ input, context }) => {
+    .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      return serverService.toggleBridge(context.user.id, input);
+      try {
+        return await serverService.toggleBridge(context.user.id, input);
+      } catch (error) {
+        throwConnectionMutationError(error);
+      }
     }),
   repairBridge: protectedBase
     .input(bridgeActionSchema)
-    .handler(({ input, context }) => {
+    .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      return serverService.repairBridge(context.user.id, input);
+      try {
+        return await serverService.repairBridge(context.user.id, input);
+      } catch (error) {
+        throwConnectionMutationError(error);
+      }
     }),
   disconnectBridge: protectedBase
     .input(bridgeActionSchema)
-    .handler(({ input, context }) => {
+    .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
-      return serverService.disconnectBridge(context.user.id, input);
+      try {
+        return await serverService.disconnectBridge(context.user.id, input);
+      } catch (error) {
+        throwConnectionMutationError(error);
+      }
     }),
 });

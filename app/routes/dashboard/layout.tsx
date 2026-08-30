@@ -8,9 +8,11 @@ import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
 import { orpc } from "~/lib/orpc";
+import type { HubResource } from "~/resources/hub";
 import { requireUser } from "~/services/auth.server";
 import { CONTROL_CAPABILITIES, isCapabilityEnabled } from "~/services/capabilities.server";
 import "~/styles/dashboard.css";
+import { hubService } from "~/services/hub.server";
 import type { Route } from "./+types/layout";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -18,7 +20,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   const capabilities = Object.fromEntries(
     Object.entries(CONTROL_CAPABILITIES).map(([name]) => [name, isCapabilityEnabled(name as keyof typeof CONTROL_CAPABILITIES)]),
   );
-  return { user, capabilities };
+  let initialHubs: HubResource[] = [];
+  if (capabilities.HUB_LIST || process.env.NODE_ENV === "development") {
+    try {
+      initialHubs = await hubService.getUserHubs(user.id);
+    } catch {
+      initialHubs = [];
+    }
+  }
+  return { user, capabilities, initialHubs };
 }
 
 export function shouldRevalidate() {
@@ -26,31 +36,43 @@ export function shouldRevalidate() {
 }
 
 export default function DashboardLayout() {
-  const { user, capabilities } = useLoaderData<typeof loader>();
+  const { user, capabilities, initialHubs } = useLoaderData<typeof loader>();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [instanceType, setInstanceType] = useState<"servers" | "hubs">("servers");
+  const [instanceType, setInstanceType] = useState<"servers" | "hubs">(() =>
+    location.pathname.startsWith("/dashboard/hubs") ? "hubs" : "servers"
+  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreateHubOpen, setIsCreateHubOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: servers = [], isLoading: serversLoading } = useQuery(
-    orpc.server.list.queryOptions({ staleTime: 300_000 })
+    orpc.server.list.queryOptions({ staleTime: 30_000 })
   );
 
   // Keep disabled capabilities quiet in production.  The sidebar uses the
   // same snapshot, so there is no reason to issue a request that the RPC will
   // deliberately reject.  Development keeps the existing opt-in preview.
-  const hubListEnabled = capabilities.HUB_LIST || import.meta.env.DEV;
-  const { data: hubs = [], isLoading: hubsLoading } = useQuery(
+  const hubListEnabled = Boolean(capabilities.HUB_LIST || import.meta.env.DEV);
+  const { data: hubs = initialHubs, isLoading: hubsLoading } = useQuery(
     {
       ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
       enabled: hubListEnabled,
+      initialData: initialHubs.length > 0 ? initialHubs : undefined,
     }
   );
 
   const isLoading = instanceType === "servers" ? serversLoading : hubsLoading;
+
+  const handleToggleInstanceType = (type: "servers" | "hubs") => {
+    setInstanceType(type);
+    if (type === "hubs" && !location.pathname.startsWith("/dashboard/hubs")) {
+      navigate("/dashboard/hubs");
+    } else if (type === "servers" && !location.pathname.startsWith("/dashboard/servers")) {
+      navigate("/dashboard/servers");
+    }
+  };
 
   // Auto-switch instance toggle based on current route
   useEffect(() => {
@@ -119,7 +141,7 @@ export default function DashboardLayout() {
             hubs={hubs}
             isLoading={isLoading}
             user={user}
-            onToggleInstanceType={setInstanceType}
+            onToggleInstanceType={handleToggleInstanceType}
             onOpenSettings={() => setIsSettingsOpen(true)}
             capabilities={capabilities}
           />
@@ -154,7 +176,7 @@ export default function DashboardLayout() {
                   hubs={hubs}
                   isLoading={isLoading}
                   user={user}
-                  onToggleInstanceType={setInstanceType}
+                  onToggleInstanceType={handleToggleInstanceType}
                   onOpenSettings={() => {
                     setMobileMenuOpen(false);
                     setIsSettingsOpen(true);

@@ -86,6 +86,7 @@ export const connectionService = {
 
   async disconnectChannel(input: {
     connectionId: string;
+    expectedVersion: number;
     actorId: string;
     idempotencyKey: string;
   }): Promise<void> {
@@ -93,6 +94,7 @@ export const connectionService = {
     await invokeUnary<DisconnectChannelRequest, EmptyResponse__Output>(clients.connectionClient.DisconnectChannel.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
     });
   },
 
@@ -116,6 +118,7 @@ export const connectionService = {
 
   async repairConnectionWebhooks(input: {
     connectionId: string;
+    expectedVersion: number;
     actorId: string;
     idempotencyKey: string;
   }): Promise<ConnectionResource> {
@@ -124,6 +127,7 @@ export const connectionService = {
       clients.connectionClient.RepairConnectionWebhooks.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       connectionId: input.connectionId,
+      expectedVersion: input.expectedVersion,
       });
     return toResource(response);
   },

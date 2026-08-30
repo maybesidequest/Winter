@@ -1,0 +1,20 @@
+// Original file: ../interchat-protobuf/control/v1/models.proto
+
+export const InfractionLifecycleState = {
+  INFRACTION_LIFECYCLE_STATE_UNSPECIFIED: 'INFRACTION_LIFECYCLE_STATE_UNSPECIFIED',
+  INFRACTION_LIFECYCLE_STATE_ACTIVE: 'INFRACTION_LIFECYCLE_STATE_ACTIVE',
+  INFRACTION_LIFECYCLE_STATE_EXPIRED: 'INFRACTION_LIFECYCLE_STATE_EXPIRED',
+  INFRACTION_LIFECYCLE_STATE_REVOKED: 'INFRACTION_LIFECYCLE_STATE_REVOKED',
+} as const;
+
+export type InfractionLifecycleState =
+  | 'INFRACTION_LIFECYCLE_STATE_UNSPECIFIED'
+  | 0
+  | 'INFRACTION_LIFECYCLE_STATE_ACTIVE'
+  | 1
+  | 'INFRACTION_LIFECYCLE_STATE_EXPIRED'
+  | 2
+  | 'INFRACTION_LIFECYCLE_STATE_REVOKED'
+  | 3
+
+export type InfractionLifecycleState__Output = typeof InfractionLifecycleState[keyof typeof InfractionLifecycleState]
