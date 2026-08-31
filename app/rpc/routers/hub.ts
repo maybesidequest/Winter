@@ -12,6 +12,7 @@ import {
 } from "~/schemas/hub";
 import { hubFeaturesRouter } from "./hubFeaturesRouter";
 import { requireCapability } from "~/rpc/capabilityGuard";
+import { controlIdSchema, idempotencyKeySchema } from "~/schemas/controlLimits";
 
 function throwMappedControlError(error: unknown, fallback: string): never {
   const code = typeof error === "object" && error && "code" in error
@@ -39,7 +40,7 @@ export const hubRouter = base.router({
   }),
 
   getHub: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       let hub;
       try {
@@ -77,7 +78,7 @@ export const hubRouter = base.router({
     }),
 
   getConnections: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
       return connectionService.getHubConnections(input.hubId, context.user.id);
@@ -86,11 +87,11 @@ export const hubRouter = base.router({
 
   toggleConnection: protectedBase
     .input(z.object({
-      connectionId: z.string(),
+      connectionId: controlIdSchema,
       enabled: z.boolean(),
-      hubId: z.string(),
+      hubId: controlIdSchema,
       expectedVersion: z.number().int().positive(),
-      idempotencyKey: z.string().min(1),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
@@ -103,10 +104,10 @@ export const hubRouter = base.router({
 
   disconnectConnection: protectedBase
     .input(z.object({
-      connectionId: z.string(),
-      hubId: z.string(),
+      connectionId: controlIdSchema,
+      hubId: controlIdSchema,
       expectedVersion: z.number().int().positive(),
-      idempotencyKey: z.string().min(1),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");
@@ -119,12 +120,12 @@ export const hubRouter = base.router({
 
   createConnection: protectedBase
     .input(z.object({
-      hubId: z.string(),
-      channelId: z.string(),
-      serverId: z.string(),
-      inviteCode: z.string().optional(),
-      customName: z.string().optional(),
-      idempotencyKey: z.string().min(1),
+      hubId: controlIdSchema,
+      channelId: controlIdSchema,
+      serverId: controlIdSchema,
+      inviteCode: z.string().max(128).optional(),
+      customName: z.string().trim().max(64).optional(),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("CONNECTIONS");

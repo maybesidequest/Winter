@@ -1,5 +1,5 @@
 import { Authenticator } from "remix-auth";
-import { sessionStorage } from "./session.server";
+import { sessionStorage, isBoundSessionValid } from "./session.server";
 import { DiscordStrategy } from "./discordStrategy.server";
 import { permissionService } from "./permission.server";
 import { saveDiscordTokens } from "./oauthToken.server";
@@ -59,8 +59,14 @@ authenticator.use(
 export async function requireUser(request: Request): Promise<User> {
   const session = await sessionStorage.getSession(request.headers.get("cookie"));
   const user = session.get("user");
-  if (!user) {
-    throw new Response("Unauthorized", { status: 302, headers: { Location: "/" } });
+  if (!user || typeof user !== "object" || !("id" in user) || typeof user.id !== "string" || !(await isBoundSessionValid(session, user.id))) {
+    throw new Response("Unauthorized", {
+      status: 302,
+      headers: {
+        Location: "/",
+        "Set-Cookie": await sessionStorage.destroySession(session),
+      },
+    });
   }
   return user as User;
 }

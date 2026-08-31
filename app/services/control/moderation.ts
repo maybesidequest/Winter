@@ -26,11 +26,11 @@ import type { SanctionEnforcementStatus__Output } from "~/generated/control/v1/i
 import type { SanctionType__Output } from "~/generated/control/v1/interchat/control/v1/SanctionType";
 import type { SubmitAppealRequest } from "~/generated/control/v1/interchat/control/v1/SubmitAppealRequest";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
+export { moderationFailureFor } from "../moderationFailure";
+export type { ModerationFailure, ModerationFailureKind } from "../moderationFailure";
 
 /** The Control Plane accepts exactly one human or server subject. */
 export type ModerationSubject = { userId: string; serverId?: never } | { serverId: string; userId?: never };
-export type ModerationFailureKind = "STALE" | "DENIED" | "UNAVAILABLE" | "NOT_FOUND";
-export interface ModerationFailure { kind: ModerationFailureKind; message: string; }
 export interface ModerationPage<T> { items: T[]; nextCursor: string | null; totalCount: number; }
 
 export interface Infraction {
@@ -95,18 +95,6 @@ export function toSafetyAssessment(value: SafetyAssessment__Output): SafetyAsses
   return { subject: toModerationSubject(value.subject), score: value.score, riskBand: value.riskBand,
     approvedSignalSummaries: value.approvedSignalSummaries.map((signal) => ({ code: signal.code, summary: signal.summary, contribution: signal.contribution, mitigating: signal.mitigating, observedAt: timestamp(signal.observedAt) })),
     source: value.source, observedAt: timestamp(value.observedAt) };
-}
-
-/** Explicit error state for callers; unknown errors intentionally remain unknown. */
-export function moderationFailureFor(error: unknown): ModerationFailure | null {
-  const detail = error && typeof error === "object" ? error as { code?: unknown; message?: unknown; cause?: { code?: unknown } } : undefined;
-  const code = detail?.code ?? detail?.cause?.code;
-  const message = typeof detail?.message === "string" ? detail.message : "The moderation operation could not be completed.";
-  if ([9, 10, "ABORTED", "FAILED_PRECONDITION", "CONFLICT"].includes(code as never)) return { kind: "STALE", message };
-  if ([7, 16, "PERMISSION_DENIED", "UNAUTHENTICATED", "FORBIDDEN"].includes(code as never)) return { kind: "DENIED", message };
-  if ([4, 14, "DEADLINE_EXCEEDED", "UNAVAILABLE", "SERVICE_UNAVAILABLE"].includes(code as never)) return { kind: "UNAVAILABLE", message };
-  if ([5, "NOT_FOUND"].includes(code as never)) return { kind: "NOT_FOUND", message };
-  return null;
 }
 
 export const moderationService = {

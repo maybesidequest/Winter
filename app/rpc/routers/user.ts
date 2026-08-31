@@ -6,6 +6,7 @@ import {
   patchUserPreferencesSchema,
   patchDashboardPreferencesSchema,
 } from "../../schemas/user";
+import { controlIdSchema, idempotencyKeySchema } from "~/schemas/controlLimits";
 
 export const userRouter = base.router({
   getProfile: protectedBase.handler(async ({ context }) => {
@@ -40,7 +41,7 @@ export const userRouter = base.router({
     .input(z.object({
       category: z.enum(["general", "dashboard", "hub", "safety"]),
       message: z.string().trim().min(10).max(2_000),
-      idempotencyKey: z.string().min(1),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("USER_FEEDBACK");
@@ -53,7 +54,7 @@ export const userRouter = base.router({
   }),
 
   acknowledgeInbox: protectedBase
-    .input(z.object({ itemId: z.string().min(1), idempotencyKey: z.string().min(1) }))
+    .input(z.object({ itemId: controlIdSchema, idempotencyKey: idempotencyKeySchema }))
     .handler(async ({ input, context }) => {
       requireCapability("USER_INBOX");
       await userService.acknowledgeInbox(context.user.id, input.itemId, input.idempotencyKey);

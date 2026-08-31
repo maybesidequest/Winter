@@ -1,10 +1,14 @@
 import { RPCHandler } from "@orpc/server/fetch";
 import { appRouter } from "../../../rpc/router";
+import { enforceRpcRequestSecurity } from "../../../rpc/requestSecurity";
 import type { Route } from "./+types/$";
 
-const handler = new RPCHandler(appRouter);
+const handler = new RPCHandler(appRouter, { strictGetMethodPluginEnabled: false });
 
-async function handleRequest(request: Request) {
+export async function handleRequest(request: Request) {
+  const rejected = enforceRpcRequestSecurity(request);
+  if (rejected) return rejected;
+
   const result = await handler.handle(request, {
     prefix: "/api/v1",
     context: { request },

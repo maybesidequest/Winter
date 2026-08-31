@@ -13,6 +13,7 @@ import type {
 import type { AddBlockInput, PatchCallConfigInput, PatchPrefixInput, RemoveBlockInput } from "~/schemas/server";
 import { controlConnectionService, controlHubService, controlServerService } from "~/services/control.server";
 import { getDiscordAccessToken } from "~/services/oauthToken.server";
+import { fetchDiscord } from "~/services/discordHttp.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
@@ -47,20 +48,15 @@ function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {
 }
 
 async function discordFetch(path: string, authorization: string) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), Number(process.env.DISCORD_API_TIMEOUT_MS || 4000));
   try {
-    return await fetch(`https://discord.com/api/v10${path}`, {
+    return await fetchDiscord(path, {
       headers: {
         Authorization: authorization,
         "User-Agent": "InterChat-Winter/1.0 (https://interchat.app)",
       },
-      signal: controller.signal,
     });
   } catch {
     throw new Error("Discord is temporarily unavailable.");
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

@@ -9,6 +9,7 @@ import type {
   PatchUserPreferencesInput,
   PatchDashboardPreferencesInput,
 } from "~/schemas/user";
+import { boundedDashboardPreferenceSchema, type DashboardPreference } from "~/schemas/dashboardPreferences";
 
 export const SUPPORTED_LOCALES: SupportedLocale[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -74,10 +75,10 @@ export const userService = {
     return null;
   },
 
-  async updateDashboardPreference(userId: string, preference: Record<string, any>): Promise<{ success: boolean }> {
+  async updateDashboardPreference(userId: string, preference: DashboardPreference): Promise<{ success: boolean }> {
     try {
       const existing = (await this.getDashboardPreference(userId)) || {};
-      const updated = { ...existing, ...preference };
+      const updated = boundedDashboardPreferenceSchema.parse({ ...existing, ...preference });
       await redis.set(`user:dashboard_preference:${userId}`, JSON.stringify(updated));
       return { success: true };
     } catch (error) {
@@ -196,7 +197,7 @@ export const userService = {
 
   async updateUserPreferences(
     userId: string,
-    input: PatchUserPreferencesInput & { dashboardPreference?: PatchDashboardPreferencesInput }
+    input: PatchUserPreferencesInput & { dashboardPreference?: DashboardPreference }
   ) {
     const patchRes = await this.patchUserPreferences(userId, {
       locale: input.locale,
@@ -207,7 +208,7 @@ export const userService = {
       streaksEnabled: input.streaksEnabled,
     });
     if (input.dashboardPreference) {
-      await this.patchDashboardPreferences(userId, input.dashboardPreference);
+      await this.updateDashboardPreference(userId, input.dashboardPreference);
     }
     return patchRes;
   },

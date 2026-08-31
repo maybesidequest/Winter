@@ -4,11 +4,12 @@ import { hubStaffService } from "../../services/hubStaff.server";
 import { z } from "zod";
 import { requireCapability } from "~/rpc/capabilityGuard";
 import { moderationFailureFor, moderationService } from "~/services/control/moderation";
+import { controlCursorSchema, controlIdSchema, idempotencyKeySchema } from "~/schemas/controlLimits";
 
 const hubRoleSchema = z.enum(["MANAGER", "MODERATOR"]);
 const subjectSchema = z.union([
-  z.object({ userId: z.string().min(1) }).strict(),
-  z.object({ serverId: z.string().min(1) }).strict(),
+  z.object({ userId: controlIdSchema }).strict(),
+  z.object({ serverId: controlIdSchema }).strict(),
 ]);
 const lifecycleStateSchema = z.enum([
   "INFRACTION_LIFECYCLE_STATE_ACTIVE",
@@ -43,10 +44,10 @@ export const moderationRouter = base.router({
 
   submitAppeal: protectedBase
     .input(z.object({
-      hubId: z.string().min(1),
-      infractionId: z.string().min(1),
+      hubId: controlIdSchema,
+      infractionId: controlIdSchema,
       reason: z.string().trim().min(5).max(2_000),
-      idempotencyKey: z.string().min(1),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
@@ -55,11 +56,11 @@ export const moderationRouter = base.router({
 
   listInfractions: protectedBase
     .input(z.object({
-      hubId: z.string().min(1),
+      hubId: controlIdSchema,
       subject: subjectSchema.optional(),
       lifecycleState: lifecycleStateSchema.optional(),
       sanctionType: sanctionTypeSchema.optional(),
-      cursor: z.string().optional(),
+      cursor: controlCursorSchema.optional(),
       limit: z.number().int().positive().max(100).optional(),
     }))
     .handler(async ({ input, context }) => {
@@ -68,7 +69,7 @@ export const moderationRouter = base.router({
     }),
 
   getInfraction: protectedBase
-    .input(z.object({ hubId: z.string().min(1), infractionId: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema, infractionId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.getInfraction({ ...input, actorId: context.user.id }));
@@ -76,12 +77,12 @@ export const moderationRouter = base.router({
 
   applySanction: protectedBase
     .input(z.object({
-      hubId: z.string().min(1),
+      hubId: controlIdSchema,
       subject: subjectSchema,
       type: sanctionTypeSchema,
-      reason: z.string().trim().min(1).max(2_000),
-      durationSeconds: z.number().int().nonnegative().optional(),
-      idempotencyKey: z.string().min(1),
+      reason: z.string().trim().min(1).max(1_000),
+      durationSeconds: z.number().int().min(0).max(31_536_000).optional(),
+      idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
@@ -90,8 +91,8 @@ export const moderationRouter = base.router({
 
   revokeSanction: protectedBase
     .input(z.object({
-      hubId: z.string().min(1), infractionId: z.string().min(1), reason: z.string().trim().min(1).max(2_000),
-      expectedVersion: z.number().int().positive(), idempotencyKey: z.string().min(1),
+      hubId: controlIdSchema, infractionId: controlIdSchema, reason: z.string().trim().min(1).max(1_000),
+      expectedVersion: z.number().int().positive(), idempotencyKey: idempotencyKeySchema,
     }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
@@ -99,49 +100,49 @@ export const moderationRouter = base.router({
     }),
 
   listHubAppeals: protectedBase
-    .input(z.object({ hubId: z.string().min(1), status: appealStatusSchema.optional(), subject: subjectSchema.optional(), cursor: z.string().optional(), limit: z.number().int().positive().max(100).optional() }))
+    .input(z.object({ hubId: controlIdSchema, status: appealStatusSchema.optional(), subject: subjectSchema.optional(), cursor: controlCursorSchema.optional(), limit: z.number().int().positive().max(100).optional() }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.listHubAppeals({ ...input, actorId: context.user.id }));
     }),
 
   getAppeal: protectedBase
-    .input(z.object({ hubId: z.string().min(1), appealId: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema, appealId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.getAppeal({ ...input, actorId: context.user.id }));
     }),
 
   approveAppeal: protectedBase
-    .input(z.object({ hubId: z.string().min(1), appealId: z.string().min(1), resolutionReason: z.string().trim().min(1).max(2_000), expectedVersion: z.number().int().positive(), idempotencyKey: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema, appealId: controlIdSchema, resolutionReason: z.string().trim().min(1).max(2_000), expectedVersion: z.number().int().positive(), idempotencyKey: idempotencyKeySchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.approveAppeal({ ...input, actorId: context.user.id }));
     }),
 
   rejectAppeal: protectedBase
-    .input(z.object({ hubId: z.string().min(1), appealId: z.string().min(1), resolutionReason: z.string().trim().min(1).max(2_000), expectedVersion: z.number().int().positive(), idempotencyKey: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema, appealId: controlIdSchema, resolutionReason: z.string().trim().min(1).max(2_000), expectedVersion: z.number().int().positive(), idempotencyKey: idempotencyKeySchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.rejectAppeal({ ...input, actorId: context.user.id }));
     }),
 
   getHubSafetySettings: protectedBase
-    .input(z.object({ hubId: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.getHubSafetySettings({ ...input, actorId: context.user.id }));
     }),
 
   patchHubSafetySettings: protectedBase
-    .input(z.object({ hubId: z.string().min(1), settings: z.record(z.string(), z.boolean()), updateMask: z.array(z.string()).min(1), expectedVersion: z.number().int().positive(), idempotencyKey: z.string().min(1) }))
+    .input(z.object({ hubId: controlIdSchema, settings: z.record(z.string().max(64), z.boolean()), updateMask: z.array(z.string().max(64)).min(1).max(8), expectedVersion: z.number().int().positive(), idempotencyKey: idempotencyKeySchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.patchHubSafetySettings({ ...input, actorId: context.user.id, settings: input.settings as never, updateMask: input.updateMask as never }));
     }),
 
   getSafetyAssessment: protectedBase
-    .input(z.object({ hubId: z.string().min(1), subject: subjectSchema }))
+    .input(z.object({ hubId: controlIdSchema, subject: subjectSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
       return withModerationErrors(() => moderationService.getSafetyAssessment({ ...input, actorId: context.user.id }));
@@ -151,7 +152,7 @@ export const moderationRouter = base.router({
   // ------------------------------------------------------------------ //
 
   getStaff: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_TEAM");
       return hubStaffService.getStaff(input.hubId, context.user.id);
@@ -160,8 +161,8 @@ export const moderationRouter = base.router({
   addModerator: protectedBase
     .input(
       z.object({
-        hubId: z.string(),
-        targetUserId: z.string(),
+        hubId: controlIdSchema,
+        targetUserId: controlIdSchema,
         role: hubRoleSchema,
         expectedVersion: z.number().int().positive(),
       })
@@ -184,8 +185,8 @@ export const moderationRouter = base.router({
   removeModerator: protectedBase
     .input(
       z.object({
-        hubId: z.string(),
-        targetUserId: z.string(),
+        hubId: controlIdSchema,
+        targetUserId: controlIdSchema,
         expectedVersion: z.number().int().positive(),
       })
     )

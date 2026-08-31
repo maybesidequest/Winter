@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { controlCursorSchema, controlIdSchema, idempotencyKeySchema } from "./controlLimits";
 
 export const HubDiscoverySortOptions = [
   "trending",
@@ -15,33 +16,33 @@ export type HubDiscoverySort = (typeof HubDiscoverySortOptions)[number];
 export const hubDiscoveryQuerySchema = z.object({
   search: z.string().max(100).optional(),
   sort: z.enum(HubDiscoverySortOptions).default("trending"),
-  tags: z.array(z.string()).optional(),
-  language: z.string().optional(),
-  region: z.string().optional(),
+  tags: z.array(z.string().trim().min(1).max(64)).max(10).optional(),
+  language: z.string().max(64).optional(),
+  region: z.string().max(64).optional(),
   nsfw: z.boolean().default(false),
-  page: z.number().int().min(1).default(1),
+  page: z.number().int().min(1).max(20).default(1),
   // Control Plane uses keyset cursors. The service also accepts page for
   // backwards compatibility with the existing dashboard URL.
-  cursor: z.string().optional(),
+  cursor: controlCursorSchema.optional(),
   limit: z.number().int().min(1).max(50).default(24),
 });
 
 export type HubDiscoveryQueryInput = z.infer<typeof hubDiscoveryQuerySchema>;
 
 export const hubUpvoteInputSchema = z.object({
-  hubId: z.string().min(1),
-  idempotencyKey: z.string().min(1),
+  hubId: controlIdSchema,
+  idempotencyKey: idempotencyKeySchema,
 });
 
 export type HubUpvoteInput = z.infer<typeof hubUpvoteInputSchema>;
 
 export const quickConnectInputSchema = z.object({
-  hubId: z.string().min(1),
-  serverId: z.string().min(1),
-  channelId: z.string().min(1),
-  inviteCode: z.string().optional(),
-  customName: z.string().optional(),
-  idempotencyKey: z.string().min(1),
+  hubId: controlIdSchema,
+  serverId: controlIdSchema,
+  channelId: controlIdSchema,
+  inviteCode: z.string().max(128).optional(),
+  customName: z.string().trim().max(64).optional(),
+  idempotencyKey: idempotencyKeySchema,
 });
 
 export type QuickConnectInput = z.infer<typeof quickConnectInputSchema>;

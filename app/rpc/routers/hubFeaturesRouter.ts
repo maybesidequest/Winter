@@ -22,6 +22,7 @@ import {
   updateHubRoleSchema,
   deleteHubRoleSchema,
 } from "~/schemas/hub";
+import { controlIdSchema } from "~/schemas/controlLimits";
 
 function mapControlError(error: unknown): never {
   const code = typeof error === "object" && error && "code" in error
@@ -49,28 +50,28 @@ async function controlCall<T>(operation: () => Promise<T>): Promise<T> {
 
 export const hubFeaturesRouter = protectedBase.router({
   getBadges: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_BADGES");
       return controlCall(() => hubService.getBadges(context.user.id, input.hubId));
     }),
 
   getLogConfig: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_LOGGING");
       return controlCall(() => hubService.getLogConfig(context.user.id, input.hubId));
     }),
 
   listRules: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_RULES");
       return controlCall(() => hubService.listRules(context.user.id, input.hubId));
     }),
 
   listAudit: protectedBase
-    .input(z.object({ hubId: z.string(), limit: z.number().int().min(1).max(100).optional(), offset: z.number().int().min(0).optional() }))
+    .input(z.object({ hubId: controlIdSchema, limit: z.number().int().min(1).max(100).optional(), offset: z.number().int().min(0).max(10_000).optional() }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_AUDIT");
       return controlCall(() => hubService.listAudit(context.user.id, input));
@@ -106,7 +107,7 @@ export const hubFeaturesRouter = protectedBase.router({
     }),
 
   listInvites: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_INVITES");
       return controlCall(() => hubService.listInvites(context.user.id, input.hubId));
@@ -142,7 +143,7 @@ export const hubFeaturesRouter = protectedBase.router({
     }),
 
   listAnnouncements: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_ANNOUNCEMENTS");
       return controlCall(() => hubService.listAnnouncements(context.user.id, input.hubId));
@@ -178,7 +179,7 @@ export const hubFeaturesRouter = protectedBase.router({
     }),
 
   listStaff: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_TEAM");
       return controlCall(() => hubService.listStaff(context.user.id, input.hubId));
@@ -200,7 +201,7 @@ export const hubFeaturesRouter = protectedBase.router({
     }),
 
   listRoles: protectedBase
-    .input(z.object({ hubId: z.string() }))
+    .input(z.object({ hubId: controlIdSchema }))
     .handler(async ({ input, context }) => {
       requireCapability("HUB_TEAM");
       return controlCall(() => hubService.listRoles(context.user.id, input.hubId));

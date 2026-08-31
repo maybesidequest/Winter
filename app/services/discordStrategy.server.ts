@@ -1,5 +1,6 @@
 import { Strategy } from "remix-auth/strategy";
 import { createCookie, redirect } from "react-router";
+import { fetchDiscord } from "./discordHttp.server";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret && process.env.NODE_ENV === "production") {
@@ -82,7 +83,7 @@ export class DiscordStrategy<User> extends Strategy<User, DiscordAuthPayload> {
       redirect_uri: this.options.callbackURL,
     });
 
-    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+    const tokenResponse = await fetchDiscord("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: tokenParams,
@@ -98,7 +99,7 @@ export class DiscordStrategy<User> extends Strategy<User, DiscordAuthPayload> {
     const access_token = tokenData.access_token;
 
     // Phase 4: Fetch user profile
-    const profileResponse = await fetch("https://discord.com/api/users/@me", {
+    const profileResponse = await fetchDiscord("https://discord.com/api/users/@me", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
 

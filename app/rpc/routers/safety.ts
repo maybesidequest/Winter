@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { base, protectedBase } from "../context";
 import { safetyService } from "~/services/safety.server";
+import { controlCursorSchema, controlIdSchema } from "~/schemas/controlLimits";
 
 const safetyType = z.enum(["review", "report", "appeal", "infraction", "restriction"]);
 
@@ -14,10 +15,10 @@ function mapError(error: unknown): never {
 }
 
 export const safetyRouter = base.router({
-  list: protectedBase.input(z.object({ hubId: z.string(), type: safetyType, cursor: z.string().optional() })).handler(async ({ input, context }) => {
+  list: protectedBase.input(z.object({ hubId: controlIdSchema, type: safetyType, cursor: controlCursorSchema.optional() })).handler(async ({ input, context }) => {
     try { return await safetyService.list(context.user.id, input); } catch (error) { return mapError(error); }
   }),
-  adjudicateHeld: protectedBase.input(z.object({ hubId: z.string(), reviewItemId: z.string(), resolution: z.enum(["APPROVE", "REJECT", "EXPIRE"]), reason: z.string().trim().min(3).max(1000), expectedVersion: z.number().int().nonnegative() })).handler(async ({ input, context }) => {
+  adjudicateHeld: protectedBase.input(z.object({ hubId: controlIdSchema, reviewItemId: controlIdSchema, resolution: z.enum(["APPROVE", "REJECT", "EXPIRE"]), reason: z.string().trim().min(3).max(1000), expectedVersion: z.number().int().nonnegative() })).handler(async ({ input, context }) => {
     const { hubId, ...command } = input;
     try { return await safetyService.adjudicate(context.user.id, hubId, command); } catch (error) { return mapError(error); }
   }),

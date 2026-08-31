@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { moderationFailureFor, toAppeal, toHubSafetySettings, toInfraction, toSafetyAssessment } from "~/services/control/moderation";
+import { moderationFailureFor as clientSafeModerationFailureFor } from "~/services/moderationFailure";
 
 describe("canonical moderation representations", () => {
   it("preserves lifecycle, enforcement, and its observed timestamp", () => {
@@ -18,5 +19,6 @@ describe("canonical moderation representations", () => {
     expect(moderationFailureFor({ code: 7 })?.kind).toBe("DENIED");
     expect(moderationFailureFor({ code: 14 })?.kind).toBe("UNAVAILABLE");
     expect(moderationFailureFor({ code: 5 })?.kind).toBe("NOT_FOUND");
+    expect(clientSafeModerationFailureFor({ code: 14 })?.kind).toBe("UNAVAILABLE");
   });
 });

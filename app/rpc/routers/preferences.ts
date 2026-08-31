@@ -1,6 +1,7 @@
 import { base, protectedBase } from "../context";
 import { userService } from "../../services/user.server";
 import { z } from "zod";
+import { boundedDashboardPreferenceSchema } from "../../schemas/dashboardPreferences";
 
 export const preferencesRouter = base.router({
   getUserPreferences: protectedBase.handler(async ({ context }) => {
@@ -10,7 +11,7 @@ export const preferencesRouter = base.router({
 
   updateDashboardPreference: protectedBase
     .input(z.object({
-      preference: z.record(z.string(), z.any()),
+      preference: boundedDashboardPreferenceSchema,
     }))
     .handler(async ({ input, context }) => {
       const result = await userService.updateDashboardPreference(context.user.id, input.preference);
@@ -19,13 +20,13 @@ export const preferencesRouter = base.router({
 
   updateUserPreferences: protectedBase
     .input(z.object({
-      locale: z.string().optional(),
+      locale: z.string().min(1).max(10).optional(),
       mentionOnReply: z.boolean().optional(),
       showNsfwHubs: z.boolean().optional(),
       voteRemindersEnabled: z.boolean().optional(),
       streaksEnabled: z.boolean().optional(),
       showBadges: z.boolean().optional(),
-      dashboardPreference: z.record(z.string(), z.any()).optional(),
+      dashboardPreference: boundedDashboardPreferenceSchema.optional(),
     }))
     .handler(async ({ input, context }) => {
       const result = await userService.updateUserPreferences(context.user.id, input);

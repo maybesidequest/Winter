@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { orpc } from "~/lib/orpc";
-import { moderationFailureFor, type ModerationFailure } from "~/services/control/moderation";
+import { moderationFailureFor, type ModerationFailure } from "~/services/moderationFailure";
 import {
   AppealList,
   HubSafetySettingsPanel,
