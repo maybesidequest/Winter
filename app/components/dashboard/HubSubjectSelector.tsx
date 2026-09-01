@@ -5,9 +5,10 @@ import { orpc } from "~/lib/orpc";
 
 interface HubSubjectSelectorProps {
   hubId: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   id?: string;
+  selectorType?: "SELECTOR_TYPE_USER" | "SELECTOR_TYPE_SERVER";
   disabled?: boolean;
   placeholder?: string;
 }
@@ -25,6 +26,7 @@ export function HubSubjectSelector({
   value,
   onChange,
   id,
+  selectorType = "SELECTOR_TYPE_USER",
   disabled = false,
   placeholder = "Search by name",
 }: HubSubjectSelectorProps) {
@@ -34,7 +36,7 @@ export function HubSubjectSelector({
   const query = useQuery({
     ...orpc.selectors.search.queryOptions({
       input: {
-        type: "SELECTOR_TYPE_USER",
+        type: selectorType,
         query: normalizedSearch,
         parentId: hubId,
         limit: 25,

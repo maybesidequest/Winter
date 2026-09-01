@@ -4,7 +4,7 @@ import { base, protectedBase } from "~/rpc/context";
 import { SelectorType } from "~/generated/control/v1/static";
 import { selectorService } from "~/services/control/selector";
 
-const selectorType = z.enum(["SELECTOR_TYPE_CHANNEL", "SELECTOR_TYPE_ROLE", "SELECTOR_TYPE_USER"]);
+const selectorType = z.enum(["SELECTOR_TYPE_CHANNEL", "SELECTOR_TYPE_ROLE", "SELECTOR_TYPE_USER", "SELECTOR_TYPE_SERVER"]);
 const searchInput = z.object({
   type: selectorType,
   query: z.string().trim().min(2).max(100),

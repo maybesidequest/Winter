@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpcClient as orpc } from "~/lib/orpc";
 import type { ServerBlockResource, ServerResource } from "~/resources/server";
+import { HubSubjectSelector } from "../HubSubjectSelector";
 
 interface ServerBlocklistCardProps {
   server: ServerResource;
@@ -140,7 +141,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
               <thead>
                 <tr className="border-b border-white/[0.08] text-white/70 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Target ID</th>
+                  <th className="py-3 px-4">Target</th>
                   <th className="py-3 px-4">Reason</th>
                   <th className="py-3 px-4">Added by</th>
                   <th className="py-3 px-4">Date Added</th>
@@ -162,10 +163,10 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <code className="text-white font-mono text-xs">{block.targetId}</code>
+                      <span className="text-white">{block.targetName || (block.targetType === "user" ? "Discord member" : "Discord Server")}</span>
                     </td>
                     <td className="py-3.5 px-4 text-white/70">{block.reason || "—"}</td>
-                    <td className="py-3.5 px-4"><code className="text-white/70 font-mono text-xs">{block.authorId || "Unknown"}</code></td>
+                    <td className="py-3.5 px-4 text-white/70">Staff member</td>
                     <td className="py-3.5 px-4 text-white/60">
                       {block.createdAt ? new Date(block.createdAt).toLocaleDateString() : "Unknown"}
                     </td>
@@ -218,15 +219,24 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item
-            name="targetId"
-            label="Discord Snowflake ID"
-            rules={[
-              { required: true, message: "Please input the target ID" },
-              { pattern: /^\d{17,21}$/, message: "Must be a valid 17-21 digit snowflake ID" },
-            ]}
-          >
-            <Input placeholder="e.g. 123456789012345678" />
+          <Form.Item noStyle shouldUpdate={(previous, current) => previous.targetType !== current.targetType}>
+            {({ getFieldValue }) => {
+              const targetType = getFieldValue("targetType");
+              return (
+                <Form.Item
+                  name="targetId"
+                  label="Target"
+                  rules={[{ required: true, message: "Choose a named user or Server" }]}
+                >
+                  <HubSubjectSelector
+                    hubId={server.metadata.id}
+                    onChange={() => undefined}
+                    selectorType={targetType === "server" ? "SELECTOR_TYPE_SERVER" : "SELECTOR_TYPE_USER"}
+                    placeholder={targetType === "server" ? "Search manageable Servers" : "Search Server members"}
+                  />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
 
           <Form.Item name="reason" label="Reason" rules={[{ required: true, message: "Please provide a reason" }]}>
