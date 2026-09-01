@@ -19,7 +19,6 @@ export const connectionService = {
         channelId: conn.metadata.channelId || "",
         serverId: conn.metadata.serverId || "",
         connected: conn.spec.connected,
-        pausedByBot: !conn.status.healthy,
       },
       status: {
         serverName: conn.spec.customName || null,

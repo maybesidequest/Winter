@@ -2,7 +2,6 @@ import {
   ArrowRightOutlined,
   DisconnectOutlined,
   ExclamationCircleOutlined,
-  InfoCircleOutlined,
   LoadingOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
@@ -117,14 +116,6 @@ export function ServerBridgeItem({
             >
               Repair Now
             </button>
-          </div>
-        )}
-
-        {/* Pause Reason Info */}
-        {isPaused && bridge.pauseReason && (
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 flex items-center gap-2">
-            <InfoCircleOutlined className="flex-shrink-0 text-amber-400" />
-            <span>Reason: {bridge.pauseReason}</span>
           </div>
         )}
       </div>

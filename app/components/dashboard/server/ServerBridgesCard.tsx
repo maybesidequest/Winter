@@ -157,7 +157,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
         chName.toLowerCase().includes(query);
 
       if (!matchesSearch) return false;
-      const isPaused = bridge.pausedByBot || !bridge.connected;
+      const isPaused = !bridge.connected;
       if (statusFilter === "active") return !isPaused;
       if (statusFilter === "paused") return isPaused;
       return true;
