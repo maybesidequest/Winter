@@ -5,6 +5,7 @@ import { moderationRouter } from "./routers/moderation";
 import { preferencesRouter } from "./routers/preferences";
 import { presentationRouter } from "./routers/presentation";
 import { serverRouter } from "./routers/server";
+import { selectorsRouter } from "./routers/selectors";
 import { safetyRouter } from "./routers/safety";
 import { userRouter } from "./routers/user";
 
@@ -15,6 +16,7 @@ export const appRouter = base.router({
   preferences: preferencesRouter,
   presentation: presentationRouter,
   server: serverRouter,
+  selectors: selectorsRouter,
   safety: safetyRouter,
   user: userRouter,
 });
