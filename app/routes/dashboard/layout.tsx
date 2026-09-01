@@ -4,6 +4,7 @@ import { ConfigProvider, theme } from "antd";
 import { useEffect, useState } from "react";
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
+import { DashboardShortcuts } from "~/components/dashboard/DashboardShortcuts";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
 import { SettingsModal } from "~/components/dashboard/SettingsModal";
@@ -86,6 +87,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
 
   return (
     <ConfigProvider
@@ -218,6 +220,8 @@ export default function DashboardLayout() {
             navigate(`/dashboard/hubs/${hubId}/overview`);
           }}
         />
+
+        <DashboardShortcuts />
       </div>
     </ConfigProvider>
   );
