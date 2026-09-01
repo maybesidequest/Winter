@@ -37,6 +37,7 @@ const forbidden = [
   [/\bprotoLoader\b|CONTROL_DESCRIPTOR_BASE64|deepTo(?:Snake|Camel)Case/, "dynamic descriptor or case-conversion transport"],
   [/\b(?:IrisClient|PolarizerClient)\b|from\s+["'][^"']*(?:iris|polarizer)[^"']*["']/i, "direct Iris/Polarizer client import"],
   [/\b(?:IRIS|POLARIZER)_[A-Z0-9_]+\b|DISCORD_BOT_TOKEN|MANAGEMENT_DATABASE_URL|INTERCHAT_MANAGEMENT_DATABASE_URL/, "forbidden provider or shared-management credential"],
+  [/winter:(?:server|servers|bridges|blocklist):|server:(?:settings|prefix):/, "Winter management-resource cache key"],
   [/dangerouslySetInnerHTML\s*=|dangerouslySetInnerHTML\s*:/, "global or unsanitized HTML injection"],
 ];
 

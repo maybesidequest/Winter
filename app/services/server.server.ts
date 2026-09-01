@@ -260,12 +260,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await Promise.all([
-      redis.del(`winter:server:${userId}:${input.serverId}`),
-      redis.del(`winter:servers:${userId}`),
-      redis.incr(`server:settings:version:${input.serverId}`),
-      redis.del(`server:settings:${input.serverId}`),
-    ]).catch(() => { });
     return { success: true, serverName: guild.name, server: updated };
   },
 
@@ -279,13 +273,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    const prefixVal = input.prefix ? JSON.stringify(input.prefix) : "false";
-    await Promise.all([
-      redis.del(`winter:server:${userId}:${input.serverId}`),
-      redis.del(`winter:servers:${userId}`),
-      redis.set(`server:prefix:${input.serverId}`, prefixVal, "EX", 3600),
-      redis.incr(`server:prefix:version:${input.serverId}`),
-    ]).catch(() => { });
     return { success: true, serverName: guild.name, server: updated };
   },
 
@@ -361,7 +348,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -376,7 +362,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, connection };
   },
 
@@ -391,7 +376,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:bridges:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 
@@ -427,7 +411,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true, id: res.id };
   },
 
@@ -439,7 +422,6 @@ export const serverService = {
       actorId: userId,
       idempotencyKey: input.idempotencyKey,
     });
-    await redis.del(`winter:blocklist:${userId}:${input.serverId}`).catch(() => { });
     return { success: true };
   },
 };
