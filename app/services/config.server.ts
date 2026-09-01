@@ -5,7 +5,6 @@
  */
 export const PRODUCTION_REQUIRED_SECRETS = [
   "SESSION_SECRET",
-  "OAUTH_TOKEN_ENCRYPTION_KEY",
   "DISCORD_CLIENT_ID",
   "DISCORD_CLIENT_SECRET",
   "DISCORD_CALLBACK_URL",
@@ -21,7 +20,10 @@ export function validateProductionConfig(
 ): void {
   if (runtimeMode !== "production") return;
 
-  const missing = PRODUCTION_REQUIRED_SECRETS.filter((name) => !env[name]?.trim());
+  const missing: string[] = PRODUCTION_REQUIRED_SECRETS.filter((name) => !env[name]?.trim());
+  if (!env.OAUTH_TOKEN_ENCRYPTION_KEYS?.trim() && !env.OAUTH_TOKEN_ENCRYPTION_KEY?.trim()) {
+    missing.push("OAUTH_TOKEN_ENCRYPTION_KEYS");
+  }
   if (missing.length > 0) {
     throw new Error(`Missing required production configuration: ${missing.join(", ")}`);
   }
