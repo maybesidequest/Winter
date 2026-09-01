@@ -131,7 +131,12 @@ export function HubRoutes({
                     </div>
                     <div className="text-xs text-white/50 truncate mt-0.5">
                       {connection.status.channelName ? `#${connection.status.channelName}` : "Channel name unavailable"} ·{" "}
-                      {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"}
+                      {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"} ·{" "}
+                      <span className={connection.status.healthy ? "text-emerald-300/80" : "text-amber-300"}>
+                        {connection.status.healthy
+                          ? "Observed health: healthy"
+                          : `Observed health: ${connection.status.statusMessage || "needs attention"}`}
+                      </span>
                     </div>
                   </div>
                 </div>
