@@ -4,9 +4,9 @@ import { invokeUnary, type UnaryMethod } from "~/services/control/transport";
 describe("Winter Server Control Service", () => {
   it("serializes PatchServerConfigRequest correctly at wire boundary", async () => {
     let wireRequest: Record<string, unknown> | undefined;
-    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = (request, _metadata, _options, callback) => {
+    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = async (request) => {
       wireRequest = request;
-      callback(null, {
+      return {
         server: {
           metadata: { id: "guild-123", name: "Test Guild", iconUrl: "https://icon.png" },
           spec: {
@@ -22,7 +22,7 @@ describe("Winter Server Control Service", () => {
           },
           version: 2,
         },
-      });
+      };
     };
 
     const response = await invokeUnary(method, {
@@ -46,14 +46,14 @@ describe("Winter Server Control Service", () => {
     });
 
     expect(wireRequest).toBeDefined();
-    expect(wireRequest?.server_id).toBe("guild-123");
-    expect(wireRequest?.expected_version).toBe(1);
+    expect(wireRequest?.serverId).toBe("guild-123");
+    expect(wireRequest?.expectedVersion).toBe(1);
     expect(wireRequest?.spec).toMatchObject({
       prefix: "!",
-      call_ping: true,
-      call_requeue: false,
-      call_nsfw_filter: true,
-      call_channel_id: "channel-1",
+      callPing: true,
+      callRequeue: false,
+      callNsfwFilter: true,
+      callChannelId: "channel-1",
     });
 
     expect(response).toMatchObject({
@@ -68,9 +68,9 @@ describe("Winter Server Control Service", () => {
 
   it("serializes AddBlockRequest and RemoveBlockRequest with target types", async () => {
     let addWireReq: Record<string, unknown> | undefined;
-    const addMethod: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = (request, _metadata, _options, callback) => {
+    const addMethod: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = async (request) => {
       addWireReq = request;
-      callback(null, {
+      return {
         block: {
           id: "block-1",
           serverId: "guild-123",
@@ -78,7 +78,7 @@ describe("Winter Server Control Service", () => {
           targetType: "BLOCK_TARGET_TYPE_USER",
           reason: "Spam",
         },
-      });
+      };
     };
 
     const addRes = await invokeUnary(addMethod, {
@@ -96,9 +96,9 @@ describe("Winter Server Control Service", () => {
       reason: "Spam",
     });
 
-    expect(addWireReq?.server_id).toBe("guild-123");
-    expect(addWireReq?.target_id).toBe("target-user-1");
-    expect(addWireReq?.target_type).toBe("BLOCK_TARGET_TYPE_USER");
+    expect(addWireReq?.serverId).toBe("guild-123");
+    expect(addWireReq?.targetId).toBe("target-user-1");
+    expect(addWireReq?.targetType).toBe("BLOCK_TARGET_TYPE_USER");
     expect(addRes).toMatchObject({
       block: {
         id: "block-1",

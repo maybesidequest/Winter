@@ -4,9 +4,9 @@ import { invokeUnary, type UnaryMethod } from "~/services/control/transport";
 describe("Winter Hub Staff Control Service", () => {
   it("serializes AssignHubStaffRoleRequest with role_id and expected_version", async () => {
     let wireRequest: Record<string, unknown> | undefined;
-    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = (request, _metadata, _options, callback) => {
+    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = async (request) => {
       wireRequest = request;
-      callback(null, {
+      return {
         staff: [
           {
             userId: "mod-1",
@@ -16,7 +16,7 @@ describe("Winter Hub Staff Control Service", () => {
             assignedAt: { seconds: 1700000000, nanos: 0 },
           },
         ],
-      });
+      };
     };
 
     const response = await invokeUnary(method, {
@@ -37,11 +37,11 @@ describe("Winter Hub Staff Control Service", () => {
     });
 
     expect(wireRequest).toBeDefined();
-    expect(wireRequest?.hub_id).toBe("hub-999");
-    expect(wireRequest?.user_id).toBe("mod-1");
-    expect(wireRequest?.role_id).toBe("role-mod-456");
-    expect(wireRequest?.expected_version).toBe(5);
-    expect(wireRequest?.permissions_bitmask).toBe(128);
+    expect(wireRequest?.hubId).toBe("hub-999");
+    expect(wireRequest?.userId).toBe("mod-1");
+    expect(wireRequest?.roleId).toBe("role-mod-456");
+    expect(wireRequest?.expectedVersion).toBe(5);
+    expect(wireRequest?.permissionsBitmask).toBe(128);
 
     expect(response).toMatchObject({
       staff: [
@@ -56,11 +56,11 @@ describe("Winter Hub Staff Control Service", () => {
 
   it("serializes RemoveHubStaffRoleRequest with role_id and expected_version", async () => {
     let wireRequest: Record<string, unknown> | undefined;
-    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = (request, _metadata, _options, callback) => {
+    const method: UnaryMethod<Record<string, unknown>, Record<string, unknown>> = async (request) => {
       wireRequest = request;
-      callback(null, {
+      return {
         staff: [],
-      });
+      };
     };
 
     const response = await invokeUnary(method, {
@@ -79,10 +79,10 @@ describe("Winter Hub Staff Control Service", () => {
     });
 
     expect(wireRequest).toBeDefined();
-    expect(wireRequest?.hub_id).toBe("hub-999");
-    expect(wireRequest?.user_id).toBe("mod-1");
-    expect(wireRequest?.role_id).toBe("role-mod-456");
-    expect(wireRequest?.expected_version).toBe(6);
+    expect(wireRequest?.hubId).toBe("hub-999");
+    expect(wireRequest?.userId).toBe("mod-1");
+    expect(wireRequest?.roleId).toBe("role-mod-456");
+    expect(wireRequest?.expectedVersion).toBe(6);
     expect(response).toMatchObject({ staff: [] });
   });
 });
