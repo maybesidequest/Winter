@@ -7,6 +7,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { Popconfirm } from "antd";
+import { ConnectionOperationNotice } from "~/components/dashboard/connection/ConnectionOperationNotice";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { HubConnectionResource } from "~/resources/connection";
 
@@ -138,6 +139,7 @@ export function HubRoutes({
                           : `Observed health: ${connection.status.statusMessage || "needs attention"}`}
                       </span>
                     </div>
+                    {connection.status.latestOperationId && <ConnectionOperationNotice operationId={connection.status.latestOperationId} />}
                   </div>
                 </div>
 
