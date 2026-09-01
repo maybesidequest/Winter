@@ -10,6 +10,7 @@ import {
   SafetyAssessmentCard,
 } from "~/components/dashboard/moderation";
 import type { HubResource } from "~/resources/hub";
+import { HubSubjectSelector } from "./HubSubjectSelector";
 
 export function HubModerationPanel({ hub, canEdit }: { hub: HubResource; canEdit: boolean }) {
   const queryClient = useQueryClient();
@@ -61,7 +62,19 @@ export function HubModerationPanel({ hub, canEdit }: { hub: HubResource; canEdit
         />
       </section>
       <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-bold text-white">Member safety assessment</h3><input className="dashboard-input w-48 text-xs" placeholder="Discord user ID" value={subjectUserId} onChange={(event) => setSubjectUserId(event.target.value)} /></div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-bold text-white">Member safety assessment</h3>
+          <div className="w-full sm:w-64">
+            <label className="sr-only" htmlFor="hub-safety-subject">Member to assess</label>
+            <HubSubjectSelector
+              id="hub-safety-subject"
+              hubId={hub.metadata.id}
+              value={subjectUserId}
+              onChange={setSubjectUserId}
+              placeholder="Search by Discord name"
+            />
+          </div>
+        </div>
         <SafetyAssessmentCard assessment={assessmentQuery.data ?? null} />
       </section>
     </div>
