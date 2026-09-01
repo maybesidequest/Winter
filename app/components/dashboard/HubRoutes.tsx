@@ -5,8 +5,8 @@ import {
   StopOutlined,
   ApiOutlined,
   SearchOutlined,
-  InfoCircleOutlined,
 } from "@ant-design/icons";
+import { Popconfirm } from "antd";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { HubConnectionResource } from "~/resources/connection";
 
@@ -149,20 +149,24 @@ export function HubRoutes({
                     <span>{connection.spec.connected ? "Pause" : "Resume"}</span>
                   </button>
 
-                  <button
-                    type="button"
-                    disabled={!canManage || pending}
-                    onClick={() => {
-                      if (confirm(`Disconnect ${connection.status.serverName || "this Server"} from this Hub?`)) {
-                        onDisconnect(connection);
-                      }
-                    }}
-                    className="dashboard-btn-danger px-3.5 py-1.5 text-xs font-bold"
-                    title="Disconnect bridge"
+                  <Popconfirm
+                    title="Disconnect bridge?"
+                    description={`Remove ${connection.status.serverName || "this Server"} from the Hub.`}
+                    okText="Disconnect"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => onDisconnect(connection)}
                   >
-                    <StopOutlined />
-                    <span>Disconnect</span>
-                  </button>
+                    <button
+                      type="button"
+                      disabled={!canManage || pending}
+                      className="dashboard-btn-danger px-3.5 py-1.5 text-xs font-bold"
+                      title="Disconnect bridge"
+                    >
+                      <StopOutlined />
+                      <span>Disconnect</span>
+                    </button>
+                  </Popconfirm>
                 </div>
               </div>
             ))}
