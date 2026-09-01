@@ -21,6 +21,23 @@ export interface ConnectionsResponse {
   connections: Connection[];
 }
 
+/**
+ * A connection target is intentionally minimal. Resolving a public name or a
+ * valid invite establishes neither membership nor authorization to mutate; the
+ * subsequent ConnectChannel mutation reauthorizes and consumes the invite in
+ * the same canonical transaction as the Connection write.
+ */
+export interface ConnectionTarget {
+  hubId: string;
+  hubName: string;
+}
+
+export interface ResolveConnectionTargetRequest {
+  context?: RequestContext | undefined;
+  hubName: string;
+  inviteCode: string;
+}
+
 export interface ConnectChannelRequest {
   context?: RequestContext | undefined;
   serverId: string;
@@ -171,6 +188,138 @@ export const ConnectionsResponse: MessageFns<ConnectionsResponse> = {
   fromPartial<I extends Exact<DeepPartial<ConnectionsResponse>, I>>(object: I): ConnectionsResponse {
     const message = createBaseConnectionsResponse();
     message.connections = object.connections?.map((e) => Connection.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseConnectionTarget(): ConnectionTarget {
+  return { hubId: "", hubName: "" };
+}
+
+export const ConnectionTarget: MessageFns<ConnectionTarget> = {
+  encode(message: ConnectionTarget, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.hubId !== "") {
+      writer.uint32(10).string(message.hubId);
+    }
+    if (message.hubName !== "") {
+      writer.uint32(18).string(message.hubName);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConnectionTarget {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConnectionTarget();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.hubId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.hubName = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ConnectionTarget>, I>>(base?: I): ConnectionTarget {
+    return ConnectionTarget.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ConnectionTarget>, I>>(object: I): ConnectionTarget {
+    const message = createBaseConnectionTarget();
+    message.hubId = object.hubId ?? "";
+    message.hubName = object.hubName ?? "";
+    return message;
+  },
+};
+
+function createBaseResolveConnectionTargetRequest(): ResolveConnectionTargetRequest {
+  return { context: undefined, hubName: "", inviteCode: "" };
+}
+
+export const ResolveConnectionTargetRequest: MessageFns<ResolveConnectionTargetRequest> = {
+  encode(message: ResolveConnectionTargetRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.context !== undefined) {
+      RequestContext.encode(message.context, writer.uint32(10).fork()).join();
+    }
+    if (message.hubName !== "") {
+      writer.uint32(18).string(message.hubName);
+    }
+    if (message.inviteCode !== "") {
+      writer.uint32(26).string(message.inviteCode);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResolveConnectionTargetRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResolveConnectionTargetRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.context = RequestContext.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.hubName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.inviteCode = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ResolveConnectionTargetRequest>, I>>(base?: I): ResolveConnectionTargetRequest {
+    return ResolveConnectionTargetRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ResolveConnectionTargetRequest>, I>>(
+    object: I,
+  ): ResolveConnectionTargetRequest {
+    const message = createBaseResolveConnectionTargetRequest();
+    message.context = (object.context !== undefined && object.context !== null)
+      ? RequestContext.fromPartial(object.context)
+      : undefined;
+    message.hubName = object.hubName ?? "";
+    message.inviteCode = object.inviteCode ?? "";
     return message;
   },
 };
@@ -582,6 +731,14 @@ export const ConnectionServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    resolveConnectionTarget: {
+      name: "ResolveConnectionTarget",
+      requestType: ResolveConnectionTargetRequest,
+      requestStream: false,
+      responseType: ConnectionTarget,
+      responseStream: false,
+      options: {},
+    },
     connectChannel: {
       name: "ConnectChannel",
       requestType: ConnectChannelRequest,
@@ -622,6 +779,10 @@ export interface ConnectionServiceImplementation<CallContextExt = {}> {
     request: GetConnectionsRequest,
     context: CallContext & CallContextExt,
   ): Promise<DeepPartial<ConnectionsResponse>>;
+  resolveConnectionTarget(
+    request: ResolveConnectionTargetRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<ConnectionTarget>>;
   connectChannel(
     request: ConnectChannelRequest,
     context: CallContext & CallContextExt,
@@ -645,6 +806,10 @@ export interface ConnectionServiceClient<CallOptionsExt = {}> {
     request: DeepPartial<GetConnectionsRequest>,
     options?: CallOptions & CallOptionsExt,
   ): Promise<ConnectionsResponse>;
+  resolveConnectionTarget(
+    request: DeepPartial<ResolveConnectionTargetRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<ConnectionTarget>;
   connectChannel(
     request: DeepPartial<ConnectChannelRequest>,
     options?: CallOptions & CallOptionsExt,
