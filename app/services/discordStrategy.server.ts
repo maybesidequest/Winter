@@ -28,8 +28,15 @@ export interface DiscordStrategyOptions {
   scope?: string[];
 }
 
+export interface DiscordProfile {
+  id: string;
+  username: string;
+  global_name?: string | null;
+  avatar?: string | null;
+}
+
 export type DiscordAuthPayload = {
-  profile: any;
+  profile: DiscordProfile;
   tokens: { accessToken: string; refreshToken?: string; expiresIn: number; scope?: string };
 };
 
@@ -114,7 +121,7 @@ export class DiscordStrategy<User> extends Strategy<User, DiscordAuthPayload> {
       throw new Error("Failed to fetch user profile from Discord");
     }
 
-    const profile = await profileResponse.json();
+    const profile = await profileResponse.json() as DiscordProfile;
 
     // Phase 5: Pass the raw profile up to the application's verify function
     return await this.verify({

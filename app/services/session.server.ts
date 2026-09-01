@@ -12,10 +12,13 @@ const configuredMaxAge = Number(process.env.SESSION_MAX_AGE_SECONDS || 43_200);
 export const SESSION_MAX_AGE_SECONDS = Number.isInteger(configuredMaxAge) && configuredMaxAge >= 900 && configuredMaxAge <= 604_800
   ? configuredMaxAge
   : 43_200;
+export const SESSION_COOKIE_NAME = process.env.NODE_ENV === "production"
+  ? "__Host-interchat_session"
+  : "interchat_session";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "_session",
+    name: SESSION_COOKIE_NAME,
     sameSite: "lax",
     path: "/",
     httpOnly: true,

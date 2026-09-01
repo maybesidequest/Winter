@@ -2,7 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { clearOAuthStateCookie, oauthStateCookie } from "~/services/discordStrategy.server";
 import { validateProductionConfig } from "~/services/config.server";
-import { SESSION_MAX_AGE_SECONDS, sessionStorage } from "~/services/session.server";
+import { newCsrfToken, requireCsrf, serializeCsrfCookie } from "~/services/csrf.server";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, sessionStorage } from "~/services/session.server";
 
 describe("Winter authentication boundaries", () => {
   it("fails closed when production credentials are missing", () => {
@@ -15,8 +16,35 @@ describe("Winter authentication boundaries", () => {
     const cookie = await sessionStorage.commitSession(session);
 
     expect(cookie).toContain(`Max-Age=${SESSION_MAX_AGE_SECONDS}`);
+    expect(cookie).toContain(`${SESSION_COOKIE_NAME}=`);
     expect(cookie).toContain("HttpOnly");
     expect(cookie).toContain("SameSite=Lax");
+  });
+
+  it("requires the signed-session CSRF token and constant-time header match", async () => {
+    const token = newCsrfToken();
+    const csrfCookie = await serializeCsrfCookie(token);
+    expect(csrfCookie).toContain("interchat_csrf=");
+
+    await expect(
+      requireCsrf(
+        new Request("https://winter.test/api/v1/mutation", {
+          method: "POST",
+          headers: { Origin: "https://winter.test", "X-CSRF-Token": token },
+        }),
+        token,
+      ),
+    ).resolves.toBeUndefined();
+
+    await expect(
+      requireCsrf(
+        new Request("https://winter.test/api/v1/mutation", {
+          method: "POST",
+          headers: { Origin: "https://winter.test", "X-CSRF-Token": "wrong" },
+        }),
+        token,
+      ),
+    ).rejects.toMatchObject({ status: 403 });
   });
 
   it("clears the OAuth state cookie after callback consumption", async () => {

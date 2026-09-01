@@ -1,5 +1,7 @@
 import { os, ORPCError } from "@orpc/server";
 import { requireUser } from "../services/auth.server";
+import { requireCsrf } from "../services/csrf.server";
+import { sessionStorage } from "../services/session.server";
 
 export type ORPCContext = {
   request: Request;
@@ -17,6 +19,10 @@ export const base = os.$context<ORPCContext>().use(async ({ next, path }) => {
 export const protectedBase = base.use(async ({ context, next }) => {
   try {
     const user = await requireUser(context.request);
+    if (!["GET", "HEAD", "OPTIONS"].includes(context.request.method.toUpperCase())) {
+      const session = await sessionStorage.getSession(context.request.headers.get("cookie"));
+      await requireCsrf(context.request, session.get("csrfToken"));
+    }
     
     return next({
       context: {
@@ -26,6 +32,9 @@ export const protectedBase = base.use(async ({ context, next }) => {
     });
   } catch (error) {
     if (error instanceof Response) {
+      if (error.status === 403) {
+        throw new ORPCError("FORBIDDEN", { message: await error.text() });
+      }
       throw new ORPCError("UNAUTHORIZED", { message: "Not authenticated" });
     }
     throw error;
