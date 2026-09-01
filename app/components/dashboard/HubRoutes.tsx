@@ -53,7 +53,7 @@ export function HubRoutes({
           </div>
           <div>
             <h3 className="text-sm font-bold text-white font-['Sora'] m-0">Connected Discord Bridges</h3>
-            <span className="text-xs text-white/50">{activeCount} active · {pausedCount} paused</span>
+          <span className="text-xs text-white/50">{activeCount} enabled · {pausedCount} paused</span>
           </div>
         </div>
 
@@ -86,7 +86,7 @@ export function HubRoutes({
                 statusFilter === "active" ? "bg-white/[0.12] text-emerald-300" : "text-white/50 hover:text-white"
               }`}
             >
-              Active ({activeCount})
+              Enabled ({activeCount})
             </button>
             <button
               type="button"
@@ -126,12 +126,12 @@ export function HubRoutes({
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${connection.spec.connected ? "bg-emerald-400" : "bg-amber-400"}`} />
-                        {connection.spec.connected ? "Live Relay" : "Paused"}
+                        {connection.spec.connected ? "Enabled" : "Paused"}
                       </span>
                     </div>
                     <div className="text-xs text-white/50 truncate mt-0.5">
                       #{connection.status.channelName || `channel-${connection.spec.channelId}`} ·{" "}
-                      {connection.spec.connected ? "Active bidirectional broadcast" : "Relay paused by manager"}
+                      {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"}
                     </div>
                   </div>
                 </div>

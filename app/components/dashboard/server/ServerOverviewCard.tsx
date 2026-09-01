@@ -44,7 +44,7 @@ export function ServerOverviewCard({
                 {server.status.botInstalled ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Online & Active
+                    Installed
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300">
@@ -54,7 +54,7 @@ export function ServerOverviewCard({
               </div>
               <p className="mt-1 text-sm text-white/70">
                 {server.status.botInstalled
-                  ? "InterChat bot is installed and synchronized with the Control Plane."
+                  ? "InterChat bot is installed. Operational health is reported separately from this configuration view."
                   : "InterChat needs to be invited to this Discord server before cross-server Hubs and Calls can function."}
               </p>
             </div>
@@ -112,7 +112,7 @@ export function ServerOverviewCard({
             <div className="text-xs text-white/60 font-semibold uppercase tracking-wider">NSFW Filter</div>
             <div className="text-xl font-bold mt-1">
               {server.spec.filterNsfw ? (
-                <span className="text-emerald-400">Active</span>
+                <span className="text-emerald-400">Enabled</span>
               ) : (
                 <span className="text-rose-400">Disabled</span>
               )}
