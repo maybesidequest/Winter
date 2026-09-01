@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { ImpactAction } from "~/generated/control/v1/static";
 import { base, protectedBase } from "~/rpc/context";
+import { grpcCodeOf } from "~/services/control/middleware";
 import { controlPreviewService } from "~/services/control.server";
 
 const previewInput = z.object({
@@ -12,13 +13,13 @@ const previewInput = z.object({
 });
 
 function mapPreviewError(error: unknown): never {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
+  const code = grpcCodeOf(error);
   if (code === 3) throw new ORPCError("BAD_REQUEST", { message: "The preview request is invalid." });
-  if (code === 5) throw new ORPCError("NOT_FOUND", { message: "This resource is no longer available." });
   if (code === 6 || code === 9 || code === 10) throw new ORPCError("CONFLICT", { message: "Refresh the resource before reviewing this action." });
-  if (code === 7 || code === 16) throw new ORPCError("FORBIDDEN", { message: "You do not have permission to preview this action." });
+  // Preview targets are Hub resources: deny and missing must not differ.
+  if (code === 5 || code === 7 || code === 16) {
+    throw new ORPCError("NOT_FOUND", { message: "This resource was not found or you do not have access to it." });
+  }
   throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Impact preview is temporarily unavailable." });
 }
 

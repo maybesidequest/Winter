@@ -135,6 +135,24 @@ function readMetadata(metadata: Metadata | undefined, key: string): string | und
   return typeof value === "string" ? value : undefined;
 }
 
+/**
+ * Numeric gRPC status code for a transport failure. ControlPlaneError carries
+ * the numeric code as `grpcCode` and the human-readable name as `code`, so
+ * mappers must classify on this value (or on a raw RpcError's numeric
+ * `code`), never on `Number(error.code)` — that reads the name string and
+ * always yields NaN.
+ */
+export function grpcCodeOf(error: unknown): number | undefined {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current && typeof current === "object"; depth += 1) {
+    const candidate = current as { grpcCode?: unknown; code?: unknown; cause?: unknown };
+    if (typeof candidate.grpcCode === "number") return candidate.grpcCode;
+    if (typeof candidate.code === "number") return candidate.code;
+    current = candidate.cause;
+  }
+  return undefined;
+}
+
 /** Map transport failures once, preserving stable caller-visible semantics. */
 export const controlErrorMiddleware: ClientMiddleware = async function* (call, options) {
   if (call.requestStream || call.responseStream) {

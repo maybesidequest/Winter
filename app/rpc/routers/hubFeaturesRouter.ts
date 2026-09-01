@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { protectedBase } from "~/rpc/context";
 import { requireCapability } from "~/rpc/capabilityGuard";
+import { grpcCodeOf } from "~/services/control/middleware";
 import { hubService } from "~/services/hub.server";
 import {
   createHubRuleSchema,
@@ -24,15 +25,17 @@ import {
 } from "~/schemas/hub";
 
 function mapControlError(error: unknown): never {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
+  const code = grpcCodeOf(error);
   if (code === 3) throw new ORPCError("BAD_REQUEST", { message: "The submitted values are invalid." });
-  if (code === 5) throw new ORPCError("NOT_FOUND", { message: "This Hub resource is no longer available." });
   if (code === 6 || code === 9 || code === 10) {
     throw new ORPCError("CONFLICT", { message: "This item changed while you were editing it. Refresh and try again." });
   }
-  if (code === 7 || code === 16) throw new ORPCError("FORBIDDEN", { message: "You do not have permission to perform this action." });
+  // Conceal permission denials exactly like missing resources: existence is
+  // checked before permission control-plane-side, so a distinct denial would
+  // reveal that a private Hub resource exists.
+  if (code === 5 || code === 7 || code === 16) {
+    throw new ORPCError("NOT_FOUND", { message: "Hub not found or access denied." });
+  }
   if (code === 4 || code === 14) {
     throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Hub management is temporarily unavailable. Try again shortly." });
   }

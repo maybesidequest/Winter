@@ -22,7 +22,6 @@ const appealStatusSchema = z.enum(["APPEAL_STATUS_PENDING", "APPEAL_STATUS_APPRO
 function throwModerationError(error: unknown): never {
   const failure = moderationFailureFor(error);
   if (failure?.kind === "STALE") throw new ORPCError("CONFLICT", { message: failure.message });
-  if (failure?.kind === "DENIED") throw new ORPCError("FORBIDDEN", { message: failure.message });
   if (failure?.kind === "NOT_FOUND") throw new ORPCError("NOT_FOUND", { message: failure.message });
   if (failure?.kind === "UNAVAILABLE") throw new ORPCError("SERVICE_UNAVAILABLE", { message: failure.message });
   throw error;

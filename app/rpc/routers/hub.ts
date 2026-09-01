@@ -1,6 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { base, protectedBase } from "~/rpc/context";
+import { grpcCodeOf } from "~/services/control/middleware";
 import { hubService } from "~/services/hub.server";
 import { connectionService } from "~/services/connection.server";
 import {
@@ -14,15 +15,18 @@ import { hubFeaturesRouter } from "./hubFeaturesRouter";
 import { requireCapability } from "~/rpc/capabilityGuard";
 
 function throwMappedControlError(error: unknown, fallback: string): never {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
+  const code = grpcCodeOf(error);
   if (code === 3) throw new ORPCError("BAD_REQUEST", { message: "The submitted values are invalid." });
-  if (code === 5) throw new ORPCError("NOT_FOUND", { message: "This Hub resource is no longer available." });
   if (code === 6 || code === 9 || code === 10) {
     throw new ORPCError("CONFLICT", { message: "This item changed while you were editing it. Refresh and try again." });
   }
-  if (code === 7 || code === 16) throw new ORPCError("FORBIDDEN", { message: "You do not have permission to perform this action." });
+  // Hub resources are private by default. The Control Plane checks existence
+  // before permission, so PERMISSION_DENIED and NOT_FOUND must surface
+  // identically or a prober could distinguish existing private Hubs from
+  // missing ones (plan: response differences must not reveal existence).
+  if (code === 5 || code === 7 || code === 16) {
+    throw new ORPCError("NOT_FOUND", { message: "Hub not found or access denied." });
+  }
   throw new ORPCError("SERVICE_UNAVAILABLE", { message: fallback });
 }
 

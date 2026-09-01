@@ -20,6 +20,81 @@ deployment observation, manual QA record, or approved exception exists.
 - [Operations pack](./operations-pack.md)
 - [Rollout plan](./rollout-plan.md)
 
+## Negative authorization matrix
+
+Phase 3 Workstream C, "Object-level authorization" (release blocker). Test-first
+regression suite; no feature code was changed to make these pass. Enforcement
+layers are documented in the module header of
+[`tests/security/authzHarness.ts`](../../tests/security/authzHarness.ts):
+Winter session → ORPC `protectedBase` (auth/CSRF/rate limits) → ORPC routers
+(`app/rpc/routers/*`) → Control Plane gRPC clients (`app/services/control/*`)
+→ interchat-control authorization (Iris, the enforcing layer). Object-level
+checks live control-plane-side, so Winter-side tests assert clean denial
+surfacing (no fallback write, no silent success, no data leakage) rather than
+duplicating the check. The harness fakes only the gRPC boundary and drives the
+real session, ORPC, router, and service code with fixture actors (owner,
+authorized staff, insufficient staff, unrelated authenticated user, removed
+staff). Reported findings are listed below; none is a privilege-escalation
+hole.
+
+| Case (minimum regression set) | Test file | Status |
+| --- | --- | --- |
+| Unrelated user changing `hub_id` cannot read private Hub rules, Team, announcements, Connections, audit, moderation records | `tests/security/objectAuthorization.test.ts` (private Hub reads; denial surfaces as generic unavailability, no data in message) | enforced — denial surfaced cleanly, control-plane side |
+| Server manager cannot touch another `server_id` | `tests/security/objectAuthorization.test.ts` (Server scope) + `tests/security/actorBinding.test.ts` (sweep uses manager actor) | enforced — Discord manageable-guild gate denies before any Control Plane call; Control Plane denial also surfaces |
+| Connection operations authorize the stored hub/server, ignoring untrusted companion IDs | `tests/security/objectAuthorization.test.ts` (Connection operations) | enforced — load-before-mutate on the stored record; foreign `connection_id` with attacker `hub_id` yields generic "not found"; no mutation call issued |
+| Hub moderator cannot grant permissions they lack or remove the owner | `tests/security/objectAuthorization.test.ts` (Hub Team changes) | enforced — control-plane-side rank/owner checks; Winter surfaces denial without success |
+| Inbox, preferences, and appeals bind to the authenticated actor | `tests/security/objectAuthorization.test.ts` (personal resources) + `tests/security/actorBinding.test.ts` (dashboard-preferences storage key) | enforced — actor derived from session; per-actor storage keys; cross-actor acknowledges denied |
+| List endpoints cannot enumerate private IDs | `tests/security/objectAuthorization.test.ts` (enumeration) + `tests/security/actorBinding.test.ts` (actor binding across every route-level identifier) | enforced — lists are actor-bound end to end |
+| Denial responses do not leak private-object existence | `tests/security/objectAuthorization.test.ts` (existence concealment) | enforced — identical NOT_FOUND denial for denied vs. missing Hub surfaces; bridge rows redact a denied or missing Hub's identity instead of surfacing it |
+
+Additional coverage beyond the minimum set:
+
+- Every route-level identifier (hub, server, connection, channel, rule, invite,
+  announcement, staff assignment, role, infraction, appeal, review item,
+  operation, inbox item, audit page, profile, activity, leaderboard, feedback)
+  is swept in `tests/security/actorBinding.test.ts`: a browser-supplied
+  `actorId`/`discordUserId` in the input is ignored and every Control Plane
+  call carries the session actor.
+- Unauthenticated requests are rejected before any handler, and a mutation
+  without the signed-session CSRF token is rejected before dispatch
+  (`tests/security/actorBinding.test.ts`).
+- Winter server-side connection wrapper performs load-before-mutate
+  authorization on the stored hub/server and passes the session actor, not any
+  companion ID, to the Control Plane.
+
+Findings — all three reported by the negative-authorization slice have since
+been fixed (no feature behavior regression; suites updated to the intended
+semantics):
+
+- F-1 (fixed) — `app/routes/staff/relationships.tsx` rendered mock cytoscape
+  data. The route now renders the actor's real Hubs and their Connections via
+  the typed ORPC reads (`hub.getUserHubs`, `hub.getConnections`,
+  `server.list`), resolves server names only where the actor manages the
+  Server, and shows explicit loading, empty, and per-Hub "connections
+  unavailable" states instead of fabricating data. No new Control Plane RPC
+  was required.
+- F-2 (fixed) — mappers read `Number(error.code)` on a string-coded
+  `ControlPlaneError`, so denial codes never matched and denials collapsed to
+  generic SERVICE_UNAVAILABLE/INTERNAL. All mappers now classify on the
+  numeric gRPC status via a shared `grpcCodeOf` helper
+  (`app/services/control/middleware.ts`). Because the Control Plane checks
+  existence before permission, Hub-scoped surfaces (Hub, Hub features,
+  moderation, selectors, previews, safety, operations) conceal
+  PERMISSION_DENIED and NOT_FOUND behind one identical "not found or access
+  denied" denial so responses cannot reveal private-object existence;
+  Connection mutations keep honest FORBIDDEN semantics because their
+  load-before-mutate step has already established visibility for the actor.
+- F-3 (fixed) — the bridge-row Hub redaction in `serverService.bridges` was
+  unreachable due to the F-2 helper defect, so the projection failed closed.
+  With the helpers fixed, a denied or missing Hub lookup now redacts the
+  row's Hub identity (including the raw ID) while the bridge stays visible;
+  `tests/security/objectAuthorization.test.ts` asserts the redacted row.
+
+Validation after the fixes: `bun test` — 152 passed, `bun run typecheck` and
+`bun run check:control-types` passed. No phase-3 plan checkboxes were
+modified.
+
+
 ## Evidence entry format
 
 Each entry records the capability, repository SHA(s), command or environment,

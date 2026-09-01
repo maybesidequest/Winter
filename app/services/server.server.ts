@@ -12,21 +12,18 @@ import type {
 } from "~/resources/server";
 import type { AddBlockInput, PatchCallConfigInput, PatchPrefixInput, RemoveBlockInput } from "~/schemas/server";
 import { controlConnectionService, controlHubService, controlServerService } from "~/services/control.server";
+import { grpcCodeOf } from "~/services/control/middleware";
 import { getDiscordAccessToken } from "~/services/oauthToken.server";
 
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
 
 function isControlNotFound(error: unknown): boolean {
-  if (!error || typeof error !== "object") return false;
-  const code = (error as { code?: unknown }).code;
-  return code === 5 || code === "NOT_FOUND";
+  return grpcCodeOf(error) === 5;
 }
 
 function isControlPermissionDenied(error: unknown): boolean {
-  if (!error || typeof error !== "object") return false;
-  const code = (error as { code?: unknown }).code;
-  return code === 7 || code === "PERMISSION_DENIED";
+  return grpcCodeOf(error) === 7;
 }
 
 function normalizeServerSpec(spec: Partial<ServerResource["spec"]> & {

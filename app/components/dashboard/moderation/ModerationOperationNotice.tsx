@@ -2,7 +2,6 @@ import type { ModerationFailure } from "~/services/control/moderation";
 
 const COPY: Record<ModerationFailure["kind"], { title: string; detail: string }> = {
   STALE: { title: "Record changed", detail: "Refresh the record before submitting another decision." },
-  DENIED: { title: "Action denied", detail: "Your current Hub role does not allow this moderation action." },
   UNAVAILABLE: { title: "Control Plane unavailable", detail: "No moderation state was assumed. Retry when service is available." },
   NOT_FOUND: { title: "Record unavailable", detail: "It may have been removed or you may no longer have access." },
 };

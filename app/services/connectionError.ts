@@ -9,8 +9,12 @@ function controlCode(error: unknown): number | string | undefined {
   let current = error;
   for (let depth = 0; depth < 4; depth += 1) {
     if (!current || typeof current !== "object") return undefined;
-    if ("code" in current) return (current as { code?: number | string }).code;
-    current = "cause" in current ? (current as { cause?: unknown }).cause : undefined;
+    const candidate = current as { grpcCode?: unknown; code?: unknown; cause?: unknown };
+    // ControlPlaneError carries the numeric gRPC status as grpcCode; its
+    // `code` is the human-readable name, which must not be classified.
+    if (typeof candidate.grpcCode === "number") return candidate.grpcCode;
+    if ("code" in candidate) return candidate.code as number | string;
+    current = candidate.cause;
   }
   return undefined;
 }

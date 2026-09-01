@@ -24,7 +24,8 @@ describe("canonical moderation representations", () => {
   });
   it("maps Control Plane failures to explicit dashboard recovery states", () => {
     expect(moderationFailureFor({ code: 10, message: "changed" })?.kind).toBe("STALE");
-    expect(moderationFailureFor({ code: 7 })?.kind).toBe("DENIED");
+    expect(moderationFailureFor({ code: 7 })?.kind).toBe("NOT_FOUND");
+    expect(moderationFailureFor({ grpcCode: 7 })?.kind).toBe("NOT_FOUND");
     expect(moderationFailureFor({ code: 14 })?.kind).toBe("UNAVAILABLE");
     expect(moderationFailureFor({ code: 5 })?.kind).toBe("NOT_FOUND");
   });

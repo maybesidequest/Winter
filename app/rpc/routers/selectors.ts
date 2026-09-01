@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { base, protectedBase } from "~/rpc/context";
 import { SelectorType } from "~/generated/control/v1/static";
+import { grpcCodeOf } from "~/services/control/middleware";
 import { selectorService } from "~/services/control/selector";
 
 const selectorType = z.enum(["SELECTOR_TYPE_CHANNEL", "SELECTOR_TYPE_ROLE", "SELECTOR_TYPE_USER", "SELECTOR_TYPE_SERVER"]);
@@ -19,12 +20,12 @@ const resolveInput = z.object({
 });
 
 function mapSelectorError(error: unknown): never {
-  const code = typeof error === "object" && error && "code" in error
-    ? Number((error as { code: unknown }).code)
-    : undefined;
+  const code = grpcCodeOf(error);
   if (code === 3) throw new ORPCError("BAD_REQUEST", { message: "The selector query is invalid." });
-  if (code === 5) throw new ORPCError("NOT_FOUND", { message: "The parent resource is no longer available." });
-  if (code === 7 || code === 16) throw new ORPCError("FORBIDDEN", { message: "You do not have permission to search this resource." });
+  // Selector parents are Hub/Server-scoped: deny and missing must not differ.
+  if (code === 5 || code === 7 || code === 16) {
+    throw new ORPCError("NOT_FOUND", { message: "The parent resource was not found or you do not have access to it." });
+  }
   throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Selector search is temporarily unavailable." });
 }
 
