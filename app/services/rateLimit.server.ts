@@ -25,6 +25,14 @@ export async function enforceUserRateLimit(userId: string, path: readonly (strin
   await consume(`winter:ratelimit:${policy.name}:user:${userId}`, policy);
 }
 
+export async function enforceUserResourceRateLimit(userId: string, resourceId: string): Promise<void> {
+  await consume(`winter:ratelimit:resource-mutations:user:${userId}:resource:${resourceId}`, {
+    name: "resource mutation",
+    limit: 10,
+    windowSeconds: 60,
+  });
+}
+
 export async function enforceIpRateLimit(ip: string): Promise<void> {
   const policy = { name: "sign-in", limit: 10, windowSeconds: 60 } satisfies RateLimitPolicy;
   try {
