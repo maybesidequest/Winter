@@ -1,6 +1,7 @@
 import { os, ORPCError } from "@orpc/server";
 import { requireUser } from "../services/auth.server";
 import { requireCsrf } from "../services/csrf.server";
+import { enforceUserRateLimit } from "../services/rateLimit.server";
 import { sessionStorage } from "../services/session.server";
 
 export type ORPCContext = {
@@ -16,9 +17,10 @@ export const base = os.$context<ORPCContext>().use(async ({ next, path }) => {
   }
 });
 
-export const protectedBase = base.use(async ({ context, next }) => {
+export const protectedBase = base.use(async ({ context, next, path }) => {
   try {
     const user = await requireUser(context.request);
+    await enforceUserRateLimit(user.id, path);
     if (!["GET", "HEAD", "OPTIONS"].includes(context.request.method.toUpperCase())) {
       const session = await sessionStorage.getSession(context.request.headers.get("cookie"));
       await requireCsrf(context.request, session.get("csrfToken"));
