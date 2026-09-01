@@ -3,6 +3,7 @@ import { checkControlPlaneReady } from "./app/services/control/transport";
 import { validateProductionConfig } from "./app/services/config.server";
 import { winterStorage } from "./app/services/winterStorage.server";
 import { checkRedisReady } from "./app/redis.server";
+import { applySecurityHeaders } from "./app/services/securityHeaders.server";
 
 const runtimeMode = process.env.NODE_ENV || "production";
 // Keep the server's default production mode visible to server-only modules;
@@ -23,20 +24,20 @@ Bun.serve({
     const url = new URL(req.url);
 
     if (url.pathname === "/healthz") {
-      return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
+      return applySecurityHeaders(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }), runtimeMode);
     }
     if (url.pathname === "/readyz") {
       try {
         await Promise.all([winterStorage.checkReady(), checkRedisReady(), checkControlPlaneReady()]);
-        return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
+        return applySecurityHeaders(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }), runtimeMode);
       } catch (error) {
         console.error("Winter readiness check failed", error);
-        return new Response("not ready", { status: 503, headers: { "content-type": "text/plain" } });
+        return applySecurityHeaders(new Response("not ready", { status: 503, headers: { "content-type": "text/plain" } }), runtimeMode);
       }
     }
 
     if (url.pathname.startsWith("/.well-known/")) {
-      return new Response(null, { status: 404 });
+      return applySecurityHeaders(new Response(null, { status: 404 }), runtimeMode);
     }
 
     // 1. Serve static client assets built by Vite
@@ -46,13 +47,13 @@ Bun.serve({
       const file = Bun.file(`./build/client${url.pathname}`);
       if (await file.exists()) {
         // You can add caching headers here for production if you'd like
-        return new Response(file);
+        return applySecurityHeaders(new Response(file), runtimeMode);
       }
     }
 
     // 2. Pass all other requests to React Router
     // Your app/routes/api.tsx (or wherever oRPC is) will handle the API calls seamlessly.
-    return handleRequest(req);
+    return applySecurityHeaders(await handleRequest(req), runtimeMode);
   },
 });
 
