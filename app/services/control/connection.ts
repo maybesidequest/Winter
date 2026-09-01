@@ -1,11 +1,11 @@
-import type { Connection__Output } from "~/generated/control/v1/interchat/control/v1/Connection";
-import type { ConnectionsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ConnectionsResponse";
-import type { GetConnectionsRequest } from "~/generated/control/v1/interchat/control/v1/GetConnectionsRequest";
-import type { ConnectChannelRequest } from "~/generated/control/v1/interchat/control/v1/ConnectChannelRequest";
-import type { DisconnectChannelRequest } from "~/generated/control/v1/interchat/control/v1/DisconnectChannelRequest";
-import type { ToggleConnectionRequest } from "~/generated/control/v1/interchat/control/v1/ToggleConnectionRequest";
-import type { RepairConnectionWebhooksRequest } from "~/generated/control/v1/interchat/control/v1/RepairConnectionWebhooksRequest";
-import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
+import type { Connection as ProtoConnection } from "~/generated/control/v1/static";
+import type { ConnectionsResponse } from "~/generated/control/v1/static";
+import type { GetConnectionsRequest } from "~/generated/control/v1/static";
+import type { ConnectChannelRequest } from "~/generated/control/v1/static";
+import type { DisconnectChannelRequest } from "~/generated/control/v1/static";
+import type { ToggleConnectionRequest } from "~/generated/control/v1/static";
+import type { RepairConnectionWebhooksRequest } from "~/generated/control/v1/static";
+import type { EmptyResponse } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
 
 export interface ConnectionResource {
@@ -20,7 +20,7 @@ function timestamp(value: { seconds?: number; nanos?: number } | null | undefine
   return new Date((value.seconds || 0) * 1000 + (value.nanos || 0) / 1_000_000).toISOString();
 }
 
-function toResource(connection: Connection__Output): ConnectionResource {
+function toResource(connection: ProtoConnection): ConnectionResource {
   if (!connection.metadata || !connection.spec || !connection.status) {
     throw new Error("Control Plane returned an incomplete Connection resource.");
   }
@@ -51,15 +51,15 @@ export const connectionService = {
     actorId: string;
   }): Promise<ConnectionResource[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<GetConnectionsRequest, ConnectionsResponse__Output>(
-      clients.connectionClient.GetConnections.bind(clients.connectionClient),
+    const res = await invokeUnary<GetConnectionsRequest, ConnectionsResponse>(
+      clients.connectionClient.getConnections.bind(clients.connectionClient),
       {
         context: makeRequestContext(params.actorId),
         hubId: params.hubId,
         serverId: params.serverId,
       }
     );
-    return (res as ConnectionsResponse__Output).connections.map(toResource);
+    return (res as ConnectionsResponse).connections.map(toResource);
   },
 
   async connectChannel(input: {
@@ -72,14 +72,15 @@ export const connectionService = {
     idempotencyKey: string;
   }): Promise<ConnectionResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<ConnectChannelRequest, Connection__Output>(
-      clients.connectionClient.ConnectChannel.bind(clients.connectionClient), {
+    const response = await invokeUnary<ConnectChannelRequest, ProtoConnection>(
+      clients.connectionClient.connectChannel.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       serverId: input.serverId,
       channelId: input.channelId,
       hubId: input.hubId,
-      inviteCode: input.inviteCode,
-      customName: input.customName,
+      inviteCode: input.inviteCode ?? "",
+      customName: input.customName ?? "",
+      operationId: input.idempotencyKey,
       });
     return toResource(response);
   },
@@ -91,10 +92,11 @@ export const connectionService = {
     idempotencyKey: string;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeUnary<DisconnectChannelRequest, EmptyResponse__Output>(clients.connectionClient.DisconnectChannel.bind(clients.connectionClient), {
+    await invokeUnary<DisconnectChannelRequest, EmptyResponse>(clients.connectionClient.disconnectChannel.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       connectionId: input.connectionId,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
   },
 
@@ -106,12 +108,13 @@ export const connectionService = {
     idempotencyKey: string;
   }): Promise<ConnectionResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<ToggleConnectionRequest, Connection__Output>(
-      clients.connectionClient.ToggleConnection.bind(clients.connectionClient), {
+    const response = await invokeUnary<ToggleConnectionRequest, ProtoConnection>(
+      clients.connectionClient.toggleConnection.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       connectionId: input.connectionId,
       enabled: input.enabled,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
       });
     return toResource(response);
   },
@@ -123,11 +126,12 @@ export const connectionService = {
     idempotencyKey: string;
   }): Promise<ConnectionResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<RepairConnectionWebhooksRequest, Connection__Output>(
-      clients.connectionClient.RepairConnectionWebhooks.bind(clients.connectionClient), {
+    const response = await invokeUnary<RepairConnectionWebhooksRequest, ProtoConnection>(
+      clients.connectionClient.repairConnectionWebhooks.bind(clients.connectionClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       connectionId: input.connectionId,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
       });
     return toResource(response);
   },

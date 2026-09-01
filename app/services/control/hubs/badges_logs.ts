@@ -1,16 +1,16 @@
 import type { HubBadgeConfig, HubLogConfig } from "./types";
-import type { GetHubBadgesRequest } from "~/generated/control/v1/interchat/control/v1/GetHubBadgesRequest";
-import type { GetHubLogConfigRequest } from "~/generated/control/v1/interchat/control/v1/GetHubLogConfigRequest";
-import type { HubBadgeConfig as ProtoHubBadgeConfig } from "~/generated/control/v1/interchat/control/v1/HubBadgeConfig";
-import type { HubLogConfig as ProtoHubLogConfig } from "~/generated/control/v1/interchat/control/v1/HubLogConfig";
-import type { PatchHubBadgesRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubBadgesRequest";
-import type { PatchHubLogConfigRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubLogConfigRequest";
+import type { GetHubBadgesRequest } from "~/generated/control/v1/static";
+import type { GetHubLogConfigRequest } from "~/generated/control/v1/static";
+import type { HubBadgeConfig as ProtoHubBadgeConfig } from "~/generated/control/v1/static";
+import type { HubLogConfig as ProtoHubLogConfig } from "~/generated/control/v1/static";
+import type { PatchHubBadgesRequest } from "~/generated/control/v1/static";
+import type { PatchHubLogConfigRequest } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
 export const hubBadgesLogsService = {
   async getBadges(hubId: string, actorId: string): Promise<HubBadgeConfig> {
     const clients = getServiceClients();
-    const response = await invokeUnary<GetHubBadgesRequest, ProtoHubBadgeConfig>(clients.hubClient.GetBadges.bind(clients.hubClient), {
+    const response = await invokeUnary<GetHubBadgesRequest, ProtoHubBadgeConfig>(clients.hubClient.getBadges.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubId,
     });
@@ -32,13 +32,14 @@ export const hubBadgesLogsService = {
     idempotencyKey: string;
   }): Promise<HubBadgeConfig> {
     const clients = getServiceClients();
-    const response = await invokeUnary<PatchHubBadgesRequest, ProtoHubBadgeConfig>(clients.hubClient.PatchBadges.bind(clients.hubClient), {
+    const response = await invokeUnary<PatchHubBadgesRequest, ProtoHubBadgeConfig>(clients.hubClient.patchBadges.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       ownerBadge: input.ownerBadge ?? "",
       managerBadge: input.managerBadge ?? "",
       moderatorBadge: input.moderatorBadge ?? "",
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return {
       hubId: response.hubId || input.hubId,
@@ -58,13 +59,14 @@ export const hubBadgesLogsService = {
     idempotencyKey: string;
   }): Promise<HubLogConfig> {
     const clients = getServiceClients();
-    const response = await invokeUnary<PatchHubLogConfigRequest, ProtoHubLogConfig>(clients.hubClient.PatchLogConfig.bind(clients.hubClient), {
+    const response = await invokeUnary<PatchHubLogConfigRequest, ProtoHubLogConfig>(clients.hubClient.patchLogConfig.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       channelId: input.channelId,
       eventFlags: input.eventFlags,
-      notificationRoleId: input.notificationRoleId,
+      notificationRoleId: input.notificationRoleId ?? "",
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return {
       hubId: response.hubId || input.hubId,
@@ -76,7 +78,7 @@ export const hubBadgesLogsService = {
 
   async getLogConfig(hubId: string, actorId: string): Promise<HubLogConfig> {
     const clients = getServiceClients();
-    const response = await invokeUnary<GetHubLogConfigRequest, ProtoHubLogConfig>(clients.hubClient.GetLogConfig.bind(clients.hubClient), {
+    const response = await invokeUnary<GetHubLogConfigRequest, ProtoHubLogConfig>(clients.hubClient.getLogConfig.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubId,
     });

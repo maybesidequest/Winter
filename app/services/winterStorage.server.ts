@@ -1,7 +1,6 @@
 import pg from "pg";
 
 let pool: pg.Pool | null = null;
-let schemaInitPromise: Promise<void> | null = null;
 
 function getWinterPool(): pg.Pool {
   if (!pool) {
@@ -22,29 +21,6 @@ function getWinterPool(): pg.Pool {
   return pool;
 }
 
-async function ensureWinterSchema(): Promise<void> {
-  if (!schemaInitPromise) {
-    schemaInitPromise = (async () => {
-      const p = getWinterPool();
-      await p.query(`
-        CREATE TABLE IF NOT EXISTS winter_oauth_tokens (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          account_id TEXT NOT NULL,
-          provider_id TEXT NOT NULL DEFAULT 'discord',
-          scope TEXT NOT NULL DEFAULT 'identify guilds',
-          access_token TEXT NOT NULL,
-          refresh_token TEXT,
-          access_token_expires_at TIMESTAMPTZ NOT NULL,
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_winter_oauth_tokens_user_id ON winter_oauth_tokens(user_id);
-      `);
-    })();
-  }
-  return schemaInitPromise;
-}
-
 export interface StoredOAuthTokenRecord {
   id: string;
   userId: string;
@@ -53,12 +29,15 @@ export interface StoredOAuthTokenRecord {
   refreshToken: string | null;
   accessTokenExpiresAt: string;
   updatedAt: string;
+  encryptionKeyId: string;
 }
 
 export const winterStorage = {
   async checkReady(): Promise<void> {
-    await ensureWinterSchema();
-    await getWinterPool().query("SELECT 1");
+    // Schema creation belongs to the dedicated migration job. Failing here
+    // makes a missing or incompatible migration visible to readiness instead
+    // of silently changing production state from an application request.
+    await getWinterPool().query("SELECT 1 FROM winter_oauth_tokens LIMIT 1");
   },
 
   async saveTokens(record: {
@@ -67,8 +46,8 @@ export const winterStorage = {
     accessToken: string;
     refreshToken: string | null;
     expiresAt: Date;
+    encryptionKeyId: string;
   }): Promise<void> {
-    await ensureWinterSchema();
     const p = getWinterPool();
     const id = `discord:${record.userId}`;
     const now = new Date().toISOString();
@@ -76,13 +55,14 @@ export const winterStorage = {
     await p.query(
       `
       INSERT INTO winter_oauth_tokens (
-        id, user_id, account_id, provider_id, scope, access_token, refresh_token, access_token_expires_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        id, user_id, account_id, provider_id, scope, access_token, refresh_token, access_token_expires_at, encryption_key_id, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       ON CONFLICT (id) DO UPDATE SET
         scope = EXCLUDED.scope,
         access_token = EXCLUDED.access_token,
         refresh_token = EXCLUDED.refresh_token,
         access_token_expires_at = EXCLUDED.access_token_expires_at,
+        encryption_key_id = EXCLUDED.encryption_key_id,
         updated_at = EXCLUDED.updated_at
     `,
       [
@@ -94,13 +74,13 @@ export const winterStorage = {
         record.accessToken,
         record.refreshToken,
         record.expiresAt.toISOString(),
+        record.encryptionKeyId,
         now,
       ]
     );
   },
 
   async getTokens(userId: string): Promise<StoredOAuthTokenRecord | null> {
-    await ensureWinterSchema();
     const p = getWinterPool();
     const id = `discord:${userId}`;
 
@@ -108,7 +88,7 @@ export const winterStorage = {
       `
       SELECT id, user_id as "userId", scope, access_token as "accessToken",
              refresh_token as "refreshToken", access_token_expires_at as "accessTokenExpiresAt",
-             updated_at as "updatedAt"
+             encryption_key_id as "encryptionKeyId", updated_at as "updatedAt"
       FROM winter_oauth_tokens
       WHERE id = $1
       LIMIT 1

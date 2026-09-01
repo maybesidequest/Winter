@@ -1,30 +1,30 @@
-import type { Appeal__Output } from "~/generated/control/v1/interchat/control/v1/Appeal";
-import type { AppealApprovalOutcome__Output } from "~/generated/control/v1/interchat/control/v1/AppealApprovalOutcome";
-import type { AppealStatus__Output } from "~/generated/control/v1/interchat/control/v1/AppealStatus";
-import type { ApplySanctionRequest } from "~/generated/control/v1/interchat/control/v1/ApplySanctionRequest";
-import type { ApproveAppealRequest } from "~/generated/control/v1/interchat/control/v1/ApproveAppealRequest";
-import type { GetAppealRequest } from "~/generated/control/v1/interchat/control/v1/GetAppealRequest";
-import type { GetHubSafetySettingsRequest } from "~/generated/control/v1/interchat/control/v1/GetHubSafetySettingsRequest";
-import type { GetInfractionRequest } from "~/generated/control/v1/interchat/control/v1/GetInfractionRequest";
-import type { GetSafetyAssessmentRequest } from "~/generated/control/v1/interchat/control/v1/GetSafetyAssessmentRequest";
-import type { HubSafetySettings__Output } from "~/generated/control/v1/interchat/control/v1/HubSafetySettings";
-import type { Infraction__Output } from "~/generated/control/v1/interchat/control/v1/Infraction";
-import type { InfractionLifecycleState__Output } from "~/generated/control/v1/interchat/control/v1/InfractionLifecycleState";
-import type { InfractionsResponse__Output } from "~/generated/control/v1/interchat/control/v1/InfractionsResponse";
-import type { ListHubAppealsRequest } from "~/generated/control/v1/interchat/control/v1/ListHubAppealsRequest";
-import type { ListHubAppealsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListHubAppealsResponse";
-import type { ListInfractionsRequest } from "~/generated/control/v1/interchat/control/v1/ListInfractionsRequest";
-import type { ListInfractionsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListInfractionsResponse";
-import type { ListMyAppealableInfractionsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyAppealableInfractionsRequest";
-import type { ModerationSubject__Output } from "~/generated/control/v1/interchat/control/v1/ModerationSubject";
-import type { PatchHubSafetySettingsRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubSafetySettingsRequest";
-import type { RejectAppealRequest } from "~/generated/control/v1/interchat/control/v1/RejectAppealRequest";
-import type { RevokeSanctionRequest } from "~/generated/control/v1/interchat/control/v1/RevokeSanctionRequest";
-import type { SafetyAssessment__Output } from "~/generated/control/v1/interchat/control/v1/SafetyAssessment";
-import type { SafetyRiskBand__Output } from "~/generated/control/v1/interchat/control/v1/SafetyRiskBand";
-import type { SanctionEnforcementStatus__Output } from "~/generated/control/v1/interchat/control/v1/SanctionEnforcementStatus";
-import type { SanctionType__Output } from "~/generated/control/v1/interchat/control/v1/SanctionType";
-import type { SubmitAppealRequest } from "~/generated/control/v1/interchat/control/v1/SubmitAppealRequest";
+import type { Appeal as ProtoAppeal } from "~/generated/control/v1/static";
+import type { AppealApprovalOutcome } from "~/generated/control/v1/static";
+import { AppealStatus } from "~/generated/control/v1/static";
+import type { ApplySanctionRequest } from "~/generated/control/v1/static";
+import type { ApproveAppealRequest } from "~/generated/control/v1/static";
+import type { GetAppealRequest } from "~/generated/control/v1/static";
+import type { GetHubSafetySettingsRequest } from "~/generated/control/v1/static";
+import type { GetInfractionRequest } from "~/generated/control/v1/static";
+import type { GetSafetyAssessmentRequest } from "~/generated/control/v1/static";
+import type { HubSafetySettings as ProtoHubSafetySettings } from "~/generated/control/v1/static";
+import type { Infraction as ProtoInfraction } from "~/generated/control/v1/static";
+import { InfractionLifecycleState } from "~/generated/control/v1/static";
+import type { InfractionsResponse } from "~/generated/control/v1/static";
+import type { ListHubAppealsRequest } from "~/generated/control/v1/static";
+import type { ListHubAppealsResponse } from "~/generated/control/v1/static";
+import type { ListInfractionsRequest } from "~/generated/control/v1/static";
+import type { ListInfractionsResponse } from "~/generated/control/v1/static";
+import type { ListMyAppealableInfractionsRequest } from "~/generated/control/v1/static";
+import type { ModerationSubject as ProtoModerationSubject } from "~/generated/control/v1/static";
+import type { PatchHubSafetySettingsRequest } from "~/generated/control/v1/static";
+import type { RejectAppealRequest } from "~/generated/control/v1/static";
+import type { RevokeSanctionRequest } from "~/generated/control/v1/static";
+import type { SafetyAssessment as ProtoSafetyAssessment } from "~/generated/control/v1/static";
+import type { SafetyRiskBand } from "~/generated/control/v1/static";
+import type { SanctionEnforcementStatus } from "~/generated/control/v1/static";
+import { SanctionType } from "~/generated/control/v1/static";
+import type { SubmitAppealRequest } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
 
 /** The Control Plane accepts exactly one human or server subject. */
@@ -34,16 +34,16 @@ export interface ModerationFailure { kind: ModerationFailureKind; message: strin
 export interface ModerationPage<T> { items: T[]; nextCursor: string | null; totalCount: number; }
 
 export interface Infraction {
-  id: string; hubId: string; userId: string; type: SanctionType__Output; reason: string; issuerId: string; status: string;
-  subject: ModerationSubject | null; version: number; lifecycleState: InfractionLifecycleState__Output;
-  enforcement: { status: SanctionEnforcementStatus__Output; observedAt: string | null; error: string | null };
+  id: string; hubId: string; userId: string; type: SanctionType; reason: string; issuerId: string; status: string;
+  subject: ModerationSubject | null; version: number; lifecycleState: InfractionLifecycleState;
+  enforcement: { status: SanctionEnforcementStatus; observedAt: string | null; error: string | null };
   expiresAt: string | null; createdAt: string | null; updatedAt: string | null; revokedAt: string | null;
   revokedBy: string | null; revocationReason: string | null; hubName?: string;
 }
 export interface Appeal {
   id: string; infractionId: string; hubId: string; userId: string; reason: string; status: string;
-  appealStatus: AppealStatus__Output; version: number; reviewerId: string | null; reviewedAt: string | null;
-  resolutionReason: string | null; approvalOutcome: AppealApprovalOutcome__Output; createdAt: string | null;
+  appealStatus: AppealStatus; version: number; reviewerId: string | null; reviewedAt: string | null;
+  resolutionReason: string | null; approvalOutcome: AppealApprovalOutcome; createdAt: string | null;
   updatedAt: string | null; infraction: Infraction | null;
 }
 export interface HubSafetySettings {
@@ -52,7 +52,7 @@ export interface HubSafetySettings {
   version: number; updatedAt: string | null;
 }
 export interface SafetyAssessment {
-  subject: ModerationSubject | null; score: number; riskBand: SafetyRiskBand__Output;
+  subject: ModerationSubject | null; score: number; riskBand: SafetyRiskBand;
   approvedSignalSummaries: Array<{ code: string; summary: string; contribution: number; mitigating: boolean; observedAt: string | null }>;
   source: string; observedAt: string | null;
 }
@@ -61,14 +61,14 @@ function timestamp(value: { seconds?: number; nanos?: number } | null | undefine
   return value ? new Date((value.seconds ?? 0) * 1000 + (value.nanos ?? 0) / 1_000_000).toISOString() : null;
 }
 function nonEmpty(value: string | undefined): string | null { return value || null; }
-function requestSubject(subject?: ModerationSubject) { return subject ? { ...subject } : undefined; }
+function requestSubject(subject?: ModerationSubject): ProtoModerationSubject | undefined { return subject ? { ...subject } : undefined; }
 
-export function toModerationSubject(value: ModerationSubject__Output | null | undefined): ModerationSubject | null {
+export function toModerationSubject(value: ProtoModerationSubject | null | undefined): ModerationSubject | null {
   if (value?.userId) return { userId: value.userId };
   if (value?.serverId) return { serverId: value.serverId };
   return null;
 }
-export function toInfraction(value: Infraction__Output): Infraction {
+export function toInfraction(value: ProtoInfraction): Infraction {
   return {
     id: value.id, hubId: value.hubId, userId: value.userId, type: value.type, reason: value.reason, issuerId: value.issuerId, status: value.status,
     subject: toModerationSubject(value.subject), version: value.version, lifecycleState: value.lifecycleState,
@@ -77,7 +77,7 @@ export function toInfraction(value: Infraction__Output): Infraction {
     revokedBy: nonEmpty(value.revokedBy), revocationReason: nonEmpty(value.revocationReason), hubName: value.hubName || undefined,
   };
 }
-export function toAppeal(value: Appeal__Output): Appeal {
+export function toAppeal(value: ProtoAppeal): Appeal {
   return {
     id: value.id, infractionId: value.infractionId, hubId: value.hubId, userId: value.userId, reason: value.reason, status: value.status,
     appealStatus: value.appealStatus, version: value.version, reviewerId: nonEmpty(value.reviewerId), reviewedAt: timestamp(value.reviewedAt),
@@ -85,13 +85,13 @@ export function toAppeal(value: Appeal__Output): Appeal {
     infraction: value.infraction ? toInfraction(value.infraction) : null,
   };
 }
-export function toHubSafetySettings(value: HubSafetySettings__Output): HubSafetySettings {
+export function toHubSafetySettings(value: ProtoHubSafetySettings): HubSafetySettings {
   return { hubId: value.hubId, spec: {
     hideLinks: value.hideLinks, spamFilter: value.spamFilter, blockInvites: value.blockInvites, blockNsfw: value.blockNsfw,
     allowVideos: value.allowVideos, blockAttachments: value.blockAttachments, blockTenorGifs: value.blockTenorGifs,
   }, version: value.version, updatedAt: timestamp(value.updatedAt) };
 }
-export function toSafetyAssessment(value: SafetyAssessment__Output): SafetyAssessment {
+export function toSafetyAssessment(value: ProtoSafetyAssessment): SafetyAssessment {
   return { subject: toModerationSubject(value.subject), score: value.score, riskBand: value.riskBand,
     approvedSignalSummaries: value.approvedSignalSummaries.map((signal) => ({ code: signal.code, summary: signal.summary, contribution: signal.contribution, mitigating: signal.mitigating, observedAt: timestamp(signal.observedAt) })),
     source: value.source, observedAt: timestamp(value.observedAt) };
@@ -110,77 +110,91 @@ export function moderationFailureFor(error: unknown): ModerationFailure | null {
 }
 
 export const moderationService = {
-  async applySanction(input: { hubId: string; subject?: ModerationSubject; userId?: string; type: SanctionType__Output; reason: string; durationSeconds?: number; actorId: string; idempotencyKey: string }): Promise<Infraction> {
+  async applySanction(input: { hubId: string; subject?: ModerationSubject; userId?: string; type: SanctionType; reason: string; durationSeconds?: number; actorId: string; idempotencyKey: string }): Promise<Infraction> {
     const subject = input.subject ?? (input.userId ? { userId: input.userId } : undefined);
     if (!subject) throw new Error("A moderation subject is required.");
     const client = getServiceClients().moderationClient;
-    const response = await invokeUnary<ApplySanctionRequest, Infraction__Output>(client.ApplySanction.bind(client), {
+    const response = await invokeUnary<ApplySanctionRequest, ProtoInfraction>(client.applySanction.bind(client), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, userId: "userId" in subject ? subject.userId : "",
       subject: requestSubject(subject), type: input.type, reason: input.reason, durationSeconds: input.durationSeconds ?? 0,
+      operationId: input.idempotencyKey,
     });
     return toInfraction(response);
   },
   async revokeSanction(input: { hubId: string; infractionId: string; reason: string; expectedVersion: number; actorId: string; idempotencyKey: string }): Promise<Infraction> {
     const client = getServiceClients().moderationClient;
-    return toInfraction(await invokeUnary<RevokeSanctionRequest, Infraction__Output>(client.RevokeSanction.bind(client), {
+    return toInfraction(await invokeUnary<RevokeSanctionRequest, ProtoInfraction>(client.revokeSanction.bind(client), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, infractionId: input.infractionId, reason: input.reason, expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     }));
   },
-  async listInfractions(input: { hubId: string; actorId: string; subject?: ModerationSubject; lifecycleState?: InfractionLifecycleState__Output; sanctionType?: SanctionType__Output; limit?: number; cursor?: string }): Promise<ModerationPage<Infraction>> {
+  async listInfractions(input: { hubId: string; actorId: string; subject?: ModerationSubject; lifecycleState?: InfractionLifecycleState; sanctionType?: SanctionType; limit?: number; cursor?: string }): Promise<ModerationPage<Infraction>> {
     const client = getServiceClients().moderationClient;
-    const response = await invokeUnary<ListInfractionsRequest, ListInfractionsResponse__Output>(client.ListInfractions.bind(client), {
-      context: makeRequestContext(input.actorId), hubId: input.hubId, subject: requestSubject(input.subject), lifecycleState: input.lifecycleState,
-      sanctionType: input.sanctionType, limit: input.limit ?? 50, cursor: input.cursor ?? "",
+    const response = await invokeUnary<ListInfractionsRequest, ListInfractionsResponse>(client.listInfractions.bind(client), {
+      context: makeRequestContext(input.actorId), hubId: input.hubId, subject: requestSubject(input.subject),
+      lifecycleState: input.lifecycleState ?? InfractionLifecycleState.INFRACTION_LIFECYCLE_STATE_UNSPECIFIED,
+      sanctionType: input.sanctionType ?? SanctionType.SANCTION_TYPE_UNSPECIFIED, limit: input.limit ?? 50, cursor: input.cursor ?? "",
     });
     return { items: response.infractions.map(toInfraction), nextCursor: nonEmpty(response.nextCursor), totalCount: response.totalCount };
   },
   async getInfraction(input: { hubId: string; infractionId: string; actorId: string }): Promise<Infraction> {
     const client = getServiceClients().moderationClient;
-    return toInfraction(await invokeUnary<GetInfractionRequest, Infraction__Output>(client.GetInfraction.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, infractionId: input.infractionId }));
+    return toInfraction(await invokeUnary<GetInfractionRequest, ProtoInfraction>(client.getInfraction.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, infractionId: input.infractionId }));
   },
-  async listHubAppeals(input: { hubId: string; actorId: string; status?: AppealStatus__Output; subject?: ModerationSubject; limit?: number; cursor?: string }): Promise<ModerationPage<Appeal>> {
+  async listHubAppeals(input: { hubId: string; actorId: string; status?: AppealStatus; subject?: ModerationSubject; limit?: number; cursor?: string }): Promise<ModerationPage<Appeal>> {
     const client = getServiceClients().moderationClient;
-    const response = await invokeUnary<ListHubAppealsRequest, ListHubAppealsResponse__Output>(client.ListHubAppeals.bind(client), {
-      context: makeRequestContext(input.actorId), hubId: input.hubId, status: input.status, subject: requestSubject(input.subject), limit: input.limit ?? 50, cursor: input.cursor ?? "",
+    const response = await invokeUnary<ListHubAppealsRequest, ListHubAppealsResponse>(client.listHubAppeals.bind(client), {
+      context: makeRequestContext(input.actorId), hubId: input.hubId,
+      status: input.status ?? AppealStatus.APPEAL_STATUS_PENDING, subject: requestSubject(input.subject), limit: input.limit ?? 50, cursor: input.cursor ?? "",
     });
     return { items: response.appeals.map(toAppeal), nextCursor: nonEmpty(response.nextCursor), totalCount: response.totalCount };
   },
   async getAppeal(input: { hubId: string; appealId: string; actorId: string }): Promise<Appeal> {
     const client = getServiceClients().moderationClient;
-    return toAppeal(await invokeUnary<GetAppealRequest, Appeal__Output>(client.GetAppeal.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, appealId: input.appealId }));
+    return toAppeal(await invokeUnary<GetAppealRequest, ProtoAppeal>(client.getAppeal.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, appealId: input.appealId }));
   },
   async approveAppeal(input: { hubId: string; appealId: string; resolutionReason: string; expectedVersion: number; actorId: string; idempotencyKey: string }): Promise<Appeal> {
     const client = getServiceClients().moderationClient;
-    return toAppeal(await invokeUnary<ApproveAppealRequest, Appeal__Output>(client.ApproveAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, appealId: input.appealId, resolutionReason: input.resolutionReason, expectedVersion: input.expectedVersion }));
+    return toAppeal(await invokeUnary<ApproveAppealRequest, ProtoAppeal>(client.approveAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, appealId: input.appealId, resolutionReason: input.resolutionReason, expectedVersion: input.expectedVersion, operationId: input.idempotencyKey }));
   },
   async rejectAppeal(input: { hubId: string; appealId: string; resolutionReason: string; expectedVersion: number; actorId: string; idempotencyKey: string }): Promise<Appeal> {
     const client = getServiceClients().moderationClient;
-    return toAppeal(await invokeUnary<RejectAppealRequest, Appeal__Output>(client.RejectAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, appealId: input.appealId, resolutionReason: input.resolutionReason, expectedVersion: input.expectedVersion }));
+    return toAppeal(await invokeUnary<RejectAppealRequest, ProtoAppeal>(client.rejectAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, appealId: input.appealId, resolutionReason: input.resolutionReason, expectedVersion: input.expectedVersion, operationId: input.idempotencyKey }));
   },
   async getHubSafetySettings(input: { hubId: string; actorId: string }): Promise<HubSafetySettings> {
     const client = getServiceClients().moderationClient;
-    return toHubSafetySettings(await invokeUnary<GetHubSafetySettingsRequest, HubSafetySettings__Output>(client.GetHubSafetySettings.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId }));
+    return toHubSafetySettings(await invokeUnary<GetHubSafetySettingsRequest, ProtoHubSafetySettings>(client.getHubSafetySettings.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId }));
   },
   async patchHubSafetySettings(input: { hubId: string; settings: Partial<HubSafetySettings["spec"]>; updateMask: Array<keyof HubSafetySettings["spec"]>; expectedVersion: number; actorId: string; idempotencyKey: string }): Promise<HubSafetySettings> {
     const client = getServiceClients().moderationClient;
-    return toHubSafetySettings(await invokeUnary<PatchHubSafetySettingsRequest, HubSafetySettings__Output>(client.PatchHubSafetySettings.bind(client), {
-      context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, settings: { hubId: input.hubId, ...input.settings }, updateMask: { paths: input.updateMask }, expectedVersion: input.expectedVersion,
+    return toHubSafetySettings(await invokeUnary<PatchHubSafetySettingsRequest, ProtoHubSafetySettings>(client.patchHubSafetySettings.bind(client), {
+      context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, settings: {
+        hubId: input.hubId,
+        hideLinks: input.settings.hideLinks ?? false,
+        spamFilter: input.settings.spamFilter ?? false,
+        blockInvites: input.settings.blockInvites ?? false,
+        blockNsfw: input.settings.blockNsfw ?? false,
+        allowVideos: input.settings.allowVideos ?? false,
+        blockAttachments: input.settings.blockAttachments ?? false,
+        blockTenorGifs: input.settings.blockTenorGifs ?? false,
+        version: 0,
+      }, updateMask: input.updateMask, expectedVersion: input.expectedVersion, operationId: input.idempotencyKey,
     }));
   },
   async getSafetyAssessment(input: { hubId: string; subject: ModerationSubject; actorId: string }): Promise<SafetyAssessment> {
     const client = getServiceClients().moderationClient;
-    return toSafetyAssessment(await invokeUnary<GetSafetyAssessmentRequest, SafetyAssessment__Output>(client.GetSafetyAssessment.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, subject: requestSubject(input.subject) }));
+    return toSafetyAssessment(await invokeUnary<GetSafetyAssessmentRequest, ProtoSafetyAssessment>(client.getSafetyAssessment.bind(client), { context: makeRequestContext(input.actorId), hubId: input.hubId, subject: requestSubject(input.subject) }));
   },
   async getInfractions(params: { hubId: string; userId?: string; actorId: string }): Promise<Infraction[]> {
     return (await moderationService.listInfractions({ ...params, subject: params.userId ? { userId: params.userId } : undefined })).items;
   },
   async listMyAppealableInfractions(actorId: string): Promise<Infraction[]> {
     const client = getServiceClients().moderationClient;
-    const response = await invokeUnary<ListMyAppealableInfractionsRequest, InfractionsResponse__Output>(client.ListMyAppealableInfractions.bind(client), { context: makeRequestContext(actorId) });
+    const response = await invokeUnary<ListMyAppealableInfractionsRequest, InfractionsResponse>(client.listMyAppealableInfractions.bind(client), { context: makeRequestContext(actorId) });
     return response.infractions.map(toInfraction);
   },
   async submitAppeal(input: { hubId: string; infractionId: string; reason: string; actorId: string; idempotencyKey: string }): Promise<Appeal> {
     const client = getServiceClients().moderationClient;
-    return toAppeal(await invokeUnary<SubmitAppealRequest, Appeal__Output>(client.SubmitAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, infractionId: input.infractionId, reason: input.reason }));
+    return toAppeal(await invokeUnary<SubmitAppealRequest, ProtoAppeal>(client.submitAppeal.bind(client), { context: makeRequestContext(input.actorId, true, input.idempotencyKey), hubId: input.hubId, infractionId: input.infractionId, reason: input.reason, operationId: input.idempotencyKey }));
   },
 };

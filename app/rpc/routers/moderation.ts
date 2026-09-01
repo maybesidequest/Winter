@@ -4,6 +4,7 @@ import { hubStaffService } from "../../services/hubStaff.server";
 import { z } from "zod";
 import { requireCapability } from "~/rpc/capabilityGuard";
 import { moderationFailureFor, moderationService } from "~/services/control/moderation";
+import { AppealStatus, InfractionLifecycleState, SanctionType } from "~/generated/control/v1/static";
 
 const hubRoleSchema = z.enum(["MANAGER", "MODERATOR"]);
 const subjectSchema = z.union([
@@ -64,7 +65,12 @@ export const moderationRouter = base.router({
     }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
-      return withModerationErrors(() => moderationService.listInfractions({ ...input, actorId: context.user.id }));
+      return withModerationErrors(() => moderationService.listInfractions({
+        ...input,
+        lifecycleState: input.lifecycleState as InfractionLifecycleState | undefined,
+        sanctionType: input.sanctionType as SanctionType | undefined,
+        actorId: context.user.id,
+      }));
     }),
 
   getInfraction: protectedBase
@@ -85,7 +91,11 @@ export const moderationRouter = base.router({
     }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
-      return withModerationErrors(() => moderationService.applySanction({ ...input, actorId: context.user.id }));
+      return withModerationErrors(() => moderationService.applySanction({
+        ...input,
+        type: input.type as SanctionType,
+        actorId: context.user.id,
+      }));
     }),
 
   revokeSanction: protectedBase
@@ -102,7 +112,11 @@ export const moderationRouter = base.router({
     .input(z.object({ hubId: z.string().min(1), status: appealStatusSchema.optional(), subject: subjectSchema.optional(), cursor: z.string().optional(), limit: z.number().int().positive().max(100).optional() }))
     .handler(async ({ input, context }) => {
       requireCapability("MODERATION");
-      return withModerationErrors(() => moderationService.listHubAppeals({ ...input, actorId: context.user.id }));
+      return withModerationErrors(() => moderationService.listHubAppeals({
+        ...input,
+        status: input.status as AppealStatus | undefined,
+        actorId: context.user.id,
+      }));
     }),
 
   getAppeal: protectedBase

@@ -1,12 +1,12 @@
 import type { HubRule } from "./types";
-import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
-import type { HubRule__Output } from "~/generated/control/v1/interchat/control/v1/HubRule";
-import type { HubRulesResponse__Output } from "~/generated/control/v1/interchat/control/v1/HubRulesResponse";
-import type { CreateHubRuleRequest } from "~/generated/control/v1/interchat/control/v1/CreateHubRuleRequest";
-import type { UpdateHubRuleRequest } from "~/generated/control/v1/interchat/control/v1/UpdateHubRuleRequest";
-import type { DeleteHubRuleRequest } from "~/generated/control/v1/interchat/control/v1/DeleteHubRuleRequest";
-import type { ReorderHubRulesRequest } from "~/generated/control/v1/interchat/control/v1/ReorderHubRulesRequest";
-import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
+import type { GetHubRequest } from "~/generated/control/v1/static";
+import type { HubRule as ProtoHubRule } from "~/generated/control/v1/static";
+import type { HubRulesResponse } from "~/generated/control/v1/static";
+import type { CreateHubRuleRequest } from "~/generated/control/v1/static";
+import type { UpdateHubRuleRequest } from "~/generated/control/v1/static";
+import type { DeleteHubRuleRequest } from "~/generated/control/v1/static";
+import type { ReorderHubRulesRequest } from "~/generated/control/v1/static";
+import type { EmptyResponse } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string | undefined {
@@ -14,7 +14,7 @@ function timestamp(value: { seconds?: number; nanos?: number } | null | undefine
   return new Date((value.seconds || 0) * 1000 + (value.nanos || 0) / 1_000_000).toISOString();
 }
 
-function toRule(value: HubRule__Output): HubRule {
+function toRule(value: ProtoHubRule): HubRule {
   return {
     id: value.id,
     hubId: value.hubId,
@@ -28,7 +28,7 @@ function toRule(value: HubRule__Output): HubRule {
 export const hubRulesService = {
   async listRules(hubId: string, actorId: string): Promise<HubRule[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<GetHubRequest, HubRulesResponse__Output>(clients.hubClient.ListRules.bind(clients.hubClient), {
+    const res = await invokeUnary<GetHubRequest, HubRulesResponse>(clients.hubClient.listRules.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubId,
     });
@@ -44,12 +44,13 @@ export const hubRulesService = {
     idempotencyKey: string;
   }): Promise<HubRule> {
     const clients = getServiceClients();
-    const response = await invokeUnary<CreateHubRuleRequest, HubRule__Output>(clients.hubClient.CreateRule.bind(clients.hubClient), {
+    const response = await invokeUnary<CreateHubRuleRequest, ProtoHubRule>(clients.hubClient.createRule.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       title: input.title,
       description: input.description,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toRule(response);
   },
@@ -64,13 +65,14 @@ export const hubRulesService = {
     idempotencyKey: string;
   }): Promise<HubRule> {
     const clients = getServiceClients();
-    const response = await invokeUnary<UpdateHubRuleRequest, HubRule__Output>(clients.hubClient.UpdateRule.bind(clients.hubClient), {
+    const response = await invokeUnary<UpdateHubRuleRequest, ProtoHubRule>(clients.hubClient.updateRule.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       ruleId: input.ruleId,
       title: input.title,
       description: input.description,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toRule(response);
   },
@@ -83,11 +85,12 @@ export const hubRulesService = {
     idempotencyKey: string;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeUnary<DeleteHubRuleRequest, EmptyResponse__Output>(clients.hubClient.DeleteRule.bind(clients.hubClient), {
+    await invokeUnary<DeleteHubRuleRequest, EmptyResponse>(clients.hubClient.deleteRule.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       ruleId: input.ruleId,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
   },
 
@@ -99,11 +102,12 @@ export const hubRulesService = {
     idempotencyKey: string;
   }): Promise<HubRule[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<ReorderHubRulesRequest, HubRulesResponse__Output>(clients.hubClient.ReorderRules.bind(clients.hubClient), {
+    const res = await invokeUnary<ReorderHubRulesRequest, HubRulesResponse>(clients.hubClient.reorderRules.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       ruleIds: input.ruleIds,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return res.rules.map(toRule);
   },

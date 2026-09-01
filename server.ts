@@ -2,6 +2,7 @@ import { createRequestHandler } from "react-router";
 import { checkControlPlaneReady } from "./app/services/control/transport";
 import { validateProductionConfig } from "./app/services/config.server";
 import { winterStorage } from "./app/services/winterStorage.server";
+import { checkRedisReady } from "./app/redis.server";
 
 const runtimeMode = process.env.NODE_ENV || "production";
 // Keep the server's default production mode visible to server-only modules;
@@ -26,7 +27,7 @@ Bun.serve({
     }
     if (url.pathname === "/readyz") {
       try {
-        await Promise.all([winterStorage.checkReady(), checkControlPlaneReady()]);
+        await Promise.all([winterStorage.checkReady(), checkRedisReady(), checkControlPlaneReady()]);
         return new Response("ok", { status: 200, headers: { "content-type": "text/plain" } });
       } catch (error) {
         console.error("Winter readiness check failed", error);

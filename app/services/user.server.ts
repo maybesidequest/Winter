@@ -9,6 +9,7 @@ import type {
   PatchUserPreferencesInput,
   PatchDashboardPreferencesInput,
 } from "~/schemas/user";
+import { LeaderboardKind } from "~/generated/control/v1/static";
 
 export const SUPPORTED_LOCALES: SupportedLocale[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -46,7 +47,7 @@ export const userService = {
     limit = 20,
     offset = 0,
   ): Promise<UserLeaderboard> {
-    return controlUserService.getLeaderboard({ actorId: userId, kind, limit, offset });
+    return controlUserService.getLeaderboard({ actorId: userId, kind: kind as LeaderboardKind, limit, offset });
   },
 
   async submitFeedback(userId: string, category: string, message: string, idempotencyKey: string) {

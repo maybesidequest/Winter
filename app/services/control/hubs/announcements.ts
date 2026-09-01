@@ -1,14 +1,14 @@
 import type { HubAnnouncement } from "./types";
-import type { HubAnnouncement__Output } from "~/generated/control/v1/interchat/control/v1/HubAnnouncement";
-import type { HubAnnouncementsResponse__Output } from "~/generated/control/v1/interchat/control/v1/HubAnnouncementsResponse";
-import type { ListHubAnnouncementsRequest } from "~/generated/control/v1/interchat/control/v1/ListHubAnnouncementsRequest";
-import type { CreateHubAnnouncementRequest } from "~/generated/control/v1/interchat/control/v1/CreateHubAnnouncementRequest";
-import type { UpdateHubAnnouncementRequest } from "~/generated/control/v1/interchat/control/v1/UpdateHubAnnouncementRequest";
-import type { DeleteHubAnnouncementRequest } from "~/generated/control/v1/interchat/control/v1/DeleteHubAnnouncementRequest";
-import type { HubAnnouncementDesiredState } from "~/generated/control/v1/interchat/control/v1/HubAnnouncementDesiredState";
-import { HubAnnouncementDesiredState as DesiredState } from "~/generated/control/v1/interchat/control/v1/HubAnnouncementDesiredState";
-import type { TransitionHubAnnouncementStateRequest } from "~/generated/control/v1/interchat/control/v1/TransitionHubAnnouncementStateRequest";
-import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
+import type { HubAnnouncement as ProtoHubAnnouncement } from "~/generated/control/v1/static";
+import type { HubAnnouncementsResponse } from "~/generated/control/v1/static";
+import type { ListHubAnnouncementsRequest } from "~/generated/control/v1/static";
+import type { CreateHubAnnouncementRequest } from "~/generated/control/v1/static";
+import type { UpdateHubAnnouncementRequest } from "~/generated/control/v1/static";
+import type { DeleteHubAnnouncementRequest } from "~/generated/control/v1/static";
+import type { HubAnnouncementDesiredState } from "~/generated/control/v1/static";
+import { HubAnnouncementDesiredState as DesiredState } from "~/generated/control/v1/static";
+import type { TransitionHubAnnouncementStateRequest } from "~/generated/control/v1/static";
+import type { EmptyResponse } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string | undefined {
@@ -27,40 +27,47 @@ function desiredStateValue(value: HubAnnouncement["desiredState"]): HubAnnouncem
   return DesiredState[`HUB_ANNOUNCEMENT_DESIRED_STATE_${value}` as keyof typeof DesiredState];
 }
 
-function toAnnouncement(value: HubAnnouncement__Output): HubAnnouncement {
+function toAnnouncement(value: ProtoHubAnnouncement): HubAnnouncement {
+  const metadata = value.metadata;
   const spec = value.spec;
   const status = value.status;
-  const version = Number(value.metadata?.version ?? 0);
+  if (!metadata || !spec || !status) {
+    throw new Error("Control Plane returned an incomplete Hub announcement resource.");
+  }
+  const version = Number(metadata.version);
   if (!Number.isInteger(version) || version < 1) {
     throw new Error("Control Plane returned an announcement without a canonical version.");
   }
   return {
-    id: value.id,
-    hubId: value.hubId,
-    authorId: value.authorId,
-    content: value.content,
-    scheduledFor: timestamp(value.scheduledFor),
+    id: metadata.id,
+    hubId: metadata.hubId,
+    authorId: metadata.authorId,
+    content: spec.content,
+    scheduledFor: timestamp(spec.scheduledFor),
+    // Older responses may still populate the deprecated top-level field;
+    // keep exposing it to existing Winter callers while reading canonical
+    // identity/spec/status fields above.
     sentAt: timestamp(value.sentAt),
-    createdAt: timestamp(value.createdAt),
-    title: spec?.title || "Announcement",
-    repeatIntervalSeconds: Number(spec?.repeatIntervalSeconds || 0),
-    timeZone: spec?.timeZone || "UTC",
-    desiredState: (spec?.desiredState || "HUB_ANNOUNCEMENT_DESIRED_STATE_DRAFT").replace("HUB_ANNOUNCEMENT_DESIRED_STATE_", "") as HubAnnouncement["desiredState"],
+    createdAt: timestamp(metadata.createdAt),
+    title: spec.title || "Announcement",
+    repeatIntervalSeconds: Number(spec.repeatIntervalSeconds || 0),
+    timeZone: spec.timeZone || "UTC",
+    desiredState: spec.desiredState.replace("HUB_ANNOUNCEMENT_DESIRED_STATE_", "") as HubAnnouncement["desiredState"],
     version,
-    nextDelivery: timestamp(status?.nextDelivery),
-    latestAttempt: timestamp(status?.latestAttempt),
-    latestSuccess: timestamp(status?.latestSuccess),
-    deliveryState: (status?.deliveryState || "HUB_ANNOUNCEMENT_DELIVERY_STATE_PENDING").replace("HUB_ANNOUNCEMENT_DELIVERY_STATE_", "") as HubAnnouncement["deliveryState"],
-    lastError: status?.lastError || "",
-    completed: status?.completed === true,
+    nextDelivery: timestamp(status.nextDelivery),
+    latestAttempt: timestamp(status.latestAttempt),
+    latestSuccess: timestamp(status.latestSuccess),
+    deliveryState: status.deliveryState.replace("HUB_ANNOUNCEMENT_DELIVERY_STATE_", "") as HubAnnouncement["deliveryState"],
+    lastError: status.lastError || "",
+    completed: status.completed === true,
   };
 }
 
 export const hubAnnouncementsService = {
   async listAnnouncements(hubId: string, actorId: string): Promise<HubAnnouncement[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<ListHubAnnouncementsRequest, HubAnnouncementsResponse__Output>(
-      clients.hubClient.ListAnnouncements.bind(clients.hubClient),
+    const res = await invokeUnary<ListHubAnnouncementsRequest, HubAnnouncementsResponse>(
+      clients.hubClient.listAnnouncements.bind(clients.hubClient),
       {
         context: makeRequestContext(actorId),
         hubId,
@@ -81,7 +88,7 @@ export const hubAnnouncementsService = {
     desiredState?: HubAnnouncement["desiredState"];
   }): Promise<HubAnnouncement> {
     const clients = getServiceClients();
-    const response = await invokeUnary<CreateHubAnnouncementRequest, HubAnnouncement__Output>(clients.hubClient.CreateAnnouncement.bind(clients.hubClient), {
+    const response = await invokeUnary<CreateHubAnnouncementRequest, ProtoHubAnnouncement>(clients.hubClient.createAnnouncement.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       content: input.content,
@@ -93,6 +100,8 @@ export const hubAnnouncementsService = {
         timeZone: input.timeZone || "UTC",
         desiredState: desiredStateValue(input.desiredState || "DRAFT"),
       },
+      expectedVersion: 0,
+      operationId: input.idempotencyKey,
     });
     return toAnnouncement(response);
   },
@@ -111,7 +120,7 @@ export const hubAnnouncementsService = {
     desiredState?: HubAnnouncement["desiredState"];
   }): Promise<HubAnnouncement> {
     const clients = getServiceClients();
-    const response = await invokeUnary<UpdateHubAnnouncementRequest, HubAnnouncement__Output>(clients.hubClient.UpdateAnnouncement.bind(clients.hubClient), {
+    const response = await invokeUnary<UpdateHubAnnouncementRequest, ProtoHubAnnouncement>(clients.hubClient.updateAnnouncement.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       announcementId: input.announcementId,
@@ -124,8 +133,9 @@ export const hubAnnouncementsService = {
         timeZone: input.timeZone || "UTC",
         desiredState: desiredStateValue(input.desiredState || "DRAFT"),
       },
-      updateMask: { paths: ["title", "content", "scheduled_for", "repeat_interval_seconds", "time_zone", "desired_state"] },
+      updateMask: ["title", "content", "scheduled_for", "repeat_interval_seconds", "time_zone", "desired_state"],
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toAnnouncement(response);
   },
@@ -138,11 +148,12 @@ export const hubAnnouncementsService = {
     expectedVersion: number;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeUnary<DeleteHubAnnouncementRequest, EmptyResponse__Output>(clients.hubClient.DeleteAnnouncement.bind(clients.hubClient), {
+    await invokeUnary<DeleteHubAnnouncementRequest, EmptyResponse>(clients.hubClient.deleteAnnouncement.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       announcementId: input.announcementId,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
   },
 
@@ -155,14 +166,15 @@ export const hubAnnouncementsService = {
     idempotencyKey: string;
   }): Promise<HubAnnouncement> {
     const clients = getServiceClients();
-    const response = await invokeUnary<TransitionHubAnnouncementStateRequest, HubAnnouncement__Output>(
-      clients.hubClient.TransitionAnnouncementState.bind(clients.hubClient),
+    const response = await invokeUnary<TransitionHubAnnouncementStateRequest, ProtoHubAnnouncement>(
+      clients.hubClient.transitionAnnouncementState.bind(clients.hubClient),
       {
         context: makeRequestContext(input.actorId, true, input.idempotencyKey),
         hubId: input.hubId,
         announcementId: input.announcementId,
         desiredState: desiredStateValue(input.desiredState),
         expectedVersion: input.expectedVersion,
+        operationId: input.idempotencyKey,
       },
     );
     return toAnnouncement(response);

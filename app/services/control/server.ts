@@ -1,18 +1,19 @@
 import type { ServerResource } from "~/resources/server";
-import type { Server__Output } from "~/generated/control/v1/interchat/control/v1/Server";
-import type { BatchGetServersResponse__Output } from "~/generated/control/v1/interchat/control/v1/BatchGetServersResponse";
-import type { ServerBlock__Output } from "~/generated/control/v1/interchat/control/v1/ServerBlock";
-import type { BlocklistResponse__Output } from "~/generated/control/v1/interchat/control/v1/BlocklistResponse";
-import type { ConnectableChannel__Output } from "~/generated/control/v1/interchat/control/v1/ConnectableChannel";
-import type { GetServerRequest } from "~/generated/control/v1/interchat/control/v1/GetServerRequest";
-import type { BatchGetServersRequest } from "~/generated/control/v1/interchat/control/v1/BatchGetServersRequest";
-import type { ListConnectableChannelsRequest } from "~/generated/control/v1/interchat/control/v1/ListConnectableChannelsRequest";
-import type { ListConnectableChannelsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListConnectableChannelsResponse";
-import type { PatchServerConfigRequest } from "~/generated/control/v1/interchat/control/v1/PatchServerConfigRequest";
-import type { GetBlocklistRequest } from "~/generated/control/v1/interchat/control/v1/GetBlocklistRequest";
-import type { AddBlockRequest } from "~/generated/control/v1/interchat/control/v1/AddBlockRequest";
-import type { RemoveBlockRequest } from "~/generated/control/v1/interchat/control/v1/RemoveBlockRequest";
-import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
+import type { Server as ProtoServer } from "~/generated/control/v1/static";
+import type { BatchGetServersResponse } from "~/generated/control/v1/static";
+import type { ServerBlock as ProtoServerBlock } from "~/generated/control/v1/static";
+import type { BlocklistResponse } from "~/generated/control/v1/static";
+import type { ConnectableChannel } from "~/generated/control/v1/static";
+import type { GetServerRequest } from "~/generated/control/v1/static";
+import type { BatchGetServersRequest } from "~/generated/control/v1/static";
+import type { ListConnectableChannelsRequest } from "~/generated/control/v1/static";
+import type { ListConnectableChannelsResponse } from "~/generated/control/v1/static";
+import type { PatchServerConfigRequest } from "~/generated/control/v1/static";
+import type { GetBlocklistRequest } from "~/generated/control/v1/static";
+import type { AddBlockRequest } from "~/generated/control/v1/static";
+import type { RemoveBlockRequest } from "~/generated/control/v1/static";
+import type { EmptyResponse } from "~/generated/control/v1/static";
+import { BlockTargetType } from "~/generated/control/v1/static";
 import { getServiceClients, invokeUnary, makeRequestContext } from "./transport";
 
 export interface ServerSpec {
@@ -35,12 +36,24 @@ export interface ServerBlock {
   createdAt?: string;
 }
 
+function toProtoSpec(spec: Partial<ServerSpec>) {
+  return {
+    prefix: spec.prefix ?? "",
+    callChannelId: spec.callChannelId ?? "",
+    callDisplayName: spec.callDisplayName ?? "",
+    callPing: spec.callPing ?? false,
+    callRequeue: spec.callRequeue ?? false,
+    callNsfwFilter: spec.callNsfwFilter ?? false,
+    settings: spec.settings ?? 0,
+  };
+}
+
 function timestamp(value: { seconds?: number; nanos?: number } | null | undefined): string | undefined {
   if (!value) return undefined;
   return new Date((value.seconds || 0) * 1000 + (value.nanos || 0) / 1_000_000).toISOString();
 }
 
-function toServer(value: Server__Output): ServerResource {
+function toServer(value: ProtoServer): ServerResource {
   if (!value.metadata || !value.spec || !value.status) throw new Error("Control Plane returned an incomplete Server resource.");
   return {
     metadata: {
@@ -69,10 +82,10 @@ function toServer(value: Server__Output): ServerResource {
   };
 }
 
-function toBlock(value: ServerBlock__Output): ServerBlock {
-  const targetType = value.targetType === "BLOCK_TARGET_TYPE_USER"
-    ? "BLOCK_TARGET_TYPE_USER"
-    : value.targetType === "BLOCK_TARGET_TYPE_SERVER"
+function toBlock(value: ProtoServerBlock): ServerBlock {
+  const targetType = value.targetType === BlockTargetType.BLOCK_TARGET_TYPE_USER
+      ? "BLOCK_TARGET_TYPE_USER"
+    : value.targetType === BlockTargetType.BLOCK_TARGET_TYPE_SERVER
       ? "BLOCK_TARGET_TYPE_SERVER"
       : (() => { throw new Error("Control Plane returned an unknown block target type."); })();
   return {
@@ -89,7 +102,7 @@ function toBlock(value: ServerBlock__Output): ServerBlock {
 export const serverService = {
   async getServer(serverId: string, actorId: string): Promise<ServerResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<GetServerRequest, Server__Output>(clients.serverClient.GetServer.bind(clients.serverClient), {
+    const response = await invokeUnary<GetServerRequest, ProtoServer>(clients.serverClient.getServer.bind(clients.serverClient), {
       context: makeRequestContext(actorId),
       serverId,
     });
@@ -101,8 +114,8 @@ export const serverService = {
     actorId: string
   ): Promise<{ servers: ServerResource[]; missingServerIds: string[] }> {
     const clients = getServiceClients();
-    const res = await invokeUnary<BatchGetServersRequest, BatchGetServersResponse__Output>(
-      clients.serverClient.BatchGetServers.bind(clients.serverClient),
+    const res = await invokeUnary<BatchGetServersRequest, BatchGetServersResponse>(
+      clients.serverClient.batchGetServers.bind(clients.serverClient),
       {
         context: makeRequestContext(actorId),
         serverIds,
@@ -114,10 +127,10 @@ export const serverService = {
     };
   },
 
-  async listConnectableChannels(serverId: string, actorId: string): Promise<ConnectableChannel__Output[]> {
+  async listConnectableChannels(serverId: string, actorId: string): Promise<ConnectableChannel[]> {
     const clients = getServiceClients();
-    const response = await invokeUnary<ListConnectableChannelsRequest, ListConnectableChannelsResponse__Output>(
-      clients.serverClient.ListConnectableChannels.bind(clients.serverClient),
+    const response = await invokeUnary<ListConnectableChannelsRequest, ListConnectableChannelsResponse>(
+      clients.serverClient.listConnectableChannels.bind(clients.serverClient),
       {
         context: makeRequestContext(actorId),
         serverId,
@@ -136,20 +149,21 @@ export const serverService = {
     idempotencyKey: string;
   }): Promise<ServerResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<PatchServerConfigRequest, Server__Output>(clients.serverClient.PatchServerConfig.bind(clients.serverClient), {
+    const response = await invokeUnary<PatchServerConfigRequest, ProtoServer>(clients.serverClient.patchServerConfig.bind(clients.serverClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       serverId: input.serverId,
-      spec: input.spec,
-      updateMask: { paths: input.updateMask },
+      spec: toProtoSpec(input.spec),
+      updateMask: input.updateMask,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toServer(response);
   },
 
   async getBlocklist(serverId: string, actorId: string): Promise<ServerBlock[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<GetBlocklistRequest, BlocklistResponse__Output>(
-      clients.serverClient.GetBlocklist.bind(clients.serverClient),
+    const res = await invokeUnary<GetBlocklistRequest, BlocklistResponse>(
+      clients.serverClient.getBlocklist.bind(clients.serverClient),
       {
         context: makeRequestContext(actorId),
         serverId,
@@ -167,12 +181,13 @@ export const serverService = {
     idempotencyKey: string;
   }): Promise<ServerBlock> {
     const clients = getServiceClients();
-    const response = await invokeUnary<AddBlockRequest, ServerBlock__Output>(clients.serverClient.AddBlock.bind(clients.serverClient), {
+    const response = await invokeUnary<AddBlockRequest, ProtoServerBlock>(clients.serverClient.addBlock.bind(clients.serverClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       serverId: input.serverId,
       targetId: input.targetId,
-      targetType: input.targetType,
+      targetType: input.targetType as BlockTargetType,
       reason: input.reason,
+      operationId: input.idempotencyKey,
     });
     return toBlock(response);
   },
@@ -184,10 +199,11 @@ export const serverService = {
     idempotencyKey: string;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeUnary<RemoveBlockRequest, EmptyResponse__Output>(clients.serverClient.RemoveBlock.bind(clients.serverClient), {
+    await invokeUnary<RemoveBlockRequest, EmptyResponse>(clients.serverClient.removeBlock.bind(clients.serverClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       serverId: input.serverId,
       blockId: input.blockId,
+      operationId: input.idempotencyKey,
     });
   },
 };

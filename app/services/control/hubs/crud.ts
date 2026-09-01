@@ -1,24 +1,24 @@
-import type { CreateHubRequest } from "~/generated/control/v1/interchat/control/v1/CreateHubRequest";
-import type { DeleteHubRequest } from "~/generated/control/v1/interchat/control/v1/DeleteHubRequest";
-import type { EmptyResponse__Output } from "~/generated/control/v1/interchat/control/v1/EmptyResponse";
-import type { GetHubRequest } from "~/generated/control/v1/interchat/control/v1/GetHubRequest";
-import type { GetPopularTagsRequest } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsRequest";
-import type { GetPopularTagsResponse } from "~/generated/control/v1/interchat/control/v1/GetPopularTagsResponse";
-import type { Hub__Output as ProtoHub } from "~/generated/control/v1/interchat/control/v1/Hub";
-import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
-import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/interchat/control/v1/HubSpec";
-import type { ListMyHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListMyHubsRequest";
-import type { ListMyHubsResponse, ListMyHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListMyHubsResponse";
-import type { ListUserHubsRequest } from "~/generated/control/v1/interchat/control/v1/ListUserHubsRequest";
-import type { ListUserHubsResponse__Output } from "~/generated/control/v1/interchat/control/v1/ListUserHubsResponse";
-import type { LockdownHubRequest } from "~/generated/control/v1/interchat/control/v1/LockdownHubRequest";
-import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
-import type { PatchHubRequest } from "~/generated/control/v1/interchat/control/v1/PatchHubRequest";
-import type { SearchHubsRequest } from "~/generated/control/v1/interchat/control/v1/SearchHubsRequest";
-import type { SearchHubsResponse } from "~/generated/control/v1/interchat/control/v1/SearchHubsResponse";
-import type { TransferHubOwnershipRequest } from "~/generated/control/v1/interchat/control/v1/TransferHubOwnershipRequest";
-import type { UpvoteHubRequest } from "~/generated/control/v1/interchat/control/v1/UpvoteHubRequest";
-import type { UpvoteHubResponse__Output } from "~/generated/control/v1/interchat/control/v1/UpvoteHubResponse";
+import type { CreateHubRequest } from "~/generated/control/v1/static";
+import type { DeleteHubRequest } from "~/generated/control/v1/static";
+import type { EmptyResponse } from "~/generated/control/v1/static";
+import type { GetHubRequest } from "~/generated/control/v1/static";
+import type { GetPopularTagsRequest } from "~/generated/control/v1/static";
+import type { GetPopularTagsResponse } from "~/generated/control/v1/static";
+import type { Hub as ProtoHub } from "~/generated/control/v1/static";
+import { HubSearchSort } from "~/generated/control/v1/static";
+import type { HubSpec as ProtoHubSpecMessage } from "~/generated/control/v1/static";
+import type { ListMyHubsRequest } from "~/generated/control/v1/static";
+import type { ListMyHubsResponse } from "~/generated/control/v1/static";
+import type { ListUserHubsRequest } from "~/generated/control/v1/static";
+import type { ListUserHubsResponse } from "~/generated/control/v1/static";
+import type { LockdownHubRequest } from "~/generated/control/v1/static";
+import { NsfwFilter } from "~/generated/control/v1/static";
+import type { PatchHubRequest } from "~/generated/control/v1/static";
+import type { SearchHubsRequest } from "~/generated/control/v1/static";
+import type { SearchHubsResponse } from "~/generated/control/v1/static";
+import type { TransferHubOwnershipRequest } from "~/generated/control/v1/static";
+import type { UpvoteHubRequest } from "~/generated/control/v1/static";
+import type { UpvoteHubResponse } from "~/generated/control/v1/static";
 import type { HubResource, HubSpec } from "~/resources/hub";
 import { getServiceClients, invokeUnary, makeRequestContext } from "../transport";
 
@@ -95,22 +95,34 @@ function toResource(hub: ProtoHub): HubResource {
 }
 
 function toProtoSpec(spec: Partial<HubSpec> & { name?: string }): ProtoHubSpecMessage {
-  const result: ProtoHubSpecMessage = {};
-  if (spec.name !== undefined) result.name = spec.name;
-  if (spec.description !== undefined) result.description = spec.description;
-  if (spec.shortDescription !== undefined && spec.shortDescription !== null) result.shortDescription = spec.shortDescription;
-  if (spec.visibility !== undefined) result.visibility = `HUB_VISIBILITY_${spec.visibility}` as ProtoHubSpecMessage["visibility"];
-  if (spec.iconUrl !== undefined && spec.iconUrl !== null) result.iconUrl = spec.iconUrl;
-  if (spec.bannerUrl !== undefined && spec.bannerUrl !== null) result.bannerUrl = spec.bannerUrl;
-  if (spec.welcomeMessage !== undefined && spec.welcomeMessage !== null) result.welcomeMessage = spec.welcomeMessage;
-  if (spec.language !== undefined && spec.language !== null) result.language = spec.language;
-  if (spec.region !== undefined && spec.region !== null) result.region = spec.region;
-  if (spec.locked !== undefined) result.locked = spec.locked;
-  if (spec.nsfw !== undefined) result.nsfw = spec.nsfw;
-  if (spec.appealCooldownHours !== undefined) result.appealCooldownHours = spec.appealCooldownHours;
-  if (spec.settings !== undefined) result.settings = spec.settings;
-  return result;
+  return {
+    name: spec.name ?? "",
+    shortDescription: spec.shortDescription ?? "",
+    description: spec.description ?? "",
+    iconUrl: spec.iconUrl ?? "",
+    bannerUrl: spec.bannerUrl ?? "",
+    welcomeMessage: spec.welcomeMessage ?? "",
+    language: spec.language ?? "",
+    region: spec.region ?? "",
+    visibility: spec.visibility
+      ? (`HUB_VISIBILITY_${spec.visibility}` as ProtoHubSpecMessage["visibility"])
+      : ("HUB_VISIBILITY_UNSPECIFIED" as ProtoHubSpecMessage["visibility"]),
+    locked: spec.locked ?? false,
+    nsfw: spec.nsfw ?? false,
+    rules: spec.rules ?? [],
+    appealCooldownHours: spec.appealCooldownHours ?? 0,
+    settings: spec.settings ?? 0,
+  };
 }
+
+type SearchSortInput = HubSearchSort |
+  "HUB_SEARCH_SORT_TRENDING" |
+  "HUB_SEARCH_SORT_POPULAR" |
+  "HUB_SEARCH_SORT_UPVOTES" |
+  "HUB_SEARCH_SORT_RATING" |
+  "HUB_SEARCH_SORT_ACTIVE" |
+  "HUB_SEARCH_SORT_NEWEST";
+type NsfwFilterInput = NsfwFilter | "NSFW_FILTER_SFW_ONLY" | "NSFW_FILTER_NSFW_ONLY" | "NSFW_FILTER_ALL";
 
 export const hubCrudService = {
   async createHub(input: {
@@ -127,19 +139,20 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<CreateHubRequest, ProtoHub>(clients.hubClient.CreateHub.bind(clients.hubClient), {
+    const response = await invokeUnary<CreateHubRequest, ProtoHub>(clients.hubClient.createHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
-      spec: {
+      spec: toProtoSpec({
         name: input.name,
         description: input.description,
         shortDescription: input.shortDescription || undefined,
-        visibility: `HUB_VISIBILITY_${input.visibility || "PUBLIC"}` as ProtoHubSpecMessage["visibility"],
+        visibility: input.visibility,
         iconUrl: input.iconUrl || undefined,
         bannerUrl: input.bannerUrl || undefined,
         welcomeMessage: input.welcomeMessage || undefined,
         language: input.language || "en",
         region: input.region || "us",
-      },
+      }),
+      operationId: input.idempotencyKey,
     });
     return toResource(response);
   },
@@ -150,13 +163,13 @@ export const hubCrudService = {
       context: makeRequestContext(actorId),
       hubId,
     };
-    const response = await invokeUnary<GetHubRequest, ProtoHub>(clients.hubClient.GetHub.bind(clients.hubClient), request);
+    const response = await invokeUnary<GetHubRequest, ProtoHub>(clients.hubClient.getHub.bind(clients.hubClient), request);
     return toResource(response);
   },
 
   async listUserHubs(hubIds: string[], actorId: string): Promise<HubResource[]> {
     const clients = getServiceClients();
-    const res = await invokeUnary<ListUserHubsRequest, ListUserHubsResponse__Output>(clients.hubClient.ListUserHubs.bind(clients.hubClient), {
+    const res = await invokeUnary<ListUserHubsRequest, ListUserHubsResponse>(clients.hubClient.listUserHubs.bind(clients.hubClient), {
       context: makeRequestContext(actorId),
       hubIds,
     });
@@ -168,9 +181,9 @@ export const hubCrudService = {
     const request: ListMyHubsRequest = {
       context: makeRequestContext(actorId),
       limit,
-      cursor,
+      cursor: cursor ?? "",
     };
-    const res = await invokeUnary<ListMyHubsRequest, ListMyHubsResponse__Output>(clients.hubClient.ListMyHubs.bind(clients.hubClient), request);
+    const res = await invokeUnary<ListMyHubsRequest, ListMyHubsResponse>(clients.hubClient.listMyHubs.bind(clients.hubClient), request);
     if (res.hubs) {
       for (const h of res.hubs) {
         if (h.permissions) {
@@ -183,11 +196,11 @@ export const hubCrudService = {
 
   async searchHubs(input: {
     query?: string;
-    sort?: HubSearchSort;
+    sort?: SearchSortInput;
     tags?: string[];
     language?: string;
     region?: string;
-    nsfwFilter?: NsfwFilter;
+    nsfwFilter?: NsfwFilterInput;
     limit?: number;
     cursor?: string;
     actorId?: string;
@@ -196,16 +209,16 @@ export const hubCrudService = {
     const request: SearchHubsRequest = {
       context: makeRequestContext(input.actorId || "anonymous"),
       query: input.query || "",
-      sort: input.sort || "HUB_SEARCH_SORT_TRENDING",
+      sort: (input.sort || HubSearchSort.HUB_SEARCH_SORT_TRENDING) as HubSearchSort,
       tags: input.tags || [],
-      language: input.language,
-      region: input.region,
-      nsfwFilter: input.nsfwFilter || "NSFW_FILTER_SFW_ONLY",
+      language: input.language ?? "",
+      region: input.region ?? "",
+      nsfwFilter: (input.nsfwFilter || NsfwFilter.NSFW_FILTER_SFW_ONLY) as NsfwFilter,
       limit: input.limit || 24,
-      cursor: input.cursor,
+      cursor: input.cursor ?? "",
     };
     return invokeUnary<SearchHubsRequest, SearchHubsResponse>(
-      clients.hubClient.SearchHubs.bind(clients.hubClient),
+      clients.hubClient.searchHubs.bind(clients.hubClient),
       request,
     );
   },
@@ -217,7 +230,7 @@ export const hubCrudService = {
       limit,
     };
     return invokeUnary<GetPopularTagsRequest, GetPopularTagsResponse>(
-      clients.hubClient.GetPopularTags.bind(clients.hubClient),
+      clients.hubClient.getPopularTags.bind(clients.hubClient),
       request,
     );
   },
@@ -225,9 +238,10 @@ export const hubCrudService = {
   async upvoteHub(hubId: string, actorId: string, idempotencyKey: string): Promise<{ totalUpvotes: number; upvoted: boolean }> {
     if (!idempotencyKey) throw new Error("idempotencyKey is required for HubService.UpvoteHub");
     const clients = getServiceClients();
-    const response = await invokeUnary<UpvoteHubRequest, UpvoteHubResponse__Output>(clients.hubClient.UpvoteHub.bind(clients.hubClient), {
+    const response = await invokeUnary<UpvoteHubRequest, UpvoteHubResponse>(clients.hubClient.upvoteHub.bind(clients.hubClient), {
       context: makeRequestContext(actorId, true, idempotencyKey),
       hubId,
+      operationId: idempotencyKey,
     });
     return { totalUpvotes: response.totalUpvotes, upvoted: response.upvoted };
   },
@@ -247,10 +261,11 @@ export const hubCrudService = {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       spec: toProtoSpec(input.spec),
-      updateMask: { paths: input.updateMask },
+      updateMask: input.updateMask,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     };
-    const response = await invokeUnary<PatchHubRequest, ProtoHub>(clients.hubClient.PatchHub.bind(clients.hubClient), request);
+    const response = await invokeUnary<PatchHubRequest, ProtoHub>(clients.hubClient.patchHub.bind(clients.hubClient), request);
     return toResource(response);
   },
 
@@ -263,12 +278,13 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<LockdownHubRequest, ProtoHub>(clients.hubClient.LockdownHub.bind(clients.hubClient), {
+    const response = await invokeUnary<LockdownHubRequest, ProtoHub>(clients.hubClient.lockdownHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       locked: input.locked,
       reason: input.reason,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toResource(response);
   },
@@ -281,11 +297,12 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<HubResource> {
     const clients = getServiceClients();
-    const response = await invokeUnary<TransferHubOwnershipRequest, ProtoHub>(clients.hubClient.TransferOwnership.bind(clients.hubClient), {
+    const response = await invokeUnary<TransferHubOwnershipRequest, ProtoHub>(clients.hubClient.transferOwnership.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       newOwnerId: input.newOwnerId,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
     return toResource(response);
   },
@@ -298,11 +315,12 @@ export const hubCrudService = {
     idempotencyKey: string;
   }): Promise<void> {
     const clients = getServiceClients();
-    await invokeUnary<DeleteHubRequest, EmptyResponse__Output>(clients.hubClient.DeleteHub.bind(clients.hubClient), {
+    await invokeUnary<DeleteHubRequest, EmptyResponse>(clients.hubClient.deleteHub.bind(clients.hubClient), {
       context: makeRequestContext(input.actorId, true, input.idempotencyKey),
       hubId: input.hubId,
       confirmationName: input.confirmationName,
       expectedVersion: input.expectedVersion,
+      operationId: input.idempotencyKey,
     });
   },
 };

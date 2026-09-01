@@ -12,6 +12,7 @@ export const PRODUCTION_REQUIRED_SECRETS = [
   "JWT_SECRET",
   "BEACON_JWT_SECRET",
   "WINTER_DATABASE_URL",
+  "WINTER_REDIS_URI",
 ] as const;
 
 export function validateProductionConfig(

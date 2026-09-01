@@ -7,10 +7,8 @@ import type {
   HubSearchResult,
   HubTagResource,
 } from "~/resources/hubDiscovery";
-import type { HubDirectoryItem } from "~/generated/control/v1/interchat/control/v1/HubDirectoryItem";
-import type { HubTag } from "~/generated/control/v1/interchat/control/v1/HubTag";
-import type { HubSearchSort } from "~/generated/control/v1/interchat/control/v1/HubSearchSort";
-import type { NsfwFilter } from "~/generated/control/v1/interchat/control/v1/NsfwFilter";
+import type { HubDirectoryItem, HubTag } from "~/generated/control/v1/static";
+import { HubSearchSort, NsfwFilter } from "~/generated/control/v1/static";
 import { controlConnectionService, controlHubService } from "~/services/control.server";
 
 function activityLevel(value: HubDirectoryItem["activityLevel"]): HubPublicResource["status"]["activityLevel"] {
@@ -82,21 +80,21 @@ export const hubDiscoveryService = {
     } = input;
 
     const sortMap: Record<string, HubSearchSort> = {
-      trending: "HUB_SEARCH_SORT_TRENDING",
-      popular: "HUB_SEARCH_SORT_POPULAR",
-      upvotes: "HUB_SEARCH_SORT_UPVOTES",
-      rating: "HUB_SEARCH_SORT_RATING",
-      active: "HUB_SEARCH_SORT_ACTIVE",
-      newest: "HUB_SEARCH_SORT_NEWEST",
+      trending: HubSearchSort.HUB_SEARCH_SORT_TRENDING,
+      popular: HubSearchSort.HUB_SEARCH_SORT_POPULAR,
+      upvotes: HubSearchSort.HUB_SEARCH_SORT_UPVOTES,
+      rating: HubSearchSort.HUB_SEARCH_SORT_RATING,
+      active: HubSearchSort.HUB_SEARCH_SORT_ACTIVE,
+      newest: HubSearchSort.HUB_SEARCH_SORT_NEWEST,
     };
 
     const searchPage = (cursor?: string) => controlHubService.searchHubs({
       query: search,
-      sort: sortMap[sort] || "HUB_SEARCH_SORT_TRENDING",
+      sort: sortMap[sort] || HubSearchSort.HUB_SEARCH_SORT_TRENDING,
       tags,
       language: language !== "ALL" ? language : undefined,
       region: region !== "ALL" ? region : undefined,
-      nsfwFilter: (nsfw ? "NSFW_FILTER_ALL" : "NSFW_FILTER_SFW_ONLY") as NsfwFilter,
+      nsfwFilter: nsfw ? NsfwFilter.NSFW_FILTER_ALL : NsfwFilter.NSFW_FILTER_SFW_ONLY,
       limit,
       cursor,
       actorId: userId,
@@ -131,7 +129,7 @@ export const hubDiscoveryService = {
    */
   async getFeaturedHubs(): Promise<HubPublicResource[]> {
     const res = await controlHubService.searchHubs({
-      sort: "HUB_SEARCH_SORT_POPULAR",
+      sort: HubSearchSort.HUB_SEARCH_SORT_POPULAR,
       limit: 6,
     });
     return (res.hubs || []).map(directoryHubToResource);
