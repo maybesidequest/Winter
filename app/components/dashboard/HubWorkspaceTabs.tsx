@@ -15,6 +15,7 @@ import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 import type { LifecycleFailure } from "~/components/dashboard/HubLifecyclePanel";
 import type { LifecycleAction } from "~/services/lifecycleIntent";
+import type { PermissionAction } from "~/permissions/config";
 
 interface HubWorkspaceTabsProps {
   activeTab: string;
@@ -65,19 +66,7 @@ export function HubWorkspaceTabs({
   onRetryLifecycle,
   onBackToHubs,
 }: HubWorkspaceTabsProps) {
-  const can = (...actions: string[]) => {
-    const perms = hub.metadata.permissions as any;
-    if (!perms) return false;
-    if (Array.isArray(perms)) {
-      const permMap = Object.fromEntries(
-        perms
-          .filter((p: any) => p && typeof p === "object" && "key" in p)
-          .map((p: any) => [p.key, Boolean(p.value)])
-      );
-      return actions.some((action) => permMap[action]);
-    }
-    return actions.some((action) => perms[action]);
-  };
+  const can = (...actions: PermissionAction[]) => actions.some((action) => hub.metadata.permissions[action] === true);
   switch (activeTab) {
     case "overview":
     case "general":

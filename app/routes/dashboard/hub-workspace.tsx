@@ -9,6 +9,7 @@ import { PageHeader } from "~/components/dashboard/PageHeader";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
 import { toggleSettingsFlag, type HubSettingsFlag } from "~/schemas/hub";
+import type { PermissionAction } from "~/permissions/config";
 import { requireUser } from "~/services/auth.server";
 import { hubService } from "~/services/hub.server";
 import type { Route } from "./+types/hub-workspace";
@@ -320,19 +321,7 @@ export default function HubWorkspace({ loaderData }: Route.ComponentProps) {
     desc: `Manage ${activeTab} for ${hub.metadata.name}.`,
   };
 
-  const hasPerm = (action: string) => {
-    const perms = hub.metadata.permissions as any;
-    if (!perms) return false;
-    if (Array.isArray(perms)) {
-      const permMap = Object.fromEntries(
-        perms
-          .filter((p: any) => p && typeof p === "object" && "key" in p)
-          .map((p: any) => [p.key, Boolean(p.value)])
-      );
-      return !!permMap[action];
-    }
-    return !!perms[action];
-  };
+  const hasPerm = (action: PermissionAction) => hub.metadata.permissions[action] === true;
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">

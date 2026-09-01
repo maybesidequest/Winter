@@ -10,6 +10,7 @@
     "test": "bun test",
     "smoke:docker": "bash scripts/docker-smoke.sh",
     "validate:phase2": "bun run scripts/validate-phase2-matrix.ts",
+    "validate:phase3": "node scripts/validate-phase3.mjs",
     "typecheck": "react-router typegen && tsc",
     "check:control-types": "bun run generate:control-types && git diff --exit-code -- app/generated/control/v1",
     "generate:control-types": "node scripts/generate-control-types.mjs",

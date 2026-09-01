@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { NavLink } from "react-router";
 import type { HubResource } from "~/resources/hub";
+import type { PermissionAction } from "~/permissions/config";
 
 interface HubSidebarTabsProps {
   hubId: string;
@@ -27,17 +28,9 @@ interface HubSidebarTabsProps {
 export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSidebarTabsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const permissions = hub?.metadata.permissions;
-  const can = (...actions: string[]) => {
+  const can = (...actions: PermissionAction[]) => {
     if (!permissions) return true;
-    if (Array.isArray(permissions)) {
-      const permMap = Object.fromEntries(
-        (permissions as any[])
-          .filter((p) => p && typeof p === "object" && "key" in p)
-          .map((p) => [p.key, Boolean(p.value)])
-      );
-      return actions.some((action) => permMap[action]);
-    }
-    return actions.some((action) => (permissions as any)[action]);
+    return actions.some((action) => permissions[action] === true);
   };
   const enabled = (capability: string) => capabilities?.[capability] ?? import.meta.env.DEV;
 
@@ -53,7 +46,7 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
       path: "moderation",
       label: "Moderation",
       icon: <SafetyCertificateOutlined />,
-      visible: enabled("MODERATION") && (hub?.metadata.effectiveRole === "OWNER" || can("VIEW_LOGS", "MANAGE_SANCTIONS")),
+      visible: enabled("MODERATION") && (hub?.metadata.effectiveRole === "OWNER" || can("VIEW_LOGS", "MANAGE_BANS")),
     },
     { path: "rules", label: "Rules", icon: <FileTextOutlined />, visible: enabled("HUB_RULES") && (hub?.metadata.effectiveRole === "OWNER" || can("MANAGE_RULES")) },
     {
