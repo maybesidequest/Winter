@@ -115,7 +115,7 @@ export function HubWorkspaceTabs({
     case "logging":
       return (
         <div className="max-w-4xl">
-          <HubLoggingPanel hub={hub} canEdit={can("MANAGE_LOGS", "MANAGE_HUB_SETTINGS")} />
+          <HubLoggingPanel hub={hub} connections={connections} canEdit={can("MANAGE_LOGS", "MANAGE_HUB_SETTINGS")} />
         </div>
       );
     case "badges":

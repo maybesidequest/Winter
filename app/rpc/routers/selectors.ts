@@ -12,6 +12,11 @@ const searchInput = z.object({
   limit: z.number().int().min(1).max(50).default(25),
   cursor: z.string().regex(/^\d*$/).default(""),
 });
+const resolveInput = z.object({
+  type: selectorType,
+  parentId: z.string().trim().min(1).max(128),
+  id: z.string().trim().min(1).max(128),
+});
 
 function mapSelectorError(error: unknown): never {
   const code = typeof error === "object" && error && "code" in error
@@ -34,6 +39,25 @@ export const selectorsRouter = base.router({
         limit: input.limit,
         cursor: input.cursor,
       });
+    } catch (error) {
+      return mapSelectorError(error);
+    }
+  }),
+  resolve: protectedBase.input(resolveInput).handler(async ({ input, context }) => {
+    try {
+      const response = await selectorService.resolveSelectors({
+        actorId: context.user.id,
+        references: [{
+          type: SelectorType[input.type],
+          parentId: input.parentId,
+          id: input.id,
+        }],
+      });
+      const resolved = response.selectors[0];
+      if (!resolved?.valid || !resolved.option) {
+        throw new ORPCError("NOT_FOUND", { message: resolved?.rejectionReason || "The selected entity is no longer available." });
+      }
+      return resolved.option;
     } catch (error) {
       return mapSelectorError(error);
     }

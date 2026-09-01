@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { orpc } from "~/lib/orpc";
 
 interface HubSubjectSelectorProps {
@@ -8,7 +8,7 @@ interface HubSubjectSelectorProps {
   value?: string;
   onChange: (value: string) => void;
   id?: string;
-  selectorType?: "SELECTOR_TYPE_USER" | "SELECTOR_TYPE_SERVER";
+  selectorType?: "SELECTOR_TYPE_CHANNEL" | "SELECTOR_TYPE_ROLE" | "SELECTOR_TYPE_USER" | "SELECTOR_TYPE_SERVER";
   disabled?: boolean;
   placeholder?: string;
 }
@@ -45,6 +45,32 @@ export function HubSubjectSelector({
     }),
     enabled: !disabled && normalizedSearch.length >= 2,
   });
+  const resolvedQuery = useQuery({
+    ...orpc.selectors.resolve.queryOptions({
+      input: {
+        type: selectorType,
+        parentId: hubId,
+        id: value || "",
+      },
+    }),
+    enabled: !disabled && Boolean(value) && !selectedOption,
+  });
+
+  useEffect(() => {
+    if (resolvedQuery.data && value) {
+      setSelectedOption({
+        value,
+        label: resolvedQuery.data.label,
+        title: resolvedQuery.data.description || resolvedQuery.data.label,
+        disabled: !resolvedQuery.data.selectable,
+      });
+    }
+  }, [resolvedQuery.data, value]);
+
+  useEffect(() => {
+    setSelectedOption(undefined);
+    setSearch("");
+  }, [hubId, selectorType]);
 
   const options = (query.data?.options ?? []).map((option) => ({
     value: option.id,
