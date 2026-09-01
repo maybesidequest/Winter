@@ -11,8 +11,8 @@ interface RequestWithContext {
 }
 
 /**
- * Add a bounded deadline to every call. Call-specific deadlines are allowed
- * to shorten this value, but never to remove the platform safety limit.
+ * Add a bounded deadline to every call. The AbortSignal is understood by
+ * nice-grpc and lets cancellation propagate through the HTTP/2 transport.
  */
 export function controlDeadlineMiddleware(
   timeoutMs: number,
@@ -23,9 +23,18 @@ export function controlDeadlineMiddleware(
       throw new Error("Control Plane only supports unary calls.");
     }
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+    let expired = false;
+    const timer = setTimeout(() => {
+      expired = true;
+      controller.abort();
+    }, timeout);
     try {
       return yield* call.next(call.request, { ...options, signal: controller.signal });
+    } catch (error) {
+      if (expired) {
+        throw new ControlPlaneError({ code: 4, details: `Control Plane deadline exceeded after ${timeout}ms.` });
+      }
+      throw error;
     } finally {
       clearTimeout(timer);
     }
