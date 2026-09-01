@@ -11,6 +11,7 @@ import { Popconfirm } from "antd";
 import { Link } from "react-router";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { ServerBridgeResource, ServerResource } from "~/resources/server";
+import { ServerBridgeStatus } from "./ServerBridgeStatus";
 
 interface ServerBridgeItemProps {
   server: ServerResource;
@@ -95,11 +96,12 @@ export function ServerBridgeItem({
           </span>
         </div>
 
-        {needsAttention && (
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200" role="status">
-            Observed health needs attention{bridge.statusMessage ? `: ${bridge.statusMessage}` : "."}
-          </div>
-        )}
+        <ServerBridgeStatus
+          connected={bridge.connected}
+          healthy={bridge.healthy}
+          statusMessage={bridge.statusMessage}
+          latestOperationId={bridge.latestOperationId}
+        />
 
         {/* Diagnostic Webhook Warning */}
         {bridge.webhookProvisioned === false && (
