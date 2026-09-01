@@ -26,7 +26,7 @@ export function HubLoggingPanel({ hub, connections, canEdit }: HubLoggingPanelPr
   const submittedDraftRef = useRef<string | null>(null);
   const logQuery = useQuery(orpc.hub.getLogConfig.queryOptions({ input: { hubId: hub.metadata.id } }));
   const connectedServers = useMemo(
-    () => Array.from(new Map(connections.map((connection) => [connection.spec.serverId, connection.status.serverName])).entries()).map(([id, name]) => ({ id, name })),
+    () => Array.from(new Map(connections.map((connection) => [connection.spec.serverId, connection.status.serverName || "Server name unavailable"])).entries()).map(([id, name]) => ({ id, name })),
     [connections],
   );
 

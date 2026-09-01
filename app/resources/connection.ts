@@ -1,7 +1,7 @@
 export type BaseResourceMetadata = {
   id: string;
   name?: string;
-  createdAt: string;
+  createdAt: string | null;
   updatedAt: string | null;
 };
 export type HubConnectionSpec = {
@@ -12,9 +12,12 @@ export type HubConnectionSpec = {
 };
 
 export type HubConnectionStatus = {
-  serverName: string;
+  serverName: string | null;
   channelName: string | null;
-  lastActive: string;
+  lastActive: string | null;
+  healthy: boolean;
+  statusMessage: string | null;
+  latestOperationId: string | null;
 };
 
 export type HubConnectionResource = {

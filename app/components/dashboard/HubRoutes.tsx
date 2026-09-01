@@ -29,8 +29,9 @@ export function HubRoutes({
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
 
   const filtered = connections.filter((conn) => {
+    const serverName = conn.status.serverName || "";
     const matchesSearch =
-      conn.status.serverName.toLowerCase().includes(search.toLowerCase()) ||
+      serverName.toLowerCase().includes(search.toLowerCase()) ||
       Boolean(conn.status.channelName?.toLowerCase().includes(search.toLowerCase()));
 
     if (!matchesSearch) return false;
@@ -112,11 +113,11 @@ export function HubRoutes({
                 {/* Identity */}
                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
                   <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-xs font-bold text-violet-300 flex-shrink-0 font-['Sora'] shadow-sm">
-                    {connection.status.serverName.slice(0, 2).toUpperCase()}
+                    {(connection.status.serverName || "??").slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-bold text-white truncate font-['Sora'] flex items-center gap-2">
-                      <span>{connection.status.serverName}</span>
+                      <span>{connection.status.serverName || "Server name unavailable"}</span>
                       <span
                         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                           connection.spec.connected
@@ -129,7 +130,7 @@ export function HubRoutes({
                       </span>
                     </div>
                     <div className="text-xs text-white/50 truncate mt-0.5">
-                      #{connection.status.channelName || "Channel name unavailable"} ·{" "}
+                      {connection.status.channelName ? `#${connection.status.channelName}` : "Channel name unavailable"} ·{" "}
                       {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"}
                     </div>
                   </div>
@@ -152,7 +153,7 @@ export function HubRoutes({
                     type="button"
                     disabled={!canManage || pending}
                     onClick={() => {
-                      if (confirm(`Disconnect ${connection.status.serverName} from this Hub?`)) {
+                      if (confirm(`Disconnect ${connection.status.serverName || "this Server"} from this Hub?`)) {
                         onDisconnect(connection);
                       }
                     }}

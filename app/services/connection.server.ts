@@ -12,9 +12,8 @@ export const connectionService = {
     return connections.map((conn) => ({
       metadata: {
         id: conn.metadata.id,
-        name: `Connection-${conn.metadata.id}`,
-        createdAt: conn.metadata.createdAt || new Date().toISOString(),
-        updatedAt: conn.metadata.updatedAt || new Date().toISOString(),
+        createdAt: conn.metadata.createdAt || null,
+        updatedAt: conn.metadata.updatedAt || null,
       },
       spec: {
         channelId: conn.metadata.channelId || "",
@@ -23,9 +22,12 @@ export const connectionService = {
         pausedByBot: !conn.status.healthy,
       },
       status: {
-        serverName: conn.spec.customName || `Server ${conn.metadata.serverId}`,
-        channelName: `#${conn.metadata.channelId}`,
-        lastActive: conn.status.lastRelayedAt || conn.metadata.updatedAt || conn.metadata.createdAt || new Date().toISOString(),
+        serverName: conn.spec.customName || null,
+        channelName: null,
+        lastActive: conn.status.lastRelayedAt || conn.metadata.updatedAt || conn.metadata.createdAt || null,
+        healthy: conn.status.healthy,
+        statusMessage: conn.status.statusMessage || null,
+        latestOperationId: conn.status.latestOperationId || null,
       },
       version: conn.version,
     }));
