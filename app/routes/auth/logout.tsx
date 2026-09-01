@@ -1,7 +1,7 @@
 import { redirect } from "react-router";
 import { sessionStorage } from "../../services/session.server";
 import type { Route } from "./+types/logout";
-import { clearCsrfCookie } from "../../services/csrf.server";
+import { clearCsrfCookie, requireCsrf } from "../../services/csrf.server";
 
 export async function action({ request }: Route.ActionArgs) {
   if (request.method !== "POST") {
@@ -17,6 +17,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const session = await sessionStorage.getSession(request.headers.get("cookie"));
+  await requireCsrf(request, session.get("csrfToken"));
   const csrfCookie = await clearCsrfCookie();
   const sessionCookie = await sessionStorage.destroySession(session);
   const headers = new Headers();
