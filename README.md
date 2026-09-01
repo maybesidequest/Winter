@@ -38,15 +38,12 @@ cp .env.example .env
 **Required `.env` Variables:**
 ```env
 SESSION_SECRET="your_secure_random_string_here"
-JWT_SECRET="super_secret_jwt_key_12345"
+JWT_SECRET="replace_with_a_long_random_secret"
 
 # Discord OAuth configuration
 DISCORD_CLIENT_ID="your_discord_client_id"
 DISCORD_CLIENT_SECRET="your_discord_client_secret"
 DISCORD_CALLBACK_URL="http://localhost:5173/auth/discord/callback"
-
-# Database connection
-DATABASE_URL="postgresql://user:password@localhost:5432/interchat"
 
 # Unsplash (For dynamic background generation)
 VITE_UNSPLASH_ACCESS_KEY="unsplash_api_key"

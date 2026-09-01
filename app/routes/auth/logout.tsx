@@ -3,13 +3,18 @@ import { sessionStorage } from "../../services/session.server";
 import type { Route } from "./+types/logout";
 
 export async function action({ request }: Route.ActionArgs) {
-  const session = await sessionStorage.getSession(request.headers.get("cookie"));
-  return redirect("/", {
-    headers: { "Set-Cookie": await sessionStorage.destroySession(session) },
-  });
-}
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: { Allow: "POST" } });
+  }
 
-export async function loader({ request }: Route.LoaderArgs) {
+  // SameSite=Lax protects normal cross-site form posts, while this explicit
+  // origin check covers clients that send an Origin header and makes logout a
+  // deliberate state-changing request.
+  const origin = request.headers.get("Origin");
+  if (origin && origin !== new URL(request.url).origin) {
+    return new Response("Cross-origin request denied", { status: 403 });
+  }
+
   const session = await sessionStorage.getSession(request.headers.get("cookie"));
   return redirect("/", {
     headers: { "Set-Cookie": await sessionStorage.destroySession(session) },

@@ -2,6 +2,7 @@ import { redirect } from "react-router";
 import type { Route } from "./+types/callback";
 import { authenticator } from "../../services/auth.server";
 import { sessionStorage } from "../../services/session.server";
+import { clearOAuthStateCookie } from "../../services/discordStrategy.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Strategy will either throw a redirect (Phase 1) or return the User (Phase 5)
@@ -11,7 +12,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await sessionStorage.getSession(request.headers.get("cookie"));
   session.set("user", user);
 
+  const headers = new Headers();
+  headers.append("Set-Cookie", await sessionStorage.commitSession(session));
+  headers.append("Set-Cookie", await clearOAuthStateCookie());
+
   throw redirect("/dashboard", {
-    headers: { "Set-Cookie": await sessionStorage.commitSession(session) },
+    headers,
   });
 }

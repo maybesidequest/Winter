@@ -24,7 +24,7 @@ export type RolePermissionsConfig = Record<HubRole, Record<PermissionAction, boo
 
 /**
  * Bitmask values for each permission action.
- * Must match the InterchatPermission enum (authz.proto) used by Iris and the bot.
+ * Must match the InterchatPermission enum used by the Control Plane and bot.
  */
 export const PERMISSION_BITMASKS: Record<PermissionAction, number> = {
   MANAGE_HUB_SETTINGS: 1,        // 1 << 0
@@ -69,9 +69,8 @@ export const ALL_PERMISSIONS: Record<PermissionAction, boolean> = {
 
 /**
  * Single source of truth for Role-Based Access Control configuration.
- * NOTE: With Iris integration, this static mapping is being phased out in
- * favour of dynamic permission resolution via the authz microservice.
- * Retained for backward compatibility and as a reference for default role configs.
+ * Retained for compatibility and as a reference for default role configs;
+ * runtime authorization is resolved by the Control Plane.
  */
 export const ROLE_PERMISSIONS: RolePermissionsConfig = {
   OWNER: {

@@ -16,6 +16,11 @@ export const oauthStateCookie = createCookie("oauth_state", {
   secrets: [sessionSecret || "dev_only_local_oauth_state_secret_key_32_bytes!"],
 });
 
+/** Clear the one-time OAuth state after a callback is consumed. */
+export function clearOAuthStateCookie(): Promise<string> {
+  return oauthStateCookie.serialize("", { maxAge: 0 });
+}
+
 export interface DiscordStrategyOptions {
   clientID: string;
   clientSecret: string;
@@ -70,7 +75,10 @@ export class DiscordStrategy<User> extends Strategy<User, DiscordAuthPayload> {
     const savedState = await oauthStateCookie.parse(cookieHeader);
     
     if (!state || state !== savedState) {
-      throw new Error("Invalid state parameter. CSRF protection triggered.");
+      throw new Response("Invalid OAuth state", {
+        status: 400,
+        headers: { "Set-Cookie": await clearOAuthStateCookie() },
+      });
     }
 
     // Phase 3: Exchange code for access token

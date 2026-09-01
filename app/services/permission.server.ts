@@ -1,34 +1,15 @@
-import { irisClient } from "./iris.server";
 import { ORPCError } from "@orpc/server";
 import {
-  PERMISSION_ACTIONS,
-  PERMISSION_BITMASKS,
   ALL_PERMISSIONS,
   getDefaultPermissions,
   type PermissionAction,
-  type HubRole,
 } from "../permissions/config";
-
-function bitsToRecord(bits: number): Record<PermissionAction, boolean> {
-  const record = getDefaultPermissions();
-  for (const action of PERMISSION_ACTIONS) {
-    const mask = PERMISSION_BITMASKS[action];
-    record[action] = (bits & mask) === mask;
-  }
-  return record;
-}
+import { controlHubService } from "./control.server";
 
 export const permissionService = {
-  // ------------------------------------------------------------------ //
-  //  Permission checks. Iris is authoritative and enforces its           //
-  //  authorization-version barrier. Do not read Iris's Redis cache here. //
-  // ------------------------------------------------------------------ //
-
   async canPerform(userId: string, hubId: string, action: PermissionAction): Promise<boolean> {
-    const mask = PERMISSION_BITMASKS[action];
-
-    const bits = await irisClient.getEffectivePermissions(userId, hubId);
-    return !!(bits & mask);
+    const hub = await controlHubService.getHub(hubId, userId);
+    return hub.metadata.permissions?.[action] === true;
   },
 
   async assertCanPerform(userId: string, hubId: string, action: PermissionAction): Promise<void> {
@@ -45,8 +26,8 @@ export const permissionService = {
   // ------------------------------------------------------------------ //
 
   async getPermissionsRecord(userId: string, hubId: string): Promise<Record<PermissionAction, boolean>> {
-    const bits = await irisClient.getEffectivePermissions(userId, hubId);
-    return bitsToRecord(bits);
+    const hub = await controlHubService.getHub(hubId, userId);
+    return { ...getDefaultPermissions(), ...(hub.metadata.permissions || {}) };
   },
 
 
@@ -62,20 +43,7 @@ export const permissionService = {
   // ------------------------------------------------------------------ //
 
   async checkIsStaff(userId: string): Promise<boolean> {
-    // Staff = user has ADMINISTRATOR bit. Call Iris without a hub context.
-    const bits = await irisClient.getEffectivePermissions(userId);
-    return !!(bits & PERMISSION_BITMASKS.ADMINISTRATOR);
-  },
-
-  // ------------------------------------------------------------------ //
-  //  Cache invalidation (delegates to Iris)                              //
-  // ------------------------------------------------------------------ //
-
-  async invalidateRole(hubId: string, userId: string): Promise<void> {
-    await irisClient.invalidateUserPermissions(hubId, userId);
-  },
-
-  async invalidateHub(hubId: string): Promise<void> {
-    await irisClient.invalidateHubPermissions(hubId);
+    const result = await controlHubService.listMyHubs(userId);
+    return (result.hubs || []).some((hub) => hub.permissions?.ADMINISTRATOR === true);
   },
 };

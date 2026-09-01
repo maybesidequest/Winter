@@ -8,6 +8,8 @@ container="winter-smoke-$RANDOM"
 docker build --tag "$image" .
 docker run --detach --rm --name "$container" --publish "$port:4000" \
   --env SESSION_SECRET=smoke-session-secret \
+  --env JWT_SECRET=smoke-jwt-secret \
+  --env BEACON_JWT_SECRET=smoke-beacon-jwt-secret \
   --env OAUTH_TOKEN_ENCRYPTION_KEY=smoke-token-secret \
   --env WINTER_DATABASE_URL=postgres://invalid@127.0.0.1:1/winter \
   --env DISCORD_CLIENT_ID=smoke-client \

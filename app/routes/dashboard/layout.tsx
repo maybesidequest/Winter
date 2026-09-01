@@ -22,11 +22,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
   let initialHubs: HubResource[] = [];
   if (capabilities.HUB_LIST || process.env.NODE_ENV === "development") {
-    try {
-      initialHubs = await hubService.getUserHubs(user.id);
-    } catch {
-      initialHubs = [];
-    }
+    // An unavailable Control Plane response is not an empty Hub list. Let
+    // the route's error boundary render the dependency failure so users do
+    // not mistake a transient outage for having no Hubs.
+    initialHubs = await hubService.getUserHubs(user.id);
   }
   return { user, capabilities, initialHubs };
 }

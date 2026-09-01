@@ -1,11 +1,18 @@
 import { createRequestHandler } from "react-router";
 import { checkControlPlaneReady } from "./app/services/control/transport";
+import { validateProductionConfig } from "./app/services/config.server";
 import { winterStorage } from "./app/services/winterStorage.server";
+
+const runtimeMode = process.env.NODE_ENV || "production";
+// Keep the server's default production mode visible to server-only modules;
+// this is intentionally set before the built route module is loaded.
+process.env.NODE_ENV ??= runtimeMode;
+validateProductionConfig(process.env, runtimeMode);
 
 // @ts-expect-error - This file is generated dynamically by Vite during the build process
 const build = (await import('./build/server/index.js')) as ServerBuild;
 
-const handleRequest = createRequestHandler(build, process.env.NODE_ENV || "production");
+const handleRequest = createRequestHandler(build, runtimeMode);
 
 Bun.serve({
   hostname: "0.0.0.0",

@@ -48,7 +48,7 @@ export function BotConfigSection({ userResource, isLoading }: BotConfigSectionPr
             </span>
             <span className="text-[11px] text-white/50">
               {isStaff
-                ? "Iris AuthZ administrator credentials active for global hub management."
+                ? "Control Plane administrator access is active for global hub management."
                 : "Standard rate limits and per-hub manager permissions apply."}
             </span>
           </div>
@@ -67,16 +67,16 @@ export function BotConfigSection({ userResource, isLoading }: BotConfigSectionPr
         <h4 className="text-xs sm:text-sm font-bold text-white">System Runtime & Limits</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex justify-between items-center">
-            <span className="text-white/60">Webhook Fanout:</span>
-            <span className="font-mono text-violet-300 font-bold">Prism Async</span>
+            <span className="text-white/60">Webhook delivery:</span>
+            <span className="font-mono text-violet-300 font-bold">Asynchronous</span>
           </div>
           <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex justify-between items-center">
-            <span className="text-white/60">AuthZ Policy Engine:</span>
-            <span className="font-mono text-emerald-300 font-bold">Iris Go</span>
+            <span className="text-white/60">Authorization:</span>
+            <span className="font-mono text-emerald-300 font-bold">Control Plane</span>
           </div>
           <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex justify-between items-center">
-            <span className="text-white/60">Content Safety Engine:</span>
-            <span className="font-mono text-blue-300 font-bold">Polarizer</span>
+            <span className="text-white/60">Safety records:</span>
+            <span className="font-mono text-blue-300 font-bold">Control Plane</span>
           </div>
           <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex justify-between items-center">
             <span className="text-white/60">Event Bus:</span>

@@ -148,7 +148,7 @@ export default function PrivacyPolicy() {
               <ul>
                 <li><strong>Discord</strong> receives relayed content and identifiers needed to operate the bot and sign you in.</li>
                 <li><strong>OVHcloud</strong> hosts InterChat infrastructure and acts as our processor under a Data Processing Agreement.</li>
-                <li><strong>InterChat service components</strong> process only what their job requires: Prism delivers messages, Iris checks permissions, and Polarizer scores images for safety.</li>
+                <li><strong>InterChat service components</strong> process only what their job requires: dedicated backend services handle message delivery, authorization, and safety scoring.</li>
                 <li><strong>Top.gg</strong> receives or sends Discord identifiers and vote events when you use voting features.</li>
                 <li><strong>Stripe</strong> processes payments and provides us with customer, event, and subscription references; InterChat does not receive full card details.</li>
                 <li><strong>Google Fonts</strong> may receive technical request data, such as your IP address, when your browser loads site fonts.</li>
