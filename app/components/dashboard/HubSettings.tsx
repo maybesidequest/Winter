@@ -137,6 +137,7 @@ export function HubSettings({
       {onDeleteHub && onTransferOwnership && (
         <HubLifecyclePanel
           hubId={hub.metadata.id}
+          hubVersion={hub.version}
           hubName={hub.metadata.name}
           locked={hub.spec.locked}
           isOwner={isOwner}
