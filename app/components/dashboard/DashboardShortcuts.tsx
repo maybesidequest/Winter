@@ -1,18 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function DashboardShortcuts() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [chord, setChord] = useState(false);
+  const [searchMissing, setSearchMissing] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (open) closeRef.current?.focus();
+    if (open) {
+      restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      closeRef.current?.focus();
+    } else {
+      restoreFocusRef.current?.focus();
+      restoreFocusRef.current = null;
+    }
   }, [open]);
 
   useEffect(() => {
     let chordTimer: ReturnType<typeof setTimeout> | undefined;
+    let searchMissingTimer: ReturnType<typeof setTimeout> | undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       const element = event.target instanceof HTMLElement ? event.target : null;
       const isEditing = Boolean(
@@ -28,6 +40,24 @@ export function DashboardShortcuts() {
         setOpen(false);
         return;
       }
+      // Tab is trapped inside the open dialog so focus cannot leak behind it.
+      if (event.key === "Tab" && open) {
+        const container = dialogRef.current;
+        if (!container) return;
+        const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const current = document.activeElement;
+        if (event.shiftKey && current === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && current === last) {
+          event.preventDefault();
+          first.focus();
+        }
+        return;
+      }
       if (isEditing || event.altKey || event.ctrlKey || event.metaKey) return;
 
       if (chord) {
@@ -35,6 +65,7 @@ export function DashboardShortcuts() {
         if (next === "h" || next === "s") {
           event.preventDefault();
           setChord(false);
+          setOpen(false);
           navigate(next === "h" ? "/dashboard/hubs" : "/dashboard/servers");
           return;
         }
@@ -51,6 +82,13 @@ export function DashboardShortcuts() {
         if (search) {
           event.preventDefault();
           search.focus();
+        } else {
+          // Silent keyboard affordances are dead affordances: announce the
+          // no-op so screen readers and sighted users both know.
+          event.preventDefault();
+          setSearchMissing(true);
+          if (searchMissingTimer) clearTimeout(searchMissingTimer);
+          searchMissingTimer = setTimeout(() => setSearchMissing(false), 3_000);
         }
       } else if (event.key === "?") {
         event.preventDefault();
@@ -62,10 +100,15 @@ export function DashboardShortcuts() {
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       if (chordTimer) clearTimeout(chordTimer);
+      if (searchMissingTimer) clearTimeout(searchMissingTimer);
     };
   }, [chord, navigate, open]);
 
-  if (!open) return null;
+  if (!open) {
+    return searchMissing ? (
+      <div role="status" aria-live="polite" className="sr-only">No search field is available on this page.</div>
+    ) : null;
+  }
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
@@ -75,6 +118,7 @@ export function DashboardShortcuts() {
       }}
     >
       <section
+        ref={dialogRef}
         className="w-full max-w-md rounded-2xl border border-white/10 bg-[#181726] p-6 shadow-2xl"
         role="dialog"
         aria-modal="true"
@@ -112,4 +156,3 @@ export function DashboardShortcuts() {
     </div>
   );
 }
-

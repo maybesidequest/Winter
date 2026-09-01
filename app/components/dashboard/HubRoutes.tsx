@@ -132,11 +132,12 @@ export function HubRoutes({
                     </div>
                     <div className="text-xs text-white/50 truncate mt-0.5">
                       {connection.status.channelName ? `#${connection.status.channelName}` : "Channel name unavailable"} ·{" "}
-                      {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"} ·{" "}
+                      <span>{connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"}</span>
+                      {" · "}
                       <span className={connection.status.healthy ? "text-emerald-300/80" : "text-amber-300"}>
                         {connection.status.healthy
                           ? "Observed health: healthy"
-                          : `Observed health: ${connection.status.statusMessage || "needs attention"}`}
+                          : `Observed health: attention needed${connection.status.statusMessage ? ` — ${connection.status.statusMessage}` : ""}`}
                       </span>
                     </div>
                     {connection.status.latestOperationId && <ConnectionOperationNotice operationId={connection.status.latestOperationId} />}
@@ -150,7 +151,8 @@ export function HubRoutes({
                     disabled={!canManage || pending}
                     onClick={() => onToggle(connection)}
                     className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-bold"
-                    title={connection.spec.connected ? "Pause message relay" : "Resume message relay"}
+                    title={!canManage ? "Requires Hub bridge management permission" : connection.spec.connected ? "Pause message relay" : "Resume message relay"}
+                    aria-disabled={!canManage || pending}
                   >
                     {connection.spec.connected ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
                     <span>{connection.spec.connected ? "Pause" : "Resume"}</span>
@@ -168,7 +170,8 @@ export function HubRoutes({
                       type="button"
                       disabled={!canManage || pending}
                       className="dashboard-btn-danger px-3.5 py-1.5 text-xs font-bold"
-                      title="Disconnect bridge"
+                      title={!canManage ? "Requires Hub bridge management permission" : "Disconnect bridge"}
+                      aria-disabled={!canManage || pending}
                     >
                       <StopOutlined />
                       <span>Disconnect</span>

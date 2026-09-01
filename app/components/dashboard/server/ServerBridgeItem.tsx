@@ -38,6 +38,17 @@ export function ServerBridgeItem({
   const isTogglePending = isBridgePending && pendingAction.action === "toggle";
   const isRepairPending = isBridgePending && pendingAction.action === "repair";
   const isDisconnectPending = isBridgePending && pendingAction.action === "disconnect";
+  // Only Discord CDN avatars may be embedded; anything else is dropped so a
+  // crafted hub icon cannot become a tracking pixel or mixed-content source.
+  const safeHubIconUrl = /^https:\/\/cdn\.discordapp\.com\//.test(bridge.hubIconUrl ?? "")
+    ? (bridge.hubIconUrl as string)
+    : null;
+
+  const statusBadge = needsAttention
+    ? { label: "Degraded", dot: "bg-amber-400", classes: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
+    : isPaused
+      ? { label: "Paused", dot: "bg-amber-400", classes: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
+      : { label: "Relay enabled", dot: "bg-emerald-400 animate-pulse", classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" };
 
   const formattedDate = bridge.createdAt
     ? new Date(bridge.createdAt).toLocaleDateString(undefined, {
@@ -59,9 +70,9 @@ export function ServerBridgeItem({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-11 h-11 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-white font-bold font-['Sora'] flex-shrink-0 overflow-hidden shadow-sm">
-              {bridge.hubIconUrl ? (
+              {safeHubIconUrl ? (
                 <img
-                  src={bridge.hubIconUrl}
+                  src={safeHubIconUrl}
                   alt={bridge.hubName}
                   className="w-full h-full object-cover"
                 />
@@ -83,16 +94,10 @@ export function ServerBridgeItem({
           </div>
 
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border flex-shrink-0 ${!isPaused
-              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-              : "bg-amber-500/15 text-amber-300 border-amber-500/30"
-              }`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border flex-shrink-0 ${statusBadge.classes}`}
           >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${!isPaused ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
-                }`}
-            />
-            <span>{!isPaused ? "Relay enabled" : "Paused"}</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot}`} />
+            <span>{statusBadge.label}</span>
           </span>
         </div>
 

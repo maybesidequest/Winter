@@ -84,6 +84,7 @@ export function HubLifecyclePanel({
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [previewKind, setPreviewKind] = useState<"DELETE" | "TRANSFER_OWNERSHIP" | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewRequestInFlight, setPreviewRequestInFlight] = useState(false);
 
   const deletePreviewQuery = useQuery({
     ...orpc.previews.get.queryOptions({ input: { action: "DELETE", resourceType: "HUB", resourceId: hubId, expectedVersion: hubVersion } }),
@@ -100,15 +101,20 @@ export function HubLifecyclePanel({
   const pending = pendingAction !== undefined;
   const recovery = failure ? RECOVERY_COPY[failure.recovery] : undefined;
   const preview = previewKind === "DELETE" ? deletePreviewQuery.data : transferPreviewQuery.data;
-  const previewLoading = deletePreviewQuery.isFetching || transferPreviewQuery.isFetching;
+  const previewTriggerDisabled = pending || previewRequestInFlight;
 
   const requestPreview = async (kind: "DELETE" | "TRANSFER_OWNERSHIP") => {
     setPreviewError(null);
-    const result = kind === "DELETE" ? await deletePreviewQuery.refetch() : await transferPreviewQuery.refetch();
-    if (result.data) {
-      setPreviewKind(kind);
-    } else {
-      setPreviewError("Impact preview is temporarily unavailable. Refresh the Hub and try again.");
+    setPreviewRequestInFlight(true);
+    try {
+      const result = kind === "DELETE" ? await deletePreviewQuery.refetch() : await transferPreviewQuery.refetch();
+      if (result.data) {
+        setPreviewKind(kind);
+      } else {
+        setPreviewError("Impact preview is temporarily unavailable. Refresh the Hub and try again.");
+      }
+    } finally {
+      setPreviewRequestInFlight(false);
     }
   };
 
@@ -212,10 +218,10 @@ export function HubLifecyclePanel({
             <button
               type="button"
               className="dashboard-btn-secondary px-4 py-2 text-xs font-bold text-amber-300"
-              disabled={pending || !transferTarget.trim()}
+              disabled={previewTriggerDisabled || !transferTarget.trim()}
               onClick={() => void requestPreview("TRANSFER_OWNERSHIP")}
             >
-              Transfer Ownership
+              {previewRequestInFlight ? "Preparing preview…" : "Transfer Ownership"}
             </button>
           </div>
         </section>
@@ -227,25 +233,15 @@ export function HubLifecyclePanel({
             <WarningOutlined className="text-red-400" />
             <h3 className="m-0 text-base font-bold text-red-300 font-['Sora']">Danger Zone</h3>
           </div>
-          <label className="text-xs font-bold text-white" htmlFor="delete-hub-confirmation">
-            Type <span className="text-red-300">{hubName}</span> exactly to confirm deletion
-          </label>
-          <input
-            id="delete-hub-confirmation"
-            className="dashboard-input text-xs"
-            autoComplete="off"
-            value={deleteConfirmation}
-            onChange={(event) => setDeleteConfirmation(event.target.value)}
-          />
+          <p className="m-0 text-xs text-white/60">Deleting the Hub removes its rules, staff, and bridge configuration. You will confirm the exact Hub name in the review step.</p>
           <button
             type="button"
             className="dashboard-btn-danger w-fit px-4 py-1.5 text-xs font-bold"
-            disabled={pending || !deleteConfirmed}
+            disabled={previewTriggerDisabled}
             onClick={() => void requestPreview("DELETE")}
           >
-            <DeleteOutlined /> Delete Hub Permanently
+            <DeleteOutlined /> {previewRequestInFlight ? "Preparing preview…" : "Delete Hub Permanently"}
           </button>
-          {previewError && <Alert type="error" showIcon message={previewError} />}
         </section>
       )}
 
@@ -254,9 +250,13 @@ export function HubLifecyclePanel({
         open={previewKind !== null}
         onCancel={() => setPreviewKind(null)}
         onOk={confirmPreview}
-        confirmLoading={previewLoading}
+        confirmLoading={pending}
         okText={previewKind === "DELETE" ? "Confirm permanent deletion" : "Confirm ownership transfer"}
-        okButtonProps={previewKind === "DELETE" ? { danger: true } : undefined}
+        okButtonProps={
+          previewKind === "DELETE"
+            ? { danger: true, disabled: !deleteConfirmed }
+            : undefined
+        }
       >
         {previewError && <Alert type="error" showIcon message={previewError} />}
         {preview ? (
@@ -271,7 +271,19 @@ export function HubLifecyclePanel({
               </ul>
             )}
             {previewKind === "DELETE" && (
-              <p className="m-0 text-xs font-semibold text-red-700">This action cannot be undone. Your exact Hub-name confirmation is still required.</p>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-red-700" htmlFor="delete-hub-confirmation">
+                  Type <span className="text-red-900">{hubName}</span> exactly to enable deletion
+                </label>
+                <input
+                  id="delete-hub-confirmation"
+                  className="w-full rounded-md border border-red-300 px-2 py-1 text-sm"
+                  autoComplete="off"
+                  value={deleteConfirmation}
+                  onChange={(event) => setDeleteConfirmation(event.target.value)}
+                />
+                <p className="m-0 text-xs font-semibold text-red-700">This action cannot be undone.</p>
+              </div>
             )}
           </div>
         ) : <p className="m-0 text-xs">Loading the canonical impact preview…</p>}

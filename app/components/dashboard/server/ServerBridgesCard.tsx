@@ -24,10 +24,16 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
-  const [pendingAction, setPendingAction] = useState<{
-    bridgeId: string;
-    action: "toggle" | "repair" | "disconnect";
-  } | null>(null);
+  // Keyed per bridge so concurrent actions never clear each other's spinner.
+  const [pendingActions, setPendingActions] = useState<Record<string, "toggle" | "repair" | "disconnect">>({});
+  const markPending = (bridgeId: string, action: "toggle" | "repair" | "disconnect") =>
+    setPendingActions((current) => ({ ...current, [bridgeId]: action }));
+  const clearPending = (bridgeId: string) =>
+    setPendingActions((current) => {
+      if (!(bridgeId in current)) return current;
+      const { [bridgeId]: _cleared, ...rest } = current;
+      return rest;
+    });
 
   const actionKeysRef = useRef(new Map<string, string>());
   const keyFor = (action: string, bridgeId: string) => {
@@ -93,7 +99,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   );
 
   const handleToggle = (bridge: ServerBridgeResource, isPaused: boolean) => {
-    setPendingAction({ bridgeId: bridge.id, action: "toggle" });
+    markPending(bridge.id, "toggle");
     toggleMutation.mutate(
       {
         serverId: server.metadata.id,
@@ -103,13 +109,13 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
         idempotencyKey: keyFor("toggle", bridge.id),
       },
       {
-        onSettled: () => setPendingAction(null),
+        onSettled: () => clearPending(bridge.id),
       },
     );
   };
 
   const handleRepair = (bridge: ServerBridgeResource) => {
-    setPendingAction({ bridgeId: bridge.id, action: "repair" });
+    markPending(bridge.id, "repair");
     repairMutation.mutate(
       {
         serverId: server.metadata.id,
@@ -118,13 +124,13 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
         idempotencyKey: keyFor("repair", bridge.id),
       },
       {
-        onSettled: () => setPendingAction(null),
+        onSettled: () => clearPending(bridge.id),
       },
     );
   };
 
   const handleDisconnect = (bridge: ServerBridgeResource) => {
-    setPendingAction({ bridgeId: bridge.id, action: "disconnect" });
+    markPending(bridge.id, "disconnect");
     disconnectMutation.mutate(
       {
         serverId: server.metadata.id,
@@ -133,7 +139,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
         idempotencyKey: keyFor("disconnect", bridge.id),
       },
       {
-        onSettled: () => setPendingAction(null),
+        onSettled: () => clearPending(bridge.id),
       },
     );
   };
@@ -302,7 +308,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
                 server={server}
                 bridge={bridge}
                 channelName={resolvedChannel}
-                pendingAction={pendingAction}
+                pendingAction={pendingActions[bridge.id] ? { bridgeId: bridge.id, action: pendingActions[bridge.id] } : null}
                 onToggle={handleToggle}
                 onRepair={handleRepair}
                 onDisconnect={handleDisconnect}

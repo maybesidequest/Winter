@@ -93,7 +93,7 @@ export default function HubWorkspace({ loaderData }: Route.ComponentProps) {
   // Navigation is not an authorization boundary.  Direct URLs must follow
   // the same production capability snapshot as the sidebar, otherwise a
   // hidden feature can still render (and issue its RPCs) when pasted in.
-  const activeTab = (VISIBLE_HUB_VIEWS.has(requestedTab) && viewEnabled) || import.meta.env.DEV ? requestedTab : "overview";
+  const activeTab = ((VISIBLE_HUB_VIEWS.has(requestedTab) && viewEnabled) || import.meta.env.DEV) ? requestedTab : "overview";
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const patchAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);

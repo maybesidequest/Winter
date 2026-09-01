@@ -30,9 +30,15 @@ export function HubSubjectSelector({
   disabled = false,
   placeholder = "Search by name",
 }: HubSubjectSelectorProps) {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedOption, setSelectedOption] = useState<SelectedOption | undefined>();
-  const normalizedSearch = search.trim();
+  // Debounced so fast typing fires one search RPC instead of one per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+  const normalizedSearch = debouncedSearch;
   const query = useQuery({
     ...orpc.selectors.search.queryOptions({
       input: {
@@ -69,7 +75,8 @@ export function HubSubjectSelector({
 
   useEffect(() => {
     setSelectedOption(undefined);
-    setSearch("");
+    setSearchInput("");
+    setDebouncedSearch("");
   }, [hubId, selectorType]);
 
   const options = (query.data?.options ?? []).map((option) => ({
@@ -102,9 +109,10 @@ export function HubSubjectSelector({
             ? "Type at least 2 characters."
             : "No matching members."
       }
-      onSearch={setSearch}
+      onSearch={setSearchInput}
       onClear={() => {
-        setSearch("");
+        setSearchInput("");
+        setDebouncedSearch("");
         setSelectedOption(undefined);
         onChange("");
       }}
@@ -117,7 +125,10 @@ export function HubSubjectSelector({
         onChange(nextValue ?? "");
       }}
       onDropdownVisibleChange={(open) => {
-        if (!open) setSearch("");
+        if (!open) {
+          setSearchInput("");
+          setDebouncedSearch("");
+        }
       }}
     />
   );
