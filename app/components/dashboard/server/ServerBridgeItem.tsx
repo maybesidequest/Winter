@@ -75,10 +75,7 @@ export function ServerBridgeItem({
               <div className="text-xs text-white/70 mt-0.5 flex items-center gap-1.5 flex-wrap">
                 <span className="text-white/50">Channel:</span>
                 <span className="font-semibold text-sky-300">
-                  #{channelName || `channel-${bridge.channelId}`}
-                </span>
-                <span className="text-[10px] font-mono text-white/40 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06]">
-                  {bridge.channelId}
+                  #{channelName || "Channel name unavailable"}
                 </span>
               </div>
             </div>
@@ -94,7 +91,7 @@ export function ServerBridgeItem({
               className={`w-1.5 h-1.5 rounded-full ${!isPaused ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
                 }`}
             />
-            <span>{!isPaused ? "Live Relay" : "Paused"}</span>
+            <span>{!isPaused ? "Relay enabled" : "Paused"}</span>
           </span>
         </div>
 

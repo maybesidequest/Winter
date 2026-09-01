@@ -81,6 +81,7 @@ export function HubSubjectSelector({
   if (selectedOption && !options.some((option) => option.value === selectedOption.value)) {
     options.unshift(selectedOption);
   }
+  const visibleValue = selectedOption?.value === value ? value : undefined;
 
   return (
     <Select
@@ -88,7 +89,7 @@ export function HubSubjectSelector({
       allowClear
       id={id}
       className="w-full"
-      value={value || undefined}
+      value={visibleValue}
       disabled={disabled}
       filterOption={false}
       options={options}

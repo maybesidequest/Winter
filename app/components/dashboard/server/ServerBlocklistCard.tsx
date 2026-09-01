@@ -44,7 +44,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks }: ServerBlo
         idempotencyKey: addIdempotencyKey.current,
       });
 
-      message.success(`Blocked ${values.targetType} ${values.targetId} successfully.`);
+      message.success(`Blocked ${values.targetType === "user" ? "member" : "Server"} successfully.`);
       setIsAddModalOpen(false);
       form.resetFields();
       addIdempotencyKey.current = crypto.randomUUID();

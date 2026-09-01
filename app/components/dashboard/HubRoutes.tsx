@@ -31,8 +31,7 @@ export function HubRoutes({
   const filtered = connections.filter((conn) => {
     const matchesSearch =
       conn.status.serverName.toLowerCase().includes(search.toLowerCase()) ||
-      (conn.status.channelName && conn.status.channelName.toLowerCase().includes(search.toLowerCase())) ||
-      conn.spec.channelId.includes(search);
+      Boolean(conn.status.channelName?.toLowerCase().includes(search.toLowerCase()));
 
     if (!matchesSearch) return false;
     if (statusFilter === "active") return conn.spec.connected;
@@ -130,7 +129,7 @@ export function HubRoutes({
                       </span>
                     </div>
                     <div className="text-xs text-white/50 truncate mt-0.5">
-                      #{connection.status.channelName || `channel-${connection.spec.channelId}`} ·{" "}
+                      #{connection.status.channelName || "Channel name unavailable"} ·{" "}
                       {connection.spec.connected ? "Relay enabled by configuration" : "Relay paused by manager"}
                     </div>
                   </div>
