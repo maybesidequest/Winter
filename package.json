@@ -12,12 +12,12 @@
     "validate:phase2": "bun run scripts/validate-phase2-matrix.ts",
     "typecheck": "react-router typegen && tsc",
     "check:control-types": "bun run generate:control-types && git diff --exit-code -- app/generated/control/v1",
-    "generate:control-types": "mkdir -p app/generated/control/v1/google/protobuf app/generated/control/v1/interchat/control/v1 && proto-loader-gen-types --keepCase=false --longs=Number --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js -I ../interchat-protobuf -O app/generated/control/v1 ../interchat-protobuf/control/v1/models.proto ../interchat-protobuf/control/v1/hub_service.proto ../interchat-protobuf/control/v1/server_service.proto ../interchat-protobuf/control/v1/connection_service.proto ../interchat-protobuf/control/v1/user_service.proto ../interchat-protobuf/control/v1/moderation_service.proto && node scripts/embed-control-descriptor.mjs"
+    "generate:control-types": "node scripts/generate-control-types.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
+    "@bufbuild/protobuf": "2.14.1",
     "@grpc/grpc-js": "^1.14.4",
-    "@grpc/proto-loader": "^0.8.1",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@orpc/client": "^1.15.0",
     "@orpc/react-query": "^1.15.0",
@@ -38,6 +38,7 @@
     "jose": "^6.2.10",
     "jsonwebtoken": "^9.0.3",
     "lru-cache": "^11.5.2",
+    "nice-grpc": "2.1.12",
     "pg": "^8.23.0",
     "phoenix": "^1.8.13",
     "rc-select": "^14.16.8",
@@ -59,6 +60,7 @@
     "@types/react-cytoscapejs": "^1.2.6",
     "@types/react-dom": "^19.2.5",
     "tailwindcss": "^4.3.3",
+    "ts-proto": "2.7.7",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   },
