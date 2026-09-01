@@ -139,11 +139,11 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   };
 
   const activeCount = useMemo(
-    () => bridges.filter((b) => !b.pausedByBot && b.connected).length,
+    () => bridges.filter((b) => b.connected).length,
     [bridges],
   );
   const pausedCount = useMemo(
-    () => bridges.filter((b) => b.pausedByBot || !b.connected).length,
+    () => bridges.filter((b) => !b.connected).length,
     [bridges],
   );
 
@@ -154,8 +154,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
       const matchesSearch =
         !query ||
         bridge.hubName.toLowerCase().includes(query) ||
-        chName.toLowerCase().includes(query) ||
-        bridge.channelId.includes(query);
+        chName.toLowerCase().includes(query);
 
       if (!matchesSearch) return false;
       const isPaused = bridge.pausedByBot || !bridge.connected;
@@ -213,7 +212,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
               onClick={() => setStatusFilter("active")}
               className={`dashboard-pill-btn ${statusFilter === "active" ? "dashboard-pill-btn--active" : ""}`}
             >
-              Active ({activeCount})
+              Enabled ({activeCount})
             </button>
             <button
               type="button"

@@ -11,7 +11,7 @@ import { getServiceClients, invokeUnary, makeRequestContext } from "./transport"
 export interface ConnectionResource {
   metadata: { id: string; serverId: string; channelId: string; hubId: string; createdAt?: string; updatedAt?: string };
   spec: { connected: boolean; customName?: string };
-  status: { healthy: boolean; statusMessage: string; lastRelayedAt?: string; webhookProvisioned: boolean };
+  status: { healthy: boolean; statusMessage: string; lastRelayedAt?: string; webhookProvisioned: boolean; latestOperationId?: string };
   version: number;
 }
 
@@ -39,6 +39,7 @@ function toResource(connection: ProtoConnection): ConnectionResource {
       statusMessage: connection.status.statusMessage,
       lastRelayedAt: timestamp(connection.status.lastRelayedAt),
       webhookProvisioned: connection.status.webhookProvisioned,
+      latestOperationId: connection.status.latestOperationId || undefined,
     },
     version: connection.version,
   };

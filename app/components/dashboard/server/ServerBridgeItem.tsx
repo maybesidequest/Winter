@@ -32,7 +32,8 @@ export function ServerBridgeItem({
   onRepair,
   onDisconnect,
 }: ServerBridgeItemProps) {
-  const isPaused = bridge.pausedByBot || !bridge.connected;
+  const isPaused = !bridge.connected;
+  const needsAttention = bridge.connected && !bridge.healthy;
   const isBridgePending = pendingAction?.bridgeId === bridge.id;
   const isTogglePending = isBridgePending && pendingAction.action === "toggle";
   const isRepairPending = isBridgePending && pendingAction.action === "repair";
@@ -51,7 +52,7 @@ export function ServerBridgeItem({
       className="p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all duration-150 hover:border-white/15"
       style={{
         ...dashboardGlassCardStyle,
-        borderColor: isPaused ? "rgba(245, 158, 11, 0.3)" : "rgba(255, 255, 255, 0.08)",
+        borderColor: isPaused || needsAttention ? "rgba(245, 158, 11, 0.3)" : "rgba(255, 255, 255, 0.08)",
       }}
     >
       <div className="flex flex-col gap-3">
@@ -94,6 +95,12 @@ export function ServerBridgeItem({
             <span>{!isPaused ? "Relay enabled" : "Paused"}</span>
           </span>
         </div>
+
+        {needsAttention && (
+          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200" role="status">
+            Observed health needs attention{bridge.statusMessage ? `: ${bridge.statusMessage}` : "."}
+          </div>
+        )}
 
         {/* Diagnostic Webhook Warning */}
         {bridge.webhookProvisioned === false && (

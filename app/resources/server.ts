@@ -34,6 +34,9 @@ export type ServerBridgeResource = {
   hubIconUrl: string | null;
   connected: boolean;
   pausedByBot: boolean;
+  healthy: boolean;
+  statusMessage: string | null;
+  latestOperationId: string | null;
   pauseReason: string | null;
   createdAt: string | null;
   version: number;
