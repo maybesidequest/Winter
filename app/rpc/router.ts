@@ -2,6 +2,7 @@ import { base } from "./context";
 import { hubRouter } from "./routers/hub";
 import { hubDiscoveryRouter } from "./routers/hubDiscovery";
 import { moderationRouter } from "./routers/moderation";
+import { operationsRouter } from "./routers/operations";
 import { preferencesRouter } from "./routers/preferences";
 import { previewsRouter } from "./routers/previews";
 import { presentationRouter } from "./routers/presentation";
@@ -14,6 +15,7 @@ export const appRouter = base.router({
   hub: hubRouter,
   hubDiscovery: hubDiscoveryRouter,
   moderation: moderationRouter,
+  operations: operationsRouter,
   preferences: preferencesRouter,
   previews: previewsRouter,
   presentation: presentationRouter,
