@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
 import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
+import { HubSubjectSelector } from "./HubSubjectSelector";
 
 const { Text } = Typography;
 
@@ -131,7 +132,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
   };
 
   const handleAssign = () => {
-    if (!userId.trim()) return message.error("User ID is required.");
+    if (!userId.trim()) return message.error("Choose a named member.");
     const found = roles.find((item) => item.spec.name === selectedRole);
     if (!found) return message.error("Select a valid Hub role.");
     assignMutation.mutate({
@@ -355,7 +356,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                 title={
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
-                      User ID: {item.metadata.userId}
+                      Hub staff member
                     </Text>
                     <Tag color={item.spec.role === "OWNER" ? "gold" : item.spec.role === "MANAGER" ? "purple" : "cyan"}>
                       {item.spec.role}
@@ -441,15 +442,15 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Discord User ID</label>
-            <input
-              type="text"
+            <label className="text-xs font-bold text-white/90" htmlFor="hub-staff-subject">Member</label>
+            <HubSubjectSelector
+              id="hub-staff-subject"
+              hubId={hub.metadata.id}
               value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="e.g. 123456789012345678"
-              className="dashboard-input text-xs"
+              onChange={setUserId}
+              placeholder="Search by Discord name"
             />
-            <span className="text-[11px] text-white/60">Enter the member's numeric Discord snowflake ID.</span>
+            <span id="hub-staff-subject-help" className="text-[11px] text-white/60">Choose a named member from this Hub.</span>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-white/90">Role</label>

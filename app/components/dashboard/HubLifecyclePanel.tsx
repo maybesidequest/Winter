@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { dashboardGlassCardStyle, DepthToggle } from "~/components/dashboard/shared";
+import { HubSubjectSelector } from "~/components/dashboard/HubSubjectSelector";
 import {
   isExactHubNameConfirmation,
   type LifecycleAction,
@@ -20,6 +21,7 @@ export interface LifecycleFailure {
 }
 
 interface HubLifecyclePanelProps {
+  hubId: string;
   hubName: string;
   locked: boolean;
   isOwner: boolean;
@@ -58,6 +60,7 @@ const RECOVERY_COPY: Record<LifecycleRecovery, { title: string; hint: string }> 
 };
 
 export function HubLifecyclePanel({
+  hubId,
   hubName,
   locked,
   isOwner,
@@ -143,11 +146,14 @@ export function HubLifecyclePanel({
           </div>
           <p className="m-0 text-xs text-white/60">Transfer primary ownership to another Discord user. This cannot be undone.</p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              className="dashboard-input flex-1 text-xs"
+            <label className="sr-only" htmlFor="hub-transfer-subject">New owner</label>
+            <HubSubjectSelector
+              id="hub-transfer-subject"
+              hubId={hubId}
               value={transferTarget}
-              onChange={(event) => setTransferTarget(event.target.value)}
-              placeholder="Target Discord User ID"
+              onChange={setTransferTarget}
+              placeholder="Search by Discord name"
+              disabled={pending}
             />
             <button
               type="button"
