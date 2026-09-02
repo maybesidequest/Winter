@@ -6,6 +6,10 @@ import { CreateHubWizard } from "~/components/CreateHubWizard";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpc } from "~/lib/orpc";
+import {
+  HUB_CREATION_UNAVAILABLE_MESSAGE,
+  canCreateHub,
+} from "~/services/hubCreationAvailability";
 
 export default function HubsPage() {
   const { capabilities = {} } = useOutletContext<{ capabilities?: Record<string, boolean> }>();
@@ -13,6 +17,7 @@ export default function HubsPage() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const hubCreationEnabled = canCreateHub(capabilities);
   const { data: hubs = [], isLoading, isError } = useQuery({
     ...orpc.hub.getUserHubs.queryOptions({ staleTime: 60_000 }),
     enabled: capabilities.HUB_LIST || import.meta.env.DEV,
@@ -63,7 +68,7 @@ export default function HubsPage() {
         eyebrow="Places"
         title="Hubs"
         description="Persistent spaces where connected Discord communities share conversation, rules, and a moderation team."
-        actions={(
+        actions={hubCreationEnabled ? (
           <button
             className="dashboard-btn-primary px-4 py-2 text-xs font-bold"
             type="button"
@@ -72,13 +77,22 @@ export default function HubsPage() {
             <PlusOutlined />
             <span>Create Hub</span>
           </button>
-        )}
+        ) : undefined}
       />
 
       {isError && (
         <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200 text-sm flex items-center gap-3">
           <ExclamationCircleOutlined className="text-red-400 text-base flex-shrink-0" />
           <span>Your Hub access could not be verified. No permissions have been changed.</span>
+        </div>
+      )}
+
+      {!hubCreationEnabled && (
+        <div
+          className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-100 text-sm"
+          role="status"
+        >
+          {HUB_CREATION_UNAVAILABLE_MESSAGE}
         </div>
       )}
 
