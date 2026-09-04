@@ -1,0 +1,44 @@
+name: Winter Quality Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Checkout canonical protobuf contracts
+        uses: actions/checkout@v7
+        with:
+          repository: maybesidequest/interchat-protobuf
+          token: ${{ secrets.INTERCHAT_PROTOBUF_READ_TOKEN }}
+          path: interchat-protobuf
+          ref: main
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify generated Control Plane client
+        run: bun run check:control-types
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun test
+
+      - name: Validate Phase 2/3 matrices and boundaries
+        run: bun run validate:phase3
