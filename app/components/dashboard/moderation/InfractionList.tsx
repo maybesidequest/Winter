@@ -1,6 +1,6 @@
 import { Popconfirm } from "antd";
 import { useState } from "react";
-import type { Infraction } from "~/services/control/moderation";
+import type { Infraction } from "~/services/control/moderation.shared";
 
 function label(value: string) { return value.replace(/^(INFRACTION_LIFECYCLE_STATE_|SANCTION_ENFORCEMENT_STATUS_|SANCTION_TYPE_)/, "").replaceAll("_", " ").toLowerCase(); }
 function when(value: string | null) { return value ? new Date(value).toLocaleString() : "Not observed"; }

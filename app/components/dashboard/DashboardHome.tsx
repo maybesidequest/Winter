@@ -1,66 +1,75 @@
-import { ArrowRightOutlined, CloudServerOutlined, ClusterOutlined } from "@ant-design/icons";
+import { LinkOutlined } from "@ant-design/icons";
 import { Link, useOutletContext } from "react-router";
 import { PageHeader } from "./PageHeader";
-import type { ServerResource } from "~/resources/server";
+import { ChatActivityCard } from "./home/ChatActivityCard";
+import { ConnectionStatusCard } from "./home/ConnectionStatusCard";
+import { GettingStartedCard } from "./home/GettingStartedCard";
+import { QuickActionRail } from "./home/QuickActionRail";
 import type { HubResource } from "~/resources/hub";
+import type { ServerResource } from "~/resources/server";
+
+type DashboardUser = {
+  id: string;
+  username: string;
+  globalName?: string | null;
+  avatar?: string | null;
+};
 
 type DashboardContext = {
+  user?: DashboardUser;
   servers?: ServerResource[];
   hubs?: HubResource[];
   capabilities?: Record<string, boolean>;
+  isLoading?: boolean;
 };
 
 export function DashboardHome() {
   const context = useOutletContext<DashboardContext>();
+  const user = context?.user;
   const servers = context?.servers ?? [];
   const hubs = context?.hubs ?? [];
-  const activityEnabled = context?.capabilities?.USER_ACTIVITY ?? import.meta.env.DEV;
+  const capabilities = context?.capabilities ?? {};
+
+  const username = user?.globalName || user?.username;
+  const greeting = username ? `Hey, ${username}` : "Hey there";
+
+  const totalConnections = hubs.reduce(
+    (sum, hub) => sum + (hub.status?.connectionCount || 0),
+    0
+  );
+
+  const isBrandNew = servers.length === 0 && hubs.length === 0;
 
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <PageHeader
         eyebrow="Overview"
-        title="Your InterChat workspace"
-        description="Manage the Hubs and Discord servers you have access to."
-        actions={import.meta.env.DEV ? (
+        title={greeting}
+        description="Here's what's happening across your connected Discord servers and hubs."
+        actions={
           <Link
-            to="/dashboard/browse"
-            className="dashboard-btn-secondary !min-h-[34px] !px-3.5 !py-1.5 !text-xs !font-bold"
+            to="/dashboard/servers"
+            className="dashboard-btn-primary !min-h-[34px] !px-3.5 !py-1.5 !text-xs !font-bold flex items-center gap-1.5"
           >
-            <span>Explore Hubs</span>
-            <ArrowRightOutlined className="text-[10px]" />
+            <LinkOutlined className="text-xs" />
+            <span>Link Channel</span>
           </Link>
-        ) : undefined}
+        }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Link
-          to="/dashboard/hubs"
-          className="dashboard-card p-5 rounded-2xl border border-white/[0.08] hover:border-violet-400/40 transition-colors"
-        >
-          <ClusterOutlined className="text-xl text-violet-400" />
-          <p className="mt-4 text-xs uppercase tracking-wider text-white/45">Hubs you manage</p>
-          <p className="mt-1 text-3xl font-bold text-white">{hubs.length}</p>
-        </Link>
-        <Link
-          to="/dashboard/servers"
-          className="dashboard-card p-5 rounded-2xl border border-white/[0.08] hover:border-sky-400/40 transition-colors"
-        >
-          <CloudServerOutlined className="text-xl text-sky-400" />
-          <p className="mt-4 text-xs uppercase tracking-wider text-white/45">Servers you manage</p>
-          <p className="mt-1 text-3xl font-bold text-white">{servers.length}</p>
-        </Link>
-      </div>
+      <QuickActionRail capabilities={capabilities} />
 
-      {activityEnabled && <section className="dashboard-card p-6 rounded-2xl border border-white/[0.08]">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-bold text-white">Activity</h2>
-            <p className="mt-2 text-sm text-white/55">Review your messages, streaks, calls, and top Hubs.</p>
-          </div>
-          <Link to="/dashboard/activity" className="dashboard-btn-secondary px-3 py-1.5 text-xs font-bold">View activity</Link>
-        </div>
-      </section>}
+      <ConnectionStatusCard hubs={hubs} servers={servers} />
+
+      {isBrandNew || totalConnections === 0 ? (
+        <GettingStartedCard
+          hasServers={servers.length > 0}
+          hasHubs={hubs.length > 0}
+          hasConnections={totalConnections > 0}
+        />
+      ) : null}
+
+      <ChatActivityCard capabilities={capabilities} />
     </div>
   );
 }

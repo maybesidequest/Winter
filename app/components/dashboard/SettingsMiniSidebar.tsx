@@ -65,7 +65,7 @@ export function SettingsMiniSidebar({
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-white/60">
+                  <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/10 text-white/60">
                     {item.badge}
                   </span>
                 )}

@@ -43,10 +43,10 @@ export function UserBar({ user, onOpenSettings }: UserBarProps) {
         </div>
 
         <div className="min-w-0 flex flex-col justify-center">
-          <span className="text-[13px] font-bold text-white truncate leading-tight font-['Sora'] group-hover:text-violet-300 transition-colors">
+          <span className="text-sm font-bold text-white truncate leading-tight font-['Sora'] group-hover:text-violet-300 transition-colors">
             {username}
           </span>
-          <span className="text-[11px] text-white/50 truncate leading-tight mt-0.5">
+          <span className="text-xs text-white/50 truncate leading-tight mt-0.5">
             Signed in with Discord
           </span>
         </div>

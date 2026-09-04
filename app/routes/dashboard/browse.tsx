@@ -204,7 +204,7 @@ export default function BrowseRoute() {
             onClick={() => updateParams({ page: String(page - 1) })}
             className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
           >
-            <LeftOutlined className="text-[10px]" />
+            <LeftOutlined className="text-xs" />
             <span>Previous</span>
           </button>
           <span className="text-xs text-white/60 font-medium">
@@ -217,7 +217,7 @@ export default function BrowseRoute() {
             className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
           >
             <span>Next</span>
-            <RightOutlined className="text-[10px]" />
+            <RightOutlined className="text-xs" />
           </button>
         </div>
       )}

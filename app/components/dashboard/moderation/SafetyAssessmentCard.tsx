@@ -1,4 +1,4 @@
-import type { SafetyAssessment } from "~/services/control/moderation";
+import type { SafetyAssessment } from "~/services/control/moderation.shared";
 
 export type SafetyAssessmentState = "idle" | "loading" | "ready" | "error";
 

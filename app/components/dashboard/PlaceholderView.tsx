@@ -33,7 +33,7 @@ export function PlaceholderView({
             to={backTo}
             className="dashboard-btn-secondary px-4 py-2.5 text-xs font-bold"
           >
-            <ArrowLeftOutlined className="text-[10px]" />
+            <ArrowLeftOutlined className="text-xs" />
             <span>{backLabel}</span>
           </Link>
         }
@@ -51,7 +51,7 @@ export function PlaceholderView({
 
         <div className="relative z-10 flex flex-col items-center gap-4">
           {iconNode && (
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-1 text-violet-400">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl mb-1 text-[#8175ee]">
               {iconNode}
             </div>
           )}

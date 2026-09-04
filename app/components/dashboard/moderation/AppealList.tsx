@@ -1,7 +1,125 @@
-import type { Appeal } from "~/services/control/moderation";
-function label(value: string) { return value.replace(/^APPEAL_STATUS_/, "").replaceAll("_", " ").toLowerCase(); }
-function when(value: string | null) { return value ? new Date(value).toLocaleString() : "Not reviewed"; }
-export function AppealList({ appeals, onApprove, onReject }: { appeals: Appeal[]; onApprove?: (appeal: Appeal) => void; onReject?: (appeal: Appeal) => void }) {
-  if (appeals.length === 0) return <p className="m-0 text-xs text-white/60">No matching appeals.</p>;
-  return <div className="divide-y divide-white/[0.06]">{appeals.map((appeal) => <article key={appeal.id} className="flex flex-col gap-2 py-3 text-xs"><div className="flex flex-wrap items-center justify-between gap-2"><strong className="capitalize text-white">{label(appeal.appealStatus)}</strong></div><p className="m-0 text-white/70">{appeal.reason}</p><div className="flex flex-wrap gap-x-4 gap-y-1 text-white/50"><span>Reviewed: {when(appeal.reviewedAt)}</span>{appeal.infraction && <span>Sanction lifecycle: {appeal.infraction.lifecycleState.replace("INFRACTION_LIFECYCLE_STATE_", "").toLowerCase()}</span>}</div>{appeal.appealStatus === "APPEAL_STATUS_PENDING" && (onApprove || onReject) && <div className="flex gap-2">{onApprove && <button type="button" className="dashboard-btn-primary px-3 py-1 text-xs" onClick={() => onApprove(appeal)}>Approve</button>}{onReject && <button type="button" className="dashboard-btn-secondary px-3 py-1 text-xs" onClick={() => onReject(appeal)}>Reject</button>}</div>}</article>)}</div>;
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
+import type { Appeal } from "~/services/control/moderation.shared";
+
+function formatStatus(status: string) {
+  return status.replace(/^APPEAL_STATUS_/, "").replaceAll("_", " ").toLowerCase();
+}
+
+function formatDate(timestamp: string | null) {
+  if (!timestamp) return "Not reviewed";
+  return new Date(timestamp).toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+interface AppealListProps {
+  appeals: Appeal[];
+  onOpenDecision?: (appeal: Appeal, kind: "approve" | "reject") => void;
+}
+
+export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
+  if (appeals.length === 0) {
+    return (
+      <div className="py-6 text-center rounded-xl bg-white/[0.02] border border-white/[0.06]">
+        <p className="m-0 text-xs text-white/50">No pending appeals for this Hub.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col divide-y divide-white/[0.06]">
+      {appeals.map((appeal) => {
+        const isPending = appeal.appealStatus === "APPEAL_STATUS_PENDING";
+        const sanctionType = appeal.infraction?.type?.replace("SANCTION_TYPE_", "") || "SANCTION";
+
+        return (
+          <article
+            key={appeal.id}
+            className="flex flex-col gap-2.5 py-3.5 text-xs first:pt-1 last:pb-1"
+          >
+            {/* Header / Badges */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border capitalize ${
+                    isPending
+                      ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                      : appeal.appealStatus === "APPEAL_STATUS_APPROVED"
+                        ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                        : "bg-red-500/15 text-red-300 border-red-500/30"
+                  }`}
+                >
+                  {formatStatus(appeal.appealStatus)}
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/5 text-white/60 border border-white/10">
+                  {sanctionType}
+                </span>
+                <span className="text-white/60 font-mono text-xs">
+                  User: {appeal.userId}
+                </span>
+              </div>
+
+              <span className="text-white/40 text-xs">
+                {appeal.createdAt ? formatDate(appeal.createdAt) : null}
+              </span>
+            </div>
+
+            {/* Appeal Reason Statement */}
+            <div className="p-2.5 rounded-lg bg-black/30 border border-white/[0.06]">
+              <p className="m-0 text-white/90 leading-relaxed whitespace-pre-wrap">
+                "{appeal.reason}"
+              </p>
+            </div>
+
+            {/* Metadata Footer & Review Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-white/40 text-xs">
+                {appeal.reviewedAt && (
+                  <span>Reviewed: {formatDate(appeal.reviewedAt)}</span>
+                )}
+                {appeal.infraction && (
+                  <span>
+                    State:{" "}
+                    {appeal.infraction.lifecycleState
+                      .replace("INFRACTION_LIFECYCLE_STATE_", "")
+                      .toLowerCase()}
+                  </span>
+                )}
+                {appeal.resolutionReason && (
+                  <span className="text-white/60 italic" title={appeal.resolutionReason}>
+                    Resolution: "{appeal.resolutionReason}"
+                  </span>
+                )}
+              </div>
+
+              {isPending && onOpenDecision && (
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onOpenDecision(appeal, "approve")}
+                    className="dashboard-btn-primary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+                  >
+                    <CheckCircleOutlined className="text-xs" />
+                    <span>Approve…</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onOpenDecision(appeal, "reject")}
+                    className="dashboard-btn-secondary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+                  >
+                    <CloseCircleOutlined className="text-xs" />
+                    <span>Reject…</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
 }

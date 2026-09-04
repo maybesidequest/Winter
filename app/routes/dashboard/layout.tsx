@@ -2,8 +2,9 @@ import { CloseOutlined, MenuOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigProvider, theme } from "antd";
 import { useEffect, useState } from "react";
-import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router";
+import { Outlet, data, useLoaderData, useLocation, useNavigate } from "react-router";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
+import { DashboardMobileNav } from "~/components/dashboard/DashboardMobileNav";
 import { DashboardShortcuts } from "~/components/dashboard/DashboardShortcuts";
 import { IconRail } from "~/components/dashboard/IconRail";
 import { MiddleSidebar } from "~/components/dashboard/MiddleSidebar";
@@ -14,10 +15,12 @@ import { requireUser } from "~/services/auth.server";
 import { CONTROL_CAPABILITIES, isCapabilityEnabled } from "~/services/capabilities.server";
 import "~/styles/dashboard.css";
 import { hubService } from "~/services/hub.server";
+import { ensureCsrfSession } from "~/services/csrf.server";
 import type { Route } from "./+types/layout";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await requireUser(request);
+  const { headers } = await ensureCsrfSession(request);
   const capabilities = Object.fromEntries(
     Object.entries(CONTROL_CAPABILITIES).map(([name]) => [name, isCapabilityEnabled(name as keyof typeof CONTROL_CAPABILITIES)]),
   );
@@ -28,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     // not mistake a transient outage for having no Hubs.
     initialHubs = await hubService.getUserHubs(user.id);
   }
-  return { user, capabilities, initialHubs };
+  return data({ user, capabilities, initialHubs }, { headers });
 }
 
 export function shouldRevalidate() {
@@ -106,25 +109,21 @@ export default function DashboardLayout() {
       }}
     >
       <div className="min-h-screen bg-[#0b0c14] text-white flex flex-col font-['Inter'] relative selection:bg-violet-500/40 selection:text-white">
-        {/* Mobile Top Navigation Bar */}
-        <header className="md:hidden sticky top-0 z-40 h-14 bg-[#13141f]/95 backdrop-blur-md border-b border-white/[0.08] px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/images/interchat.png" alt="InterChat Logo" className="w-6 h-6 rounded-md object-contain" />
-            <span className="text-[15.5px] font-['Sora'] font-extrabold tracking-wide text-white">InterChat</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-600/30 text-violet-300 font-semibold border border-violet-500/30">
-              {instanceType === "hubs" ? "Hubs" : "Servers"}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white cursor-pointer"
-            aria-label="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
-          </button>
-        </header>
+        {/* Mobile Navigation Header & Slide-Over Drawer */}
+        <DashboardMobileNav
+          instanceType={instanceType}
+          mobileMenuOpen={mobileMenuOpen}
+          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onCloseMobileMenu={() => setMobileMenuOpen(false)}
+          servers={servers}
+          hubs={hubs}
+          isLoading={isLoading}
+          user={user}
+          onToggleInstanceType={handleToggleInstanceType}
+          onOpenCreateHub={() => setIsCreateHubOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          capabilities={capabilities}
+        />
 
         {/* Desktop Persistent Left Zones (Rail + Middle Sidebar) */}
         <div className="hidden md:flex">
@@ -147,48 +146,6 @@ export default function DashboardLayout() {
             capabilities={capabilities}
           />
         </div>
-
-        {/* Mobile Slide-Over Drawer */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex">
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-
-            {/* Drawer Panel */}
-            <div className="relative z-10 flex h-full max-w-[320px] w-full shadow-2xl animate-slideRight">
-              <IconRail
-                instanceType={instanceType}
-                servers={servers}
-                hubs={hubs}
-                isLoading={isLoading}
-                onOpenCreate={() => {
-                  setMobileMenuOpen(false);
-                  setIsCreateHubOpen(true);
-                }}
-                capabilities={capabilities}
-              />
-              <div className="flex-1 bg-[#13141f]">
-                <MiddleSidebar
-                  instanceType={instanceType}
-                  servers={servers}
-                  hubs={hubs}
-                  isLoading={isLoading}
-                  user={user}
-                  onToggleInstanceType={handleToggleInstanceType}
-                  onOpenSettings={() => {
-                    setMobileMenuOpen(false);
-                    setIsSettingsOpen(true);
-                  }}
-                  onNavigate={() => setMobileMenuOpen(false)}
-                  capabilities={capabilities}
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Main Content Area (Zone C: Routed Outlet) */}
         <main

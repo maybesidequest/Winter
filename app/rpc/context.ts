@@ -41,15 +41,32 @@ function resourceIdFromInput(input: unknown): string | undefined {
   return undefined;
 }
 
+function isMutationRequest(path: readonly (string | number)[], input: unknown, method: string): boolean {
+  if (["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase())) {
+    return false;
+  }
+  if (path.length > 0) {
+    return rateLimitPolicyForPath(path).name === "mutations";
+  }
+  if (input && typeof input === "object") {
+    const record = input as Record<string, unknown>;
+    if ("idempotencyKey" in record || "expectedVersion" in record || "reason" in record) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export const protectedBase = base.use(async ({ context, next, path }, input: unknown) => {
   try {
     const user = await requireUser(context.request);
     await enforceUserRateLimit(user.id, path);
     const resourceId = resourceIdFromInput(input);
-    if (resourceId && rateLimitPolicyForPath(path).name === "mutations") {
+    const isMutation = isMutationRequest(path, input, context.request.method);
+    if (resourceId && isMutation) {
       await enforceUserResourceRateLimit(user.id, resourceId);
     }
-    if (!["GET", "HEAD", "OPTIONS"].includes(context.request.method.toUpperCase())) {
+    if (isMutation) {
       const session = await sessionStorage.getSession(context.request.headers.get("cookie"));
       await requireCsrf(context.request, session.get("csrfToken"));
     }

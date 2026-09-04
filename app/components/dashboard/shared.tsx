@@ -23,7 +23,7 @@ const dashboardGlassCardStyles: NonNullable<CardProps["styles"]> = {
 
 export function DashboardSectionTitle({ children }: { children: ReactNode }) {
   return (
-    <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+    <Text style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "0.75rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
       {children}
     </Text>
   );
@@ -58,14 +58,14 @@ export function DashboardDangerCard({ style, styles, ...props }: CardProps) {
       variant="borderless"
       style={{
         ...dashboardGlassCardStyle,
-        background: "rgba(245, 34, 45, 0.05)",
-        border: "1px solid rgba(245, 34, 45, 0.2)",
-        boxShadow: "0 3px 0 0 rgba(245, 34, 45, 0.2), 0 8px 24px -4px rgba(0, 0, 0, 0.55)",
+        background: "rgba(239, 68, 68, 0.05)",
+        border: "1px solid rgba(239, 68, 68, 0.2)",
+        boxShadow: "0 3px 0 0 rgba(239, 68, 68, 0.2), 0 8px 24px -4px rgba(0, 0, 0, 0.55)",
         ...style,
       }}
       styles={{
         ...dashboardGlassCardStyles,
-        header: { borderBottom: "1px solid rgba(245, 34, 45, 0.2)", cursor: "grab" },
+        header: { borderBottom: "1px solid rgba(239, 68, 68, 0.2)", cursor: "grab" },
         ...styles,
       }}
       {...props}

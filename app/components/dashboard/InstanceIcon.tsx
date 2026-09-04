@@ -49,8 +49,8 @@ export function InstanceIcon({
         mouseEnterDelay={0.05}
         title={
           <div className="flex flex-col py-0.5">
-            <span className="font-bold text-white text-[13px] font-['Sora'] leading-tight">{name}</span>
-            <span className="text-[11px] font-normal text-white/60 leading-tight mt-0.5">
+            <span className="font-bold text-white text-sm font-['Sora'] leading-tight">{name}</span>
+            <span className="text-xs font-normal text-white/60 leading-tight mt-0.5">
               {type === "hub" ? "Hub" : "Discord Server"}
             </span>
           </div>

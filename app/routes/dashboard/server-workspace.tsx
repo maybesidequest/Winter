@@ -278,7 +278,7 @@ export default function ServerWorkspace() {
               <span className={isActive ? "text-violet-300" : "text-white/50"}>{tab.icon}</span>
               <span>{tab.label}</span>
               {typeof tab.count === "number" && (
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-violet-500/30 text-violet-200 border border-violet-400/30" : "bg-white/10 text-white/60"
+                <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-violet-500/30 text-violet-200 border border-violet-400/30" : "bg-white/10 text-white/60"
                   }`}>
                   {tab.count}
                 </span>

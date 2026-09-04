@@ -1,4 +1,4 @@
-import type { ModerationFailure } from "~/services/control/moderation";
+import type { ModerationFailure } from "~/services/control/moderation.shared";
 
 const COPY: Record<ModerationFailure["kind"], { title: string; detail: string }> = {
   STALE: { title: "Record changed", detail: "Refresh the record before submitting another decision." },

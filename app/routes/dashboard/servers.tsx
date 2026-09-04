@@ -158,7 +158,7 @@ export default function ServersPage() {
                       className="dashboard-btn-secondary px-4 py-1.5 text-xs font-bold"
                     >
                       <span>Manage</span>
-                      <ArrowRightOutlined className="text-[10px]" />
+                      <ArrowRightOutlined className="text-xs" />
                     </Link>
                   </div>
                 </div>

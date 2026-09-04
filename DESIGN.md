@@ -22,6 +22,16 @@ colors:
   text-muted: "#9697a3"
   border-subtle: "rgba(255, 255, 255, 0.08)"
 typography:
+  scale:
+    xs: "12px"
+    sm: "14px"
+    base: "16px"
+    md: "17px"
+    lg: "18px"
+    xl: "20px"
+    "2xl": "24px"
+    "3xl": "30px"
+    "4xl": "36px"
   display:
     fontFamily: "Sora, Inter, sans-serif"
     fontSize: "clamp(4.1rem, 5.25vw, 5.5rem)"
@@ -215,11 +225,13 @@ The palette moves between a near-black operations environment and a warm paper A
 - **Display** (Sora 600, 4.1rem–5.5rem, line-height 0.98, letter-spacing -0.065em): Exclusive to public hero statements; the tight rhythm creates the Atlas masthead effect.
 - **Headline** (Sora 600, 2.25rem–5rem, line-height 1.02, letter-spacing -0.055em): Large public and reading-surface section statements with deliberately short line lengths.
 - **Title** (Sora 800, 30px–36px, line-height 1.2): Dashboard page and resource titles with unmistakable operational hierarchy.
-- **Body** (Inter 400, 12px–16px, line-height 1.5): Product copy, controls, rows, and descriptions; explanatory text stays above metadata scale.
+- **Body** (Inter 400, 14px–16px, line-height 1.5): Product copy, controls, rows, and descriptions; 14px is the strict floor for body and card copy.
 - **Body Editorial** (Inter 400, 17px, line-height 1.6): Public and long-form copy constrained to roughly 65–75 characters per line.
-- **Label** (Inter 700, 12px, letter-spacing 0.08em): Compact controls, navigation metadata, eyebrows, and statuses; uppercase is limited to short categorical text.
+- **Label** (Inter 700, 12px, letter-spacing 0.08em): Compact controls, navigation metadata, eyebrows, timestamps, and statuses; 12px is the strict typographic floor for badges and labels.
 
 ### Named Rules
+
+**The Typographic Floor Rule.** Micro-labels, badges, stamps, and metadata stop at a strict floor of 12px (0.75rem). Card descriptions, body copy, and interactive content stop at a floor of 14px (0.875rem). Subatomic fractional font sizes below 12px are prohibited.
 
 **The Two-Voice Rule.** Sora names places and decisions; Inter explains, labels, and operates them.
 
