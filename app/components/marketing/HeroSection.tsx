@@ -38,15 +38,12 @@ export function HeroSection() {
 
           <div className="hero-neighbourhood hero-neighbourhood--one">
             <AtlasPin label="Pixel Pier" tone="sky" />
-            <div className="atlas-buildings" aria-hidden="true"><i /><i /><i /></div>
           </div>
           <div className="hero-neighbourhood hero-neighbourhood--two">
             <AtlasPin label="Garden Guild" tone="violet" />
-            <div className="atlas-buildings atlas-buildings--warm" aria-hidden="true"><i /><i /><i /></div>
           </div>
           <div className="hero-neighbourhood hero-neighbourhood--three">
             <AtlasPin label="Night Café" tone="coral" />
-            <div className="atlas-buildings atlas-buildings--small" aria-hidden="true"><i /><i /></div>
           </div>
 
           <div className="hero-message hero-message--one">

@@ -4,6 +4,7 @@ import { Navigate, useOutletContext, useSearchParams } from "react-router";
 import { ActivityMetricsGrid } from "~/components/dashboard/activity/ActivityMetricsGrid";
 import { ActivityPeriodBar } from "~/components/dashboard/activity/ActivityPeriodBar";
 import { TopHubsCard } from "~/components/dashboard/activity/TopHubsCard";
+import { OperationsPanel } from "~/components/dashboard/operations/OperationsPanel";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { orpc } from "~/lib/orpc";
 
@@ -53,6 +54,14 @@ export default function DashboardActivity() {
         title="Your Activity"
         description="A clear view of your messages, streaks, and participation across InterChat."
       />
+
+      <section aria-label="Durable operations" className="flex flex-col gap-4">
+        <div className="flex items-baseline justify-between gap-4 flex-wrap">
+          <h2 className="text-base font-bold text-white font-['Sora'] m-0">Operations</h2>
+          <p className="text-xs text-white/45 m-0">Background work on the Control Plane, with live status and recovery.</p>
+        </div>
+        <OperationsPanel />
+      </section>
 
       <ActivityPeriodBar
         year={year}

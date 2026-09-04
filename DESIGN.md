@@ -7,19 +7,31 @@ colors:
   night-plum: "#19172b"
   elevated-plum: "#181726"
   selected-plum: "#211f35"
+  night-elevated: "#222038"
+  night-surface: "#242238"
   atlas-ink: "#11121b"
   atlas-paper: "#f4f0e8"
   inner-paper: "#fffdf8"
   deep-violet: "#5b4ccb"
   signal-violet: "#8175ee"
+  violet-hover: "#6959dc"
   command-lavender: "#c4b5fd"
   command-lavender-face: "#cdc2f8"
   route-sky: "#8fd3ff"
+  atlas-sky-dark: "#2a7198"
   safety-sage: "#cfe8d4"
+  safety-sage-dark: "#477353"
+  status-live: "#7ed493"
   alert-coral: "#ff8c73"
+  coral-light: "#ffac99"
+  atlas-coral-dark: "#b44c3d"
   danger-red: "#ef4444"
   text-warm: "#f7f5ef"
   text-muted: "#9697a3"
+  paper-text-secondary: "#4b4952"
+  paper-text-tertiary: "#56545d"
+  paper-text-muted: "#65636b"
+  paper-line: "#e5dfd5"
   border-subtle: "rgba(255, 255, 255, 0.08)"
 typography:
   scale:
@@ -69,6 +81,7 @@ typography:
     lineHeight: 1.2
     letterSpacing: "0.08em"
 rounded:
+  sm: "4px"
   compact: "8px"
   control: "10px"
   inner: "12px"
@@ -214,8 +227,8 @@ The palette moves between a near-black operations environment and a warm paper A
 
 ## Typography
 
-**Display Font:** Sora (with Inter and sans-serif fallback)  
-**Body Font:** Inter (with system sans-serif fallback)  
+**Display Font:** Sora (with Inter and sans-serif fallback)
+**Body Font:** Inter (with system sans-serif fallback)
 **Label Font:** Inter (with system sans-serif fallback)
 
 **Character:** Sora gives map titles and resource headings a compact geometric authority. Inter carries dense configuration, metadata, and explanations without drawing attention away from the task.

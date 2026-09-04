@@ -2,14 +2,19 @@ import { Link } from "react-router";
 import { SectionIntro } from "./Primitives";
 import { Reveal } from "./Reveal";
 
-const serverControls = [
-  ["Call channels", "# meet-someone"],
-  ["Hide server name", "Off"],
-  ["Match pings", "Friends only"],
-  ["NSFW image filter", "On"],
+const serverRouteSpecs = [
+  ["Designated Channel", "# call-corner"],
+  ["Route Protocol", "1:1 Text Only (No Voice)"],
+  ["Moderation Shield", "NSFW Filter + Word Guard"],
+  ["Data Retention", "Purge on Disconnect"],
 ] as const;
 
-const hubControls = ["Manage connections", "Edit rules & modules", "Send announcements", "Review audit history"];
+const hubPolicySpecs = [
+  ["Federated Peer", "Hobby Corner (8 Servers)"],
+  ["Trust Tier", "Verified Community"],
+  ["Cross-Server Pings", "Blocked (@everyone)"],
+  ["Audit Stream", "14 Events Recorded Today"],
+] as const;
 
 export function ControlSection() {
   return (
@@ -18,34 +23,64 @@ export function ControlSection() {
       <div className="atlas-container control-layout">
         <Reveal className="control-layout__copy">
           <SectionIntro question="Do we lose control of our server?" title="Your community keeps the keys." titleId="control-title" inverse>
-            Choose where Calls can happen, decide what crosses your Hub, and give each moderator only the controls they need.
+            Control plane policies govern every connection. Configure designated text channels, assign federated Hub rules, enforce automated safety shields, and audit security events in real time from your browser.
           </SectionIntro>
-          <Link className="atlas-button atlas-button--paper" to="/dashboard">
-            Open Dashboard <span aria-hidden="true">↗</span>
-          </Link>
+          <div className="control-actions">
+            <Link className="atlas-button atlas-button--paper" to="/dashboard">
+              Explore Control Plane <span aria-hidden="true">↗</span>
+            </Link>
+            <span className="control-subtext">Live Web Dashboard · Discord OAuth2</span>
+          </div>
         </Reveal>
 
         <Reveal className="control-legend" delay={100}>
+          <div className="control-console-tabs" aria-label="Control plane modules">
+            <span className="control-tab control-tab--active">
+              <span className="control-tab__dot" aria-hidden="true" />
+              Overview & Policies
+            </span>
+            <span className="control-tab">Routes</span>
+            <span className="control-tab">Audit Stream</span>
+          </div>
           <div className="control-legend__heading">
-            <span>ATLAS LEGEND · OWNER CONTROLS</span>
-            <strong>Garden Guild</strong>
+            <div>
+              <span className="control-legend__badge">CONTROL PLANE // WEB CONSOLE</span>
+              <strong>Garden Guild (Server #1042)</strong>
+            </div>
+            <span className="console-status-pill">
+              <i className="status-dot status-dot--on" aria-hidden="true" /> Live Policy Engine
+            </span>
           </div>
           <section className="control-panel" aria-labelledby="server-controls-title">
-            <header><span className="legend-key legend-key--sky" /><h3 id="server-controls-title">Server controls</h3><small>4 settings</small></header>
-            {serverControls.map(([label, value]) => (
-              <div className="setting-row" key={label}><span>{label}</span><strong>{value}</strong></div>
+            <header>
+              <span className="legend-key legend-key--sky" aria-hidden="true" />
+              <h3 id="server-controls-title">Server Route Spec</h3>
+              <small>ServerCallRoute</small>
+            </header>
+            {serverRouteSpecs.map(([label, value]) => (
+              <div className="setting-row" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
             ))}
           </section>
           <section className="control-panel" aria-labelledby="hub-controls-title">
-            <header><span className="legend-key legend-key--violet" /><h3 id="hub-controls-title">Hub team controls</h3><small>Granular roles</small></header>
-            <div className="permission-list">
-              {hubControls.map((item) => <span key={item}><i aria-hidden="true">✓</i>{item}</span>)}
-            </div>
+            <header>
+              <span className="legend-key legend-key--violet" aria-hidden="true" />
+              <h3 id="hub-controls-title">Hub Federation Policy</h3>
+              <small>HubPolicyAssignment</small>
+            </header>
+            {hubPolicySpecs.map(([label, value]) => (
+              <div className="setting-row" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
           </section>
           <div className="control-legend__foot">
-            <span><i className="status-dot status-dot--on" /> Connections open</span>
-            <span><i className="status-dot" /> Private Hub</span>
-            <span><i className="status-dot status-dot--log" /> Logs saved</span>
+            <span><i className="status-dot status-dot--on" aria-hidden="true" /> Resource-Oriented</span>
+            <span><i className="status-dot" aria-hidden="true" /> Zero Voice Overhead</span>
+            <span><i className="status-dot status-dot--log" aria-hidden="true" /> Immutable Audit Trail</span>
           </div>
         </Reveal>
       </div>

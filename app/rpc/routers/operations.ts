@@ -16,7 +16,7 @@ const operationState = z.enum([
   "OPERATION_STATE_PARTIAL",
 ]);
 
-function mapOperationError(error: unknown): never {
+export function mapOperationError(error: unknown): never {
   const code = grpcCodeOf(error);
   if (code === 3) throw new ORPCError("BAD_REQUEST", { message: "The operation request is invalid." });
   if (code === 6 || code === 9 || code === 10) throw new ORPCError("CONFLICT", { message: "The operation changed. Refresh and try again." });

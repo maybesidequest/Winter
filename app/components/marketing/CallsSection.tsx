@@ -12,7 +12,7 @@ export function CallsSection() {
           </div>
           <div className="calls-map__track" aria-hidden="true">
             <span className="calls-map__signal">Text route · Connected</span>
-            <span className="calls-map__route-note">Temporary connection</span>
+            <span className="calls-map__route-note">1:1 Text Chat · No Voice Channels</span>
           </div>
           <div className="calls-map__server calls-map__server--remote">
             <span className="server-mark server-mark--sky">PP</span>
@@ -25,7 +25,7 @@ export function CallsSection() {
                 <InitialAvatar initials="GG" tone="violet" />
                 <InitialAvatar initials="PP" tone="sky" />
               </div>
-              <div><strong>Text Call connected</strong><small>Garden Guild ↔ Pixel Pier</small></div>
+              <div><strong>Text Call connected</strong><small>Garden Guild ↔ Pixel Pier · 1:1 Text</small></div>
               <span className="live-dot">Live</span>
             </header>
             <div className="call-card__messages">
@@ -40,8 +40,17 @@ export function CallsSection() {
 
         <Reveal className="calls-layout__copy" delay={100}>
           <SectionIntro question="How do Calls work?" title="A hello from somewhere unexpected." titleId="calls-title">
-            Start a 1:1 text Call, skip when the vibe isn’t right, or open a group Call for up to five servers.
+            Spontaneous 1:1 text chats across Discord communities. 100% text-based in your server’s designated channel — zero voice or camera overhead, with instant skip and moderation safety built into every connection.
           </SectionIntro>
+          <div className="calls-feature-strip" aria-label="Text Call guarantees">
+            <span className="calls-feature-pill">✦ 100% Text-Based</span>
+            <span className="calls-feature-pill">✦ Isolated Channel</span>
+            <span className="calls-feature-pill">✦ Instant Skip</span>
+            <span className="calls-feature-pill">✦ Zero Audio Permissions</span>
+          </div>
+          <p className="calls-reassurance">
+            Never joins a voice channel. Members chat only through the specific text channel you assign, protected by your server’s existing automod.
+          </p>
           <p className="atlas-handnote">Temporary route. Real conversation.</p>
         </Reveal>
       </div>
