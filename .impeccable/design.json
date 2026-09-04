@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-04T11:08:02+05:30",
+  "title": "Design System: InterChat",
+  "extensions": {
+    "colorMeta": {
+      "midnight-ink": {
+        "role": "neutral",
+        "displayName": "Midnight Ink",
+        "canonical": "#0b0c14",
+        "tonalRamp": ["oklch(15% 0.025 275)", "oklch(27% 0.025 275)", "oklch(39% 0.025 275)", "oklch(51% 0.025 275)", "oklch(63% 0.025 275)", "oklch(75% 0.025 275)", "oklch(87% 0.025 275)", "oklch(95% 0.025 275)"]
+      },
+      "surface-night": {
+        "role": "neutral",
+        "displayName": "Surface Night",
+        "canonical": "#13141f",
+        "tonalRamp": ["oklch(15% 0.025 275)", "oklch(27% 0.025 275)", "oklch(39% 0.025 275)", "oklch(51% 0.025 275)", "oklch(63% 0.025 275)", "oklch(75% 0.025 275)", "oklch(87% 0.025 275)", "oklch(95% 0.025 275)"]
+      },
+      "night-plum": {
+        "role": "neutral",
+        "displayName": "Night Plum",
+        "canonical": "#19172b",
+        "tonalRamp": ["oklch(15% 0.04 290)", "oklch(27% 0.04 290)", "oklch(39% 0.04 290)", "oklch(51% 0.04 290)", "oklch(63% 0.04 290)", "oklch(75% 0.04 290)", "oklch(87% 0.04 290)", "oklch(95% 0.04 290)"]
+      },
+      "elevated-plum": {
+        "role": "neutral",
+        "displayName": "Elevated Plum",
+        "canonical": "#181726",
+        "tonalRamp": ["oklch(15% 0.035 290)", "oklch(27% 0.035 290)", "oklch(39% 0.035 290)", "oklch(51% 0.035 290)", "oklch(63% 0.035 290)", "oklch(75% 0.035 290)", "oklch(87% 0.035 290)", "oklch(95% 0.035 290)"]
+      },
+      "selected-plum": {
+        "role": "neutral",
+        "displayName": "Selected Plum",
+        "canonical": "#211f35",
+        "tonalRamp": ["oklch(15% 0.045 290)", "oklch(27% 0.045 290)", "oklch(39% 0.045 290)", "oklch(51% 0.045 290)", "oklch(63% 0.045 290)", "oklch(75% 0.045 290)", "oklch(87% 0.045 290)", "oklch(95% 0.045 290)"]
+      },
+      "atlas-ink": {
+        "role": "neutral",
+        "displayName": "Atlas Ink",
+        "canonical": "#11121b",
+        "tonalRamp": ["oklch(15% 0.02 275)", "oklch(27% 0.02 275)", "oklch(39% 0.02 275)", "oklch(51% 0.02 275)", "oklch(63% 0.02 275)", "oklch(75% 0.02 275)", "oklch(87% 0.02 275)", "oklch(95% 0.02 275)"]
+      },
+      "atlas-paper": {
+        "role": "neutral",
+        "displayName": "Atlas Paper",
+        "canonical": "#f4f0e8",
+        "tonalRamp": ["oklch(15% 0.025 85)", "oklch(27% 0.025 85)", "oklch(39% 0.025 85)", "oklch(51% 0.025 85)", "oklch(63% 0.025 85)", "oklch(75% 0.025 85)", "oklch(87% 0.025 85)", "oklch(95% 0.025 85)"]
+      },
+      "inner-paper": {
+        "role": "neutral",
+        "displayName": "Inner Paper",
+        "canonical": "#fffdf8",
+        "tonalRamp": ["oklch(15% 0.015 85)", "oklch(27% 0.015 85)", "oklch(39% 0.015 85)", "oklch(51% 0.015 85)", "oklch(63% 0.015 85)", "oklch(75% 0.015 85)", "oklch(87% 0.015 85)", "oklch(95% 0.015 85)"]
+      },
+      "deep-violet": {
+        "role": "primary",
+        "displayName": "Deep Violet",
+        "canonical": "#5b4ccb",
+        "tonalRamp": ["oklch(15% 0.18 285)", "oklch(27% 0.18 285)", "oklch(39% 0.18 285)", "oklch(51% 0.18 285)", "oklch(63% 0.18 285)", "oklch(75% 0.18 285)", "oklch(87% 0.18 285)", "oklch(95% 0.18 285)"]
+      },
+      "signal-violet": {
+        "role": "primary",
+        "displayName": "Signal Violet",
+        "canonical": "#8175ee",
+        "tonalRamp": ["oklch(15% 0.16 285)", "oklch(27% 0.16 285)", "oklch(39% 0.16 285)", "oklch(51% 0.16 285)", "oklch(63% 0.16 285)", "oklch(75% 0.16 285)", "oklch(87% 0.16 285)", "oklch(95% 0.16 285)"]
+      },
+      "command-lavender": {
+        "role": "primary",
+        "displayName": "Command Lavender",
+        "canonical": "#c4b5fd",
+        "tonalRamp": ["oklch(15% 0.09 285)", "oklch(27% 0.09 285)", "oklch(39% 0.09 285)", "oklch(51% 0.09 285)", "oklch(63% 0.09 285)", "oklch(75% 0.09 285)", "oklch(87% 0.09 285)", "oklch(95% 0.09 285)"]
+      },
+      "command-lavender-face": {
+        "role": "primary",
+        "displayName": "Command Face",
+        "canonical": "#cdc2f8",
+        "tonalRamp": ["oklch(15% 0.075 285)", "oklch(27% 0.075 285)", "oklch(39% 0.075 285)", "oklch(51% 0.075 285)", "oklch(63% 0.075 285)", "oklch(75% 0.075 285)", "oklch(87% 0.075 285)", "oklch(95% 0.075 285)"]
+      },
+      "route-sky": {
+        "role": "secondary",
+        "displayName": "Route Sky",
+        "canonical": "#8fd3ff",
+        "tonalRamp": ["oklch(15% 0.12 235)", "oklch(27% 0.12 235)", "oklch(39% 0.12 235)", "oklch(51% 0.12 235)", "oklch(63% 0.12 235)", "oklch(75% 0.12 235)", "oklch(87% 0.12 235)", "oklch(95% 0.12 235)"]
+      },
+      "safety-sage": {
+        "role": "secondary",
+        "displayName": "Safety Sage",
+        "canonical": "#cfe8d4",
+        "tonalRamp": ["oklch(15% 0.07 145)", "oklch(27% 0.07 145)", "oklch(39% 0.07 145)", "oklch(51% 0.07 145)", "oklch(63% 0.07 145)", "oklch(75% 0.07 145)", "oklch(87% 0.07 145)", "oklch(95% 0.07 145)"]
+      },
+      "alert-coral": {
+        "role": "tertiary",
+        "displayName": "Alert Coral",
+        "canonical": "#ff8c73",
+        "tonalRamp": ["oklch(15% 0.16 35)", "oklch(27% 0.16 35)", "oklch(39% 0.16 35)", "oklch(51% 0.16 35)", "oklch(63% 0.16 35)", "oklch(75% 0.16 35)", "oklch(87% 0.16 35)", "oklch(95% 0.16 35)"]
+      },
+      "danger-red": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "canonical": "#ef4444",
+        "tonalRamp": ["oklch(15% 0.22 25)", "oklch(27% 0.22 25)", "oklch(39% 0.22 25)", "oklch(51% 0.22 25)", "oklch(63% 0.22 25)", "oklch(75% 0.22 25)", "oklch(87% 0.22 25)", "oklch(95% 0.22 25)"]
+      },
+      "text-warm": {
+        "role": "neutral",
+        "displayName": "Text Warm",
+        "canonical": "#f7f5ef",
+        "tonalRamp": ["oklch(15% 0.015 85)", "oklch(27% 0.015 85)", "oklch(39% 0.015 85)", "oklch(51% 0.015 85)", "oklch(63% 0.015 85)", "oklch(75% 0.015 85)", "oklch(87% 0.015 85)", "oklch(95% 0.015 85)"]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Text Muted",
+        "canonical": "#9697a3",
+        "tonalRamp": ["oklch(15% 0.025 280)", "oklch(27% 0.025 280)", "oklch(39% 0.025 280)", "oklch(51% 0.025 280)", "oklch(63% 0.025 280)", "oklch(75% 0.025 280)", "oklch(87% 0.025 280)", "oklch(95% 0.025 280)"]
+      },
+      "border-subtle": {
+        "role": "neutral",
+        "displayName": "Border Subtle",
+        "canonical": "rgba(255, 255, 255, 0.08)",
+        "tonalRamp": ["rgba(255,255,255,0.03)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.11)", "rgba(255,255,255,0.14)", "rgba(255,255,255,0.18)", "rgba(255,255,255,0.22)", "rgba(255,255,255,0.28)"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Atlas Display",
+        "purpose": "Public hero statements only."
+      },
+      "headline": {
+        "displayName": "Atlas Headline",
+        "purpose": "Public and reading-surface section statements."
+      },
+      "title": {
+        "displayName": "Operational Title",
+        "purpose": "Dashboard page and resource headings."
+      },
+      "body": {
+        "displayName": "Product Body",
+        "purpose": "Configuration, navigation, rows, and supporting copy."
+      },
+      "body-editorial": {
+        "displayName": "Editorial Body",
+        "purpose": "Marketing and long-form reading copy."
+      },
+      "label": {
+        "displayName": "Control Label",
+        "purpose": "Buttons, eyebrows, filters, metadata, and statuses."
+      }
+    },
+    "shadows": [
+      {
+        "name": "product-card",
+        "value": "0 3px 0 0 rgba(255,255,255,0.08), 0 8px 24px -4px rgba(0,0,0,0.55)",
+        "purpose": "Standard opaque dashboard section-card structure."
+      },
+      {
+        "name": "product-panel",
+        "value": "0 4px 0 0 rgba(10,8,23,0.75)",
+        "purpose": "Firm structural edge for metric and workspace panels."
+      },
+      {
+        "name": "popup",
+        "value": "0 4px 0 0 rgba(10,8,23,0.85), 0 16px 36px rgba(0,0,0,0.60)",
+        "purpose": "Dropdown and overlay separation."
+      },
+      {
+        "name": "atlas-card",
+        "value": "10px 12px 0 rgba(17,18,27,0.10)",
+        "purpose": "Printed-paper depth for public editorial cards."
+      },
+      {
+        "name": "atlas-dark-fragment",
+        "value": "8px 10px 0 rgba(0,0,0,0.18)",
+        "purpose": "Message fragments placed over Atlas night fields."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-feedback",
+        "value": "120ms ease",
+        "purpose": "Dashboard hover and press movement."
+      },
+      {
+        "name": "field-state",
+        "value": "150ms ease",
+        "purpose": "Input color, edge, shadow, and focus changes."
+      },
+      {
+        "name": "toggle-state",
+        "value": "180ms ease",
+        "purpose": "Toggle track color and edge transitions."
+      },
+      {
+        "name": "toggle-travel",
+        "value": "200ms cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Toggle disc movement."
+      },
+      {
+        "name": "entry-snappy",
+        "value": "180ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Compact dashboard entry transitions."
+      },
+      {
+        "name": "atlas-reveal",
+        "value": "760ms cubic-bezier(0.2, 0.75, 0.25, 1)",
+        "purpose": "Public-page reveal motion."
+      },
+      {
+        "name": "atlas-route",
+        "value": "14s linear",
+        "purpose": "Slow route-line travel that communicates connection."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "atlas-stack",
+        "value": "860px"
+      },
+      {
+        "name": "reading-stack",
+        "value": "900px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "atlas-compact",
+        "value": "1050px"
+      },
+      {
+        "name": "atlas-small",
+        "value": "560px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The default dashboard action with a lavender face and tactile lower edge.",
+      "html": "<button class=\"ds-btn-primary\">SAVE CHANGES</button>",
+      "css": ".ds-btn-primary { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:6px 14px;border:1px solid #a897ea;border-radius:10px;background:#cdc2f8;color:#14121e;font:700 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 2px 0 #a897ea;cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,background 120ms ease,border-color 120ms ease; } .ds-btn-primary:hover { transform:translateY(-1px);background:#d8cffc;border-color:#b5a5f0;box-shadow:0 3.5px 0 #b5a5f0; } .ds-btn-primary:active { transform:translateY(1px);box-shadow:0 1.5px 0 #a897ea; } .ds-btn-primary:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A compact supporting dashboard action with the same tactile response.",
+      "html": "<button class=\"ds-btn-secondary\">CANCEL</button>",
+      "css": ".ds-btn-secondary { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:6px 14px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#1e1f2b;color:#fff;font:600 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 2px 0 rgba(255,255,255,.12);cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,background 120ms ease,border-color 120ms ease; } .ds-btn-secondary:hover { transform:translateY(-1px);background:#252636;border-color:rgba(255,255,255,.18);box-shadow:0 3.5px 0 rgba(255,255,255,.18); } .ds-btn-secondary:active { transform:translateY(1px);box-shadow:0 1.5px 0 rgba(255,255,255,.12); } .ds-btn-secondary:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "A consequential dashboard action reserved for destructive changes.",
+      "html": "<button class=\"ds-btn-danger\">REMOVE SERVER</button>",
+      "css": ".ds-btn-danger { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:6px 14px;border:1px solid #b91c1c;border-radius:10px;background:#dc2626;color:#fff;font:700 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 1.5px 0 #b91c1c;cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,background 120ms ease; } .ds-btn-danger:hover { transform:translateY(-1px);background:#ef4444;box-shadow:0 2.5px 0 #dc2626; } .ds-btn-danger:active { transform:translateY(1px);box-shadow:0 .5px 0 #b91c1c; } .ds-btn-danger:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "The canonical dark recessed field for product configuration.",
+      "html": "<label class=\"ds-field-label\">HUB NAME<input class=\"ds-input\" value=\"Garden Guild\" /></label>",
+      "css": ".ds-field-label { display:grid;gap:7px;color:#f7f5ef;font:700 12px/1.2 Inter,system-ui,sans-serif;letter-spacing:.08em; } .ds-input { min-height:42px;padding:9px 12px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(19,20,31,.75);color:#fff;font:400 14px/1.5 Inter,system-ui,sans-serif;box-shadow:0 1.5px 0 rgba(255,255,255,.08);transition:border-color 150ms ease,box-shadow 150ms ease,background 150ms ease; } .ds-input:hover { border-color:rgba(255,255,255,.16);background:rgba(19,20,31,.9); } .ds-input:focus-visible { border-color:rgba(129,117,238,.6);outline:3px solid #8fd3ff;outline-offset:2px;box-shadow:0 2px 0 rgba(129,117,238,.6),0 0 0 2px rgba(129,117,238,.2); }"
+    },
+    {
+      "name": "Depth Toggle",
+      "kind": "custom",
+      "refersTo": "depth-toggle",
+      "description": "The flat-depth switch for settings and feature flags.",
+      "html": "<button class=\"ds-toggle\" role=\"switch\" aria-checked=\"true\" aria-label=\"Enable calls\"><span class=\"ds-toggle-knob\"></span></button>",
+      "css": ".ds-toggle { position:relative;width:44px;height:24px;padding:0;border:1px solid #b39ef8;border-radius:9999px;background:#c4b5fd;box-shadow:inset 0 1px 2px rgba(0,0,0,.1);cursor:pointer;transition:background 180ms ease,border-color 180ms ease,box-shadow 180ms ease; } .ds-toggle-knob { position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 0 #9d87e8,0 2px 3px rgba(110,80,190,.35);transform:translateX(20px);transition:transform 200ms cubic-bezier(.25,1,.5,1),width 140ms ease; } .ds-toggle:active .ds-toggle-knob { width:20px; } .ds-toggle:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Active Filter Pill",
+      "kind": "chip",
+      "refersTo": "filter-pill",
+      "description": "The active filter state for resource categories and discovery tags.",
+      "html": "<button class=\"ds-filter-pill\" aria-pressed=\"true\">COMMUNITY</button>",
+      "css": ".ds-filter-pill { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid #8175ee;border-radius:9999px;background:#8175ee;color:#fff;font:700 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 1.5px 0 #5b4ccb,0 0 12px rgba(129,117,238,.35);cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,background 120ms ease; } .ds-filter-pill:hover { transform:translateY(-1px);background:#9084f8;box-shadow:0 2.5px 0 #5b4ccb,0 0 16px rgba(129,117,238,.45); } .ds-filter-pill:active { transform:translateY(1px);box-shadow:0 .5px 0 #5b4ccb; } .ds-filter-pill:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Section Card",
+      "kind": "card",
+      "refersTo": "section-card",
+      "description": "The opaque product surface for grouped configuration and status.",
+      "html": "<section class=\"ds-section-card\"><p class=\"ds-card-eyebrow\">ROUTING POLICY</p><h3>Message delivery</h3><p>Control how this hub reaches linked servers.</p></section>",
+      "css": ".ds-section-card { position:relative;max-width:420px;padding:24px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#13141f;color:#f7f5ef;box-shadow:0 3px 0 rgba(255,255,255,.08),0 8px 24px -4px rgba(0,0,0,.55);font-family:Inter,system-ui,sans-serif; } .ds-section-card h3 { margin:6px 0;font:700 18px/1.3 Sora,Inter,sans-serif; } .ds-section-card p { margin:0;color:rgba(255,255,255,.6);font-size:14px;line-height:1.5; } .ds-section-card .ds-card-eyebrow { color:#8175ee;font-size:11px;font-weight:800;letter-spacing:.08em; }"
+    },
+    {
+      "name": "Select Trigger",
+      "kind": "input",
+      "refersTo": "select-trigger",
+      "description": "A representative themed select trigger and its raised menu.",
+      "html": "<div class=\"ds-select-wrap\"><button class=\"ds-select-trigger\" aria-haspopup=\"listbox\" aria-expanded=\"true\">Community Hub<svg aria-hidden=\"true\" viewBox=\"0 0 20 20\"><path d=\"m5 7 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" /></svg></button><div class=\"ds-select-menu\" role=\"listbox\"><div role=\"option\" aria-selected=\"true\">Community Hub</div><div role=\"option\">Private Hub</div></div></div>",
+      "css": ".ds-select-wrap { position:relative;width:260px;font-family:Inter,system-ui,sans-serif; } .ds-select-trigger { width:100%;min-height:44px;padding:4px 10px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(129,117,238,.6);border-radius:12px;background:rgba(19,20,31,.9);color:#fff;box-shadow:0 0 0 2px rgba(129,117,238,.2),inset 0 1px 2px rgba(0,0,0,.3);cursor:pointer; } .ds-select-trigger svg { width:16px;height:16px;color:rgba(255,255,255,.45); } .ds-select-trigger:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; } .ds-select-menu { margin-top:8px;padding:6px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#181726;color:rgba(255,255,255,.85);box-shadow:0 8px 32px rgba(0,0,0,.6); } .ds-select-menu div { padding:8px 12px;border-radius:8px;font-size:13px; } .ds-select-menu div[aria-selected=true] { background:rgba(129,117,238,.25);color:#fff;font-weight:600; }"
+    },
+    {
+      "name": "Sidebar Navigation Row",
+      "kind": "nav",
+      "refersTo": "sidebar-link",
+      "description": "The selected contextual-sidebar destination for a resource workspace.",
+      "html": "<a class=\"ds-sidebar-link\" aria-current=\"page\" href=\"#\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z\" fill=\"currentColor\" /></svg><span>Overview</span></a>",
+      "css": ".ds-sidebar-link { display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#211f35;color:#fff;font:700 14px/1.4 Inter,system-ui,sans-serif;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.28);transition:background 120ms ease,color 120ms ease; } .ds-sidebar-link svg { width:17px;height:17px;color:#8175ee; } .ds-sidebar-link:hover { background:#282541; } .ds-sidebar-link:focus-visible { outline:3px solid #8fd3ff;outline-offset:2px; }"
+    },
+    {
+      "name": "Atlas CTA",
+      "kind": "button",
+      "refersTo": "atlas-cta",
+      "description": "The public-site action with a pressed-poster diagonal response.",
+      "html": "<a class=\"ds-atlas-cta\" href=\"#\">ADD INTERCHAT<svg aria-hidden=\"true\" viewBox=\"0 0 20 20\"><path d=\"M3 10h13M11 5l5 5-5 5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></a>",
+      "css": ".ds-atlas-cta { min-height:48px;padding:11px 18px 11px 24px;display:inline-flex;align-items:center;justify-content:center;gap:14px;border:1px solid transparent;border-radius:9999px;background:#5b4ccb;color:#fff;font:750 15px/1.6 Inter,system-ui,sans-serif;text-decoration:none;box-shadow:4px 5px 0 rgba(0,0,0,.2);transition:transform 200ms ease,box-shadow 200ms ease,background 200ms ease; } .ds-atlas-cta svg { width:18px;height:18px; } .ds-atlas-cta:hover { transform:translate(2px,2px);background:#6959dc;box-shadow:2px 3px 0 rgba(0,0,0,.2); } .ds-atlas-cta:active { transform:translate(3px,3px);box-shadow:1px 1px 0 rgba(0,0,0,.2); } .ds-atlas-cta:focus-visible { outline:3px solid #8fd3ff;outline-offset:4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Connected Atlas",
+    "overview": "InterChat should feel like a precise, nocturnal operations map: communities are distinct places, connections are deliberate routes, and every control helps an operator understand or change the network. The product interface is compact and composed, with near-black layered surfaces, crisp edge definition, restrained signal color, and tactile state changes that make configuration work feel dependable.\n\nThe public experience expresses the same idea more editorially. Warm paper fields, contour lines, pins, route diagrams, annotations, and offset print-like shadows turn technical relationships into a welcoming community atlas. This is a surface-specific expression, not permission to make operational screens ornamental.\n\nDespite legacy names in the implementation, heavy glassmorphism is not the current identity. Core product surfaces are opaque and layered. Blur is reserved for navigation chrome, dropdowns, tooltips, and modal overlays where separation from moving content is useful.",
+    "keyCharacteristics": [
+      "Nocturnal, resource-dense operational surfaces",
+      "Tactile bottom edges with restrained ambient depth",
+      "Violet action signals supported by sky, sage, and coral status cues",
+      "Topographic contours and route geometry as the signature motif",
+      "Warm, editorial Atlas compositions on public and reading surfaces",
+      "Compact controls, explicit hierarchy, and permission-aware navigation"
+    ],
+    "rules": [
+      {
+        "name": "The Controlled Signal Rule",
+        "body": "Violet marks action, selection, or connection; it does not flood whole operational screens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Environments Rule",
+        "body": "Dark is operational and paper is editorial. Do not introduce a light dashboard by reusing Atlas Paper.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Accent Rule",
+        "body": "Sky means route or focus, sage means safety or positive state, coral means attention, and red means destructive or invalid.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Rule",
+        "body": "Sora names places and decisions; Inter explains, labels, and operates them.",
+        "section": "typography"
+      },
+      {
+        "name": "The Shipped-Weight Rule",
+        "body": "New work uses the loaded Sora weights from 400 through 800. Do not request synthetic 850 or 900 weights unless font delivery is changed deliberately.",
+        "section": "typography"
+      },
+      {
+        "name": "The Shell Truth Rule",
+        "body": "Extend the active instance-rail and contextual-sidebar shell. Do not revive the unused 256px sidebar, 64px top bar, 12-column shell, or mobile bottom-navigation implementation.",
+        "section": "layout"
+      },
+      {
+        "name": "The Opaque-by-Default Rule",
+        "body": "Core application surfaces are opaque; a legacy “glass” identifier is not evidence that a component should look transparent.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One-Pixel Response Rule",
+        "body": "Product controls communicate hover and press through small vertical movement and changing edge depth, never dramatic floating animation.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Nested Radius Rule",
+        "body": "Inner elements are never rounder than the container that holds them unless they are intentionally capsule-shaped controls or circular identities.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do model dense operational screens with opaque Midnight Ink and Surface Night layers.",
+      "Do reserve blur for navigation chrome and transient overlays where content separation matters.",
+      "Do reuse the violet, sky, sage, and coral semantics consistently across both environments.",
+      "Do preserve the active three-zone dashboard shell and its compact responsive drawer behavior.",
+      "Do use contour lines, route geometry, pins, and atlas annotations as the recognizable InterChat signature.",
+      "Do provide visible hover, active, focus, disabled, empty, loading, and invalid states for controls.",
+      "Do honor reduced-motion preferences for reveal, route, and control animation."
+    ],
+    "donts": [
+      "Don't revive translucent glass cards as the default product surface because a legacy component or identifier contains the word “glass.”",
+      "Don't treat the warm Atlas Paper environment as a supported light dashboard theme.",
+      "Don't use the disabled production-only staff interface or stock Ant Design styling as brand evidence.",
+      "Don't revive the unused legacy dashboard sidebar, top bar, grid shell, or bottom navigation.",
+      "Don't use violet decoratively when it does not communicate action, selection, focus, or connection.",
+      "Don't introduce unstyled native selects for prominent controls or inaccessible clickable containers for resource cards.",
+      "Don't request unavailable Sora weights or depend on color alone to communicate component state."
+    ]
+  }
+}
