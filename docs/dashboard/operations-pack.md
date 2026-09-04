@@ -18,6 +18,21 @@ outbox age/retries, operation state/age, dependency failures, reconciliation
 drift, OAuth failures, rate limits, and web vitals. Every alert names an owner,
 runbook, escalation path, and severity.
 
+### Outbox lag alerts (defined, wired in SigNoz)
+
+Producer metric: `control_plane_outbox_pending_events` (Prometheus text
+`control_plane_outbox_pending_events`, exposed by Control Plane; warning log at
+`outbox_lag_warning_threshold`, default 100). Consumer signal: structured
+`control_outbox_lag` log lines emitted every 30 s by
+`ControlOutboxConsumer` with `pending_entries` (warning above 100).
+
+- **Warn** — `max_over_time(control_plane_outbox_pending_events[5m]) > 100`:
+  owner on-call, runbook `stuck operation / outbox backlog`, severity P3.
+- **Page** — `control_plane_outbox_pending_events > 1000` for 10 m, or a
+  `Control outbox consumer lag is high` log pattern for 15 m: severity P2;
+  check Control Plane readiness and Redis stream depth before restarting the
+  publisher deployment.
+
 ## Runbooks
 
 Rollback; certificate expiry; bad migration; provider outage; stuck operation;

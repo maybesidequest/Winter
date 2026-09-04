@@ -1,5 +1,6 @@
 import type { ServerResource } from "~/resources/server";
 import type { Server as ProtoServer } from "~/generated/control/v1/static";
+import type { ServerSpec as ProtoServerSpec } from "~/generated/control/v1/static";
 import type { BatchGetServersResponse } from "~/generated/control/v1/static";
 import type { ServerBlock as ProtoServerBlock } from "~/generated/control/v1/static";
 import type { BlocklistResponse } from "~/generated/control/v1/static";
@@ -36,7 +37,9 @@ export interface ServerBlock {
   createdAt?: string;
 }
 
-function toProtoSpec(spec: Partial<ServerSpec>) {
+// The wire shape is the generated one; this annotation makes any drift between
+// the hand-written presentation defaults and the contract a compile error.
+function toProtoSpec(spec: Partial<ServerSpec>): ProtoServerSpec {
   return {
     prefix: spec.prefix ?? "",
     callChannelId: spec.callChannelId ?? "",

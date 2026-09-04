@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const winterRoot = resolve(dirname(new URL(import.meta.url).pathname), "..");
@@ -38,8 +38,38 @@ if (!existsSync(plugin)) {
 // failed protoc invocation from erasing a known-good generated surface.
 mkdirSync(outputRoot, { recursive: true });
 
+// protoc cannot resolve buf module dependencies on its own. Locate the
+// bufbuild/protovalidate module (providing buf/validate/validate.proto) in the
+// local buf cache when it is not vendored next to the protos.
+function protovalidateIncludes() {
+  if (existsSync(join(protoRoot, "buf", "validate", "validate.proto"))) return [];
+  const cacheDir = process.env.BUF_CACHE_DIR || join(process.env.HOME || "", ".cache", "buf");
+  if (!existsSync(cacheDir)) return [];
+  const stack = [cacheDir];
+  while (stack.length > 0) {
+    const dir = stack.pop();
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    if (entries.some((e) => e.name === "buf" && join(dir, "buf", "validate", "validate.proto"))) {
+      return [`-I${dir}`];
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) stack.push(join(dir, entry.name));
+    }
+  }
+  return [];
+}
+
 const args = [
   `-I${protoRoot}`,
+  // Optional extra import roots (colon-separated), e.g. the buf module cache
+  // path that provides buf/validate/validate.proto.
+  ...((process.env.PROTOC_EXTRA_INCLUDES || "").split(":").filter(Boolean).map((p) => `-I${p}`)),
+  ...protovalidateIncludes(),
   "-I/usr/include",
   `--plugin=protoc-gen-ts_proto=${plugin}`,
   `--ts_proto_out=${outputRoot}`,

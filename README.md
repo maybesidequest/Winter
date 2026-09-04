@@ -58,10 +58,16 @@ VITE_UNSPLASH_DASHBOARD_COLLECTION_ID="1252124"
    bun install
    ```
 
-2. **Database Migrations (Drizzle):**
-   Ensure your local PostgreSQL instance is running, then sync the database schema:
+2. **Database Migrations:**
+   Ensure your local PostgreSQL instance is running, then apply the baseline
+   migration (`migrations/`, owned by node-pg-migrate):
    ```bash
-   bun run drizzle-kit push
+   bun run migrate:winter
+   ```
+   For schema changes going forward, edit `drizzle/schema.ts` and generate a
+   Drizzle migration:
+   ```bash
+   bun run db:generate
    ```
 
 ## Local Development Workflow

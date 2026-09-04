@@ -1,26 +1,24 @@
-import { createCookie } from "react-router";
-
 export const CSRF_SESSION_KEY = "csrfToken";
 export const CSRF_COOKIE_NAME = "interchat_csrf";
 
-const csrfCookie = createCookie(CSRF_COOKIE_NAME, {
-  path: "/",
-  httpOnly: false,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 43_200,
-});
+const CSRF_COOKIE_MAX_AGE = 43_200;
 
 export function newCsrfToken(): string {
   return crypto.randomUUID();
 }
 
-export function serializeCsrfCookie(token: string): Promise<string> {
-  return csrfCookie.serialize(token);
+// The token is stored raw in the cookie: browser JavaScript echoes it verbatim
+// into the X-CSRF-Token header, and requireCsrf compares it against the raw
+// token in the signed session. Encoding it (createCookie base64) would make
+// the two values permanently unequal. A UUID needs no cookie encoding.
+export function serializeCsrfCookie(token: string): string {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  return `${CSRF_COOKIE_NAME}=${token}; Max-Age=${CSRF_COOKIE_MAX_AGE}; Path=/; SameSite=Lax${secure}`;
 }
 
-export function clearCsrfCookie(): Promise<string> {
-  return csrfCookie.serialize("", { maxAge: 0 });
+export function clearCsrfCookie(): string {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  return `${CSRF_COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax${secure}`;
 }
 
 function equalConstantTime(left: string, right: string): boolean {

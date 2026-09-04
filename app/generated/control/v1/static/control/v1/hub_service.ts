@@ -395,6 +395,12 @@ export interface GetPopularTagsResponse {
   tags: HubTag[];
 }
 
+export interface RecordRuleAcceptanceRequest {
+  context?: RequestContext | undefined;
+  hubId: string;
+  userId: string;
+}
+
 export interface UpvoteHubRequest {
   context?: RequestContext | undefined;
   hubId: string;
@@ -4548,6 +4554,78 @@ export const GetPopularTagsResponse: MessageFns<GetPopularTagsResponse> = {
   },
 };
 
+function createBaseRecordRuleAcceptanceRequest(): RecordRuleAcceptanceRequest {
+  return { context: undefined, hubId: "", userId: "" };
+}
+
+export const RecordRuleAcceptanceRequest: MessageFns<RecordRuleAcceptanceRequest> = {
+  encode(message: RecordRuleAcceptanceRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.context !== undefined) {
+      RequestContext.encode(message.context, writer.uint32(10).fork()).join();
+    }
+    if (message.hubId !== "") {
+      writer.uint32(18).string(message.hubId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RecordRuleAcceptanceRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRecordRuleAcceptanceRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.context = RequestContext.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.hubId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<RecordRuleAcceptanceRequest>, I>>(base?: I): RecordRuleAcceptanceRequest {
+    return RecordRuleAcceptanceRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RecordRuleAcceptanceRequest>, I>>(object: I): RecordRuleAcceptanceRequest {
+    const message = createBaseRecordRuleAcceptanceRequest();
+    message.context = (object.context !== undefined && object.context !== null)
+      ? RequestContext.fromPartial(object.context)
+      : undefined;
+    message.hubId = object.hubId ?? "";
+    message.userId = object.userId ?? "";
+    return message;
+  },
+};
+
 function createBaseUpvoteHubRequest(): UpvoteHubRequest {
   return { context: undefined, hubId: "", operationId: "" };
 }
@@ -4896,6 +4974,14 @@ export const HubServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    recordRuleAcceptance: {
+      name: "RecordRuleAcceptance",
+      requestType: RecordRuleAcceptanceRequest,
+      requestStream: false,
+      responseType: EmptyResponse,
+      responseStream: false,
+      options: {},
+    },
     /** Invites */
     listInvites: {
       name: "ListInvites",
@@ -5152,6 +5238,10 @@ export interface HubServiceImplementation<CallContextExt = {}> {
     request: ReorderHubRulesRequest,
     context: CallContext & CallContextExt,
   ): Promise<DeepPartial<HubRulesResponse>>;
+  recordRuleAcceptance(
+    request: RecordRuleAcceptanceRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<EmptyResponse>>;
   /** Invites */
   listInvites(
     request: ListHubInvitesRequest,
@@ -5281,6 +5371,10 @@ export interface HubServiceClient<CallOptionsExt = {}> {
     request: DeepPartial<ReorderHubRulesRequest>,
     options?: CallOptions & CallOptionsExt,
   ): Promise<HubRulesResponse>;
+  recordRuleAcceptance(
+    request: DeepPartial<RecordRuleAcceptanceRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<EmptyResponse>;
   /** Invites */
   listInvites(
     request: DeepPartial<ListHubInvitesRequest>,

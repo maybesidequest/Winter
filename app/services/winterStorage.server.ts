@@ -1,25 +1,6 @@
-import pg from "pg";
-
-let pool: pg.Pool | null = null;
-
-function getWinterPool(): pg.Pool {
-  if (!pool) {
-    const connectionString = process.env.WINTER_DATABASE_URL;
-
-    if (!connectionString) {
-      throw new Error(
-        "WINTER_DATABASE_URL environment variable is required"
-      );
-    }
-
-    pool = new pg.Pool({
-      connectionString,
-      max: 10,
-      idleTimeoutMillis: 30000,
-    });
-  }
-  return pool;
-}
+import { and, desc, eq, sql } from "drizzle-orm";
+import { db, getWinterPool } from "../db/db.server";
+import { winterFavorites, winterOauthTokens, winterSavedViews } from "../../drizzle/schema";
 
 export interface StoredOAuthTokenRecord {
   id: string;
@@ -77,14 +58,19 @@ function normalizeViewState(state: SavedViewState): SavedViewState {
   return normalized;
 }
 
+function iso(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
 export const winterStorage = {
   async checkReady(): Promise<void> {
     // Schema creation belongs to the dedicated migration job. Failing here
     // makes a missing or incompatible migration visible to readiness instead
     // of silently changing production state from an application request.
-    await getWinterPool().query("SELECT 1 FROM winter_oauth_tokens LIMIT 1");
-    await getWinterPool().query("SELECT 1 FROM winter_favorites LIMIT 1");
-    await getWinterPool().query("SELECT 1 FROM winter_saved_views LIMIT 1");
+    const pool = getWinterPool();
+    await pool.query("SELECT 1 FROM winter_oauth_tokens LIMIT 1");
+    await pool.query("SELECT 1 FROM winter_favorites LIMIT 1");
+    await pool.query("SELECT 1 FROM winter_saved_views LIMIT 1");
   },
 
   async saveTokens(record: {
@@ -95,121 +81,169 @@ export const winterStorage = {
     expiresAt: Date;
     encryptionKeyId: string;
   }): Promise<void> {
-    const p = getWinterPool();
     const id = `discord:${record.userId}`;
-    const now = new Date().toISOString();
 
-    await p.query(
-      `
-      INSERT INTO winter_oauth_tokens (
-        id, user_id, account_id, provider_id, scope, access_token, refresh_token, access_token_expires_at, encryption_key_id, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      ON CONFLICT (id) DO UPDATE SET
-        scope = EXCLUDED.scope,
-        access_token = EXCLUDED.access_token,
-        refresh_token = EXCLUDED.refresh_token,
-        access_token_expires_at = EXCLUDED.access_token_expires_at,
-        encryption_key_id = EXCLUDED.encryption_key_id,
-        updated_at = EXCLUDED.updated_at
-    `,
-      [
+    await db
+      .insert(winterOauthTokens)
+      .values({
         id,
-        record.userId,
-        record.userId,
-        "discord",
-        record.scope,
-        record.accessToken,
-        record.refreshToken,
-        record.expiresAt.toISOString(),
-        record.encryptionKeyId,
-        now,
-      ]
-    );
+        userId: record.userId,
+        accountId: record.userId,
+        providerId: "discord",
+        scope: record.scope,
+        accessToken: record.accessToken,
+        refreshToken: record.refreshToken,
+        accessTokenExpiresAt: record.expiresAt,
+        encryptionKeyId: record.encryptionKeyId,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: winterOauthTokens.id,
+        set: {
+          scope: record.scope,
+          accessToken: record.accessToken,
+          refreshToken: record.refreshToken,
+          accessTokenExpiresAt: record.expiresAt,
+          encryptionKeyId: record.encryptionKeyId,
+          updatedAt: new Date(),
+        },
+      });
   },
 
   async getTokens(userId: string): Promise<StoredOAuthTokenRecord | null> {
-    const p = getWinterPool();
     const id = `discord:${userId}`;
 
-    const res = await p.query<StoredOAuthTokenRecord>(
-      `
-      SELECT id, user_id as "userId", scope, access_token as "accessToken",
-             refresh_token as "refreshToken", access_token_expires_at as "accessTokenExpiresAt",
-             encryption_key_id as "encryptionKeyId", updated_at as "updatedAt"
-      FROM winter_oauth_tokens
-      WHERE id = $1
-      LIMIT 1
-    `,
-      [id]
-    );
+    const rows = await db
+      .select()
+      .from(winterOauthTokens)
+      .where(eq(winterOauthTokens.id, id))
+      .limit(1);
+    const row = rows[0];
+    if (!row) return null;
 
-    return res.rows[0] || null;
+    return {
+      id: row.id,
+      userId: row.userId,
+      scope: row.scope,
+      accessToken: row.accessToken,
+      refreshToken: row.refreshToken,
+      accessTokenExpiresAt: iso(row.accessTokenExpiresAt),
+      encryptionKeyId: row.encryptionKeyId,
+      updatedAt: iso(row.updatedAt),
+    };
   },
 
   async listFavorites(userId: string): Promise<FavoriteRecord[]> {
-    const p = getWinterPool();
-    const res = await p.query<FavoriteRecord>(
-      `SELECT resource_type as "resourceType", resource_id as "resourceId", created_at as "createdAt"
-       FROM winter_favorites WHERE user_id = $1 ORDER BY created_at DESC, resource_id ASC`,
-      [requiredIdentifier(userId, "userId")],
-    );
-    return res.rows;
+    const rows = await db
+      .select({
+        resourceType: winterFavorites.resourceType,
+        resourceId: winterFavorites.resourceId,
+        createdAt: winterFavorites.createdAt,
+      })
+      .from(winterFavorites)
+      .where(eq(winterFavorites.userId, requiredIdentifier(userId, "userId")))
+      .orderBy(desc(winterFavorites.createdAt), winterFavorites.resourceId);
+    return rows.map((row) => ({ ...row, createdAt: iso(row.createdAt) }));
   },
 
   async addFavorite(userId: string, resourceType: string, resourceId: string): Promise<FavoriteRecord> {
-    const p = getWinterPool();
-    const values = [requiredIdentifier(userId, "userId"), requiredIdentifier(resourceType, "resourceType"), requiredIdentifier(resourceId, "resourceId")];
-    const res = await p.query<FavoriteRecord>(
-      `INSERT INTO winter_favorites (user_id, resource_type, resource_id)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (user_id, resource_type, resource_id) DO UPDATE SET resource_id = EXCLUDED.resource_id
-       RETURNING resource_type as "resourceType", resource_id as "resourceId", created_at as "createdAt"`,
-      values,
-    );
-    return res.rows[0];
+    const values = {
+      userId: requiredIdentifier(userId, "userId"),
+      resourceType: requiredIdentifier(resourceType, "resourceType"),
+      resourceId: requiredIdentifier(resourceId, "resourceId"),
+    };
+    const rows = await db
+      .insert(winterFavorites)
+      .values(values)
+      .onConflictDoUpdate({
+        target: [winterFavorites.userId, winterFavorites.resourceType, winterFavorites.resourceId],
+        set: { resourceId: values.resourceId },
+      })
+      .returning({
+        resourceType: winterFavorites.resourceType,
+        resourceId: winterFavorites.resourceId,
+        createdAt: winterFavorites.createdAt,
+      });
+    const row = rows[0];
+    return { ...row, createdAt: iso(row.createdAt) };
   },
 
   async removeFavorite(userId: string, resourceType: string, resourceId: string): Promise<void> {
-    const p = getWinterPool();
-    await p.query(
-      "DELETE FROM winter_favorites WHERE user_id = $1 AND resource_type = $2 AND resource_id = $3",
-      [requiredIdentifier(userId, "userId"), requiredIdentifier(resourceType, "resourceType"), requiredIdentifier(resourceId, "resourceId")],
-    );
+    await db
+      .delete(winterFavorites)
+      .where(
+        and(
+          eq(winterFavorites.userId, requiredIdentifier(userId, "userId")),
+          eq(winterFavorites.resourceType, requiredIdentifier(resourceType, "resourceType")),
+          eq(winterFavorites.resourceId, requiredIdentifier(resourceId, "resourceId")),
+        ),
+      );
   },
 
   async listSavedViews(userId: string, viewType: string): Promise<SavedViewRecord[]> {
-    const p = getWinterPool();
-    const res = await p.query<SavedViewRecord>(
-      `SELECT view_type as "viewType", name, state, created_at as "createdAt", updated_at as "updatedAt"
-       FROM winter_saved_views WHERE user_id = $1 AND view_type = $2 ORDER BY name ASC`,
-      [requiredIdentifier(userId, "userId"), requiredIdentifier(viewType, "viewType")],
-    );
-    return res.rows;
+    const rows = await db
+      .select({
+        viewType: winterSavedViews.viewType,
+        name: winterSavedViews.name,
+        state: winterSavedViews.state,
+        createdAt: winterSavedViews.createdAt,
+        updatedAt: winterSavedViews.updatedAt,
+      })
+      .from(winterSavedViews)
+      .where(
+        and(
+          eq(winterSavedViews.userId, requiredIdentifier(userId, "userId")),
+          eq(winterSavedViews.viewType, requiredIdentifier(viewType, "viewType")),
+        ),
+      )
+      .orderBy(winterSavedViews.name);
+    return rows.map((row) => ({
+      ...row,
+      state: row.state as SavedViewState,
+      createdAt: iso(row.createdAt),
+      updatedAt: iso(row.updatedAt),
+    }));
   },
 
   async saveView(userId: string, viewType: string, name: string, state: SavedViewState): Promise<SavedViewRecord> {
-    const p = getWinterPool();
-    const values = [
-      requiredIdentifier(userId, "userId"),
-      requiredIdentifier(viewType, "viewType"),
-      requiredIdentifier(name, "name"),
-      normalizeViewState(state),
-    ];
-    const res = await p.query<SavedViewRecord>(
-      `INSERT INTO winter_saved_views (user_id, view_type, name, state)
-       VALUES ($1, $2, $3, $4::jsonb)
-       ON CONFLICT (user_id, view_type, name) DO UPDATE SET state = EXCLUDED.state, updated_at = NOW()
-       RETURNING view_type as "viewType", name, state, created_at as "createdAt", updated_at as "updatedAt"`,
-      [values[0], values[1], values[2], JSON.stringify(values[3])],
-    );
-    return res.rows[0];
+    const normalized = normalizeViewState(state);
+    const rows = await db
+      .insert(winterSavedViews)
+      .values({
+        userId: requiredIdentifier(userId, "userId"),
+        viewType: requiredIdentifier(viewType, "viewType"),
+        name: requiredIdentifier(name, "name"),
+        state: normalized,
+      })
+      .onConflictDoUpdate({
+        target: [winterSavedViews.userId, winterSavedViews.viewType, winterSavedViews.name],
+        set: { state: normalized, updatedAt: sql`NOW()` },
+      })
+      .returning({
+        viewType: winterSavedViews.viewType,
+        name: winterSavedViews.name,
+        state: winterSavedViews.state,
+        createdAt: winterSavedViews.createdAt,
+        updatedAt: winterSavedViews.updatedAt,
+      });
+    const row = rows[0];
+    return {
+      ...row,
+      state: row.state as SavedViewState,
+      createdAt: iso(row.createdAt),
+      updatedAt: iso(row.updatedAt),
+    };
   },
 
   async deleteView(userId: string, viewType: string, name: string): Promise<void> {
-    const p = getWinterPool();
-    await p.query(
-      "DELETE FROM winter_saved_views WHERE user_id = $1 AND view_type = $2 AND name = $3",
-      [requiredIdentifier(userId, "userId"), requiredIdentifier(viewType, "viewType"), requiredIdentifier(name, "name")],
-    );
+    await db
+      .delete(winterSavedViews)
+      .where(
+        and(
+          eq(winterSavedViews.userId, requiredIdentifier(userId, "userId")),
+          eq(winterSavedViews.viewType, requiredIdentifier(viewType, "viewType")),
+          eq(winterSavedViews.name, requiredIdentifier(name, "name")),
+        ),
+      );
   },
 };

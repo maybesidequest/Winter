@@ -36,9 +36,13 @@ export async function loader({ request }: Route.LoaderArgs) {
       headers.append("Set-Cookie", await clearOAuthStateCookie());
       throw new Response(error.body, { status: error.status, statusText: error.statusText, headers });
     }
+    console.error("OAuth callback failed:", error);
     throw new Response("OAuth callback failed", {
       status: 502,
-      headers: { "Set-Cookie": await clearOAuthStateCookie() },
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Set-Cookie": await clearOAuthStateCookie(),
+      },
     });
   }
 }

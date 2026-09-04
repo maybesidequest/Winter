@@ -9,9 +9,14 @@ export default async function handleRequest(
   responseHeaders: Headers,
   routerContext: EntryContext
 ) {
+  // server.ts injects the per-request CSP nonce; React Router must apply it to
+  // its inline hydration scripts or the browser blocks them and the page never
+  // hydrates.
+  const nonce = request.headers.get("x-csp-nonce") ?? undefined;
   const body = await renderToReadableStream(
-    <ServerRouter context={routerContext} url={request.url} />,
+    <ServerRouter context={routerContext} url={request.url} nonce={nonce} />,
     {
+      nonce,
       signal: request.signal,
       onError(error: unknown) {
         console.error(error);

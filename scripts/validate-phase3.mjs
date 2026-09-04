@@ -49,6 +49,18 @@ for (const path of sourceFiles) {
   }
 }
 
+// Winter must never hold the bot token, Iris/Polarizer credentials, or a
+// shared-management database URL — including in local env files.
+const forbiddenEnvKey =
+  /^\s*(?:export\s+)?(?:DISCORD_TOKEN|IRIS_[A-Z0-9_]+|POLARIZER_[A-Z0-9_]+|MANAGEMENT_DATABASE_URL|INTERCHAT_MANAGEMENT_DATABASE_URL|DATABASE_URL)\s*=/;
+for (const name of [".env", ".env.local", ".env.production", ".env.example"]) {
+  const envPath = join(root, name);
+  if (!existsSync(envPath)) continue;
+  for (const line of readFileSync(envPath, "utf8").split("\n")) {
+    if (forbiddenEnvKey.test(line)) violations.push(`${name}: forbidden credential key`);
+  }
+}
+
 const staticIndex = join(appRoot, "generated/control/v1/static/index.ts");
 if (!existsSync(staticIndex)) violations.push("app/generated/control/v1/static/index.ts: generated static client index is missing");
 

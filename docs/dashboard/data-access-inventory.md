@@ -13,3 +13,16 @@ only the application code.
 
 Winter must not receive `DATABASE_URL`, `DISCORD_TOKEN`, Iris credentials,
 Polarizer credentials, or a Drizzle mapping for Atlas-owned management tables.
+
+## Bot-owned telemetry tables (outside the management boundary)
+
+The bot writes engagement telemetry directly: `HubActivityMetrics`,
+`HubUserStats`, streak/message/call counters, and `ServerData` name/icon
+inventory + call counters. These are Discord-event-derived observability
+projections, not InterChat management resources: no Winter route reads them,
+no management decision is authorized from them, and the canonical Hub/Server
+configuration remains Control Plane-owned. Reads of management resources
+(Hub, Connection, rules) use the outbox-fed local projection only
+(`shared/tasks/control_outbox_consumer.py`); every management mutation goes
+through `shared/control_client.py`.
+

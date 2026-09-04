@@ -67,6 +67,15 @@ describe("Winter authentication boundaries", () => {
     const envExample = await readFile(new URL("../../.env.example", import.meta.url), "utf8");
     expect(envExample).not.toMatch(/(?:^|\n)(?:IRIS|POLARIZER)_[A-Z_]+=/);
     expect(envExample).not.toMatch(/(?:^|\n)(?:DATABASE_URL|DISCORD_TOKEN)=/);
+    for (const envFile of [".env", ".env.local", ".env.production"]) {
+      try {
+        const localEnv = await readFile(new URL(`../../${envFile}`, import.meta.url), "utf8");
+        expect(localEnv).not.toMatch(/(?:^|\n)\s*(?:export\s+)?(?:IRIS|POLARIZER)_[A-Z0-9_]+\s*=/);
+        expect(localEnv).not.toMatch(/(?:^|\n)\s*(?:export\s+)?(?:DATABASE_URL|DISCORD_TOKEN)\s*=/);
+      } catch {
+        // Untracked local env files may legitimately be absent.
+      }
+    }
     await expect(readFile(new URL("../../app/services/iris.server.ts", import.meta.url))).rejects.toThrow();
     await expect(readFile(new URL("../../app/services/polarizer.server.ts", import.meta.url))).rejects.toThrow();
   });
