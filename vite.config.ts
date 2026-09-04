@@ -6,5 +6,7 @@ export default defineConfig({
   plugins: [tailwindcss(), reactRouter()],
   resolve: {
     tsconfigPaths: true,
+    // Prevent duplicate React copies when antd / react-query are pre-bundled.
+    dedupe: ["react", "react-dom"],
   },
 });

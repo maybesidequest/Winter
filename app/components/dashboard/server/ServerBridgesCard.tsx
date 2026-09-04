@@ -2,6 +2,7 @@ import {
   ApartmentOutlined,
   ArrowRightOutlined,
   CompassOutlined,
+  LinkOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { message } from "antd";
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { ConnectChannelWizard } from "~/components/dashboard/connection/ConnectChannelWizard";
 import { orpc } from "~/lib/orpc";
 import type { DiscordChannelResource, ServerBridgeResource, ServerResource } from "~/resources/server";
 import { ServerBridgeItem } from "./ServerBridgeItem";
@@ -24,6 +26,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
+  const [wizardOpen, setWizardOpen] = useState(false);
   // Keyed per bridge so concurrent actions never clear each other's spinner.
   const [pendingActions, setPendingActions] = useState<Record<string, "toggle" | "repair" | "disconnect">>({});
   const markPending = (bridgeId: string, action: "toggle" | "repair" | "disconnect") =>
@@ -229,6 +232,17 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
             </button>
           </div>
 
+          {/* Connect a channel */}
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            className="dashboard-btn-primary px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
+            title="Connect a channel on this server to a Hub"
+          >
+            <LinkOutlined />
+            <span>Connect a channel</span>
+          </button>
+
           {/* Hub Directory Link */}
           <Link
             to="/dashboard/browse"
@@ -247,16 +261,30 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
           className="p-8 md:p-12 rounded-2xl border flex flex-col items-center justify-center text-center gap-4"
           style={dashboardGlassCardStyle}
         >
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
-            <ApartmentOutlined />
+          <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-300 text-2xl">
+            <LinkOutlined />
           </div>
           <div className="flex flex-col gap-1.5 max-w-md">
             <h3 className="text-base font-bold text-white font-['Sora']">
-              No Connected Bridges
+              Connect this server to a Hub
             </h3>
             <p className="text-xs text-white/70">
-              This server has not bridged any channels to an InterChat Hub yet. You can connect channels to a Hub directly from Discord:
+              Pick one of this server&apos;s channels and the Hub it should relay with. Messages will flow between the
+              channel and the Hub&apos;s network.
             </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            className="dashboard-btn-primary px-5 py-2.5 text-xs font-semibold mt-2 flex items-center gap-2"
+          >
+            <LinkOutlined />
+            <span>Connect a channel</span>
+          </button>
+          <details className="mt-1 max-w-md w-full">
+            <summary className="text-[11px] text-white/40 cursor-pointer hover:text-white/60 select-none">
+              Prefer Discord commands?
+            </summary>
             <div className="mt-2 p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between gap-3 text-xs font-mono text-violet-300">
               <code>/hub join &lt;hub_name&gt;</code>
               <button
@@ -271,14 +299,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
                 Copy
               </button>
             </div>
-          </div>
-          <Link
-            to="/dashboard/browse"
-            className="dashboard-btn-primary px-5 py-2.5 text-xs font-semibold mt-2 flex items-center gap-2"
-          >
-            <span>Explore Hub Directory</span>
-            <ArrowRightOutlined className="text-[10px]" />
-          </Link>
+          </details>
         </div>
       ) : filteredBridges.length === 0 ? (
         <div
@@ -317,6 +338,17 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
           })}
         </div>
       )}
+
+      <ConnectChannelWizard
+        server={server}
+        channels={channels}
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onConnected={() => {
+          refreshBridges();
+          onServerUpdated?.();
+        }}
+      />
     </div>
   );
 }
