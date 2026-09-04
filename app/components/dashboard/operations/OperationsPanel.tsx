@@ -272,7 +272,7 @@ function OperationRow({
 export function OperationsPanel() {
   const [filter, setFilter] = useState<OperationFilterKey>("all");
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
-  const [pages, setPages] = useState<Array<{ operations: Operation[]; nextCursor: string }>>([]);
+  const [pages, setPages] = useState<ListOperationsResponse[]>([]);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   const firstPage = useQuery({

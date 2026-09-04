@@ -8,41 +8,42 @@ function grpcError(code: number): unknown {
   return Object.assign(new Error("rpc failure"), { code });
 }
 
-function orpcCodeOf(error: unknown): string {
-  expect(error).toBeInstanceOf(ORPCError);
-  return (error as ORPCError).code;
+function catchError(fn: () => unknown): ORPCError<any, any> {
+  try {
+    fn();
+    throw new Error("expected function to throw an ORPCError");
+  } catch (error) {
+    expect(error).toBeInstanceOf(ORPCError);
+    return error as ORPCError<any, any>;
+  }
 }
 
 describe("mapOperationError", () => {
   it("maps invalid-argument to BAD_REQUEST", () => {
-    expect(orpcCodeOf(() => mapOperationError(grpcError(3))())).toBe("BAD_REQUEST");
+    expect(catchError(() => mapOperationError(grpcError(3))).code).toBe("BAD_REQUEST");
   });
 
   it("maps abort, already-exists, and failed-precondition to CONFLICT", () => {
     for (const code of [6, 9, 10]) {
-      try {
-        mapOperationError(grpcError(code));
-        throw new Error(`expected CONFLICT for ${code}`);
-      } catch (error) {
-        expect(orpcCodeOf(error)).toBe("CONFLICT");
-        expect((error as ORPCError).message).toBe("The operation changed. Refresh and try again.");
-      }
+      const error = catchError(() => mapOperationError(grpcError(code)));
+      expect(error.code).toBe("CONFLICT");
+      expect(error.message).toBe("The operation changed. Refresh and try again.");
     }
   });
 
   it("maps unimplemented to BAD_REQUEST", () => {
-    expect(orpcCodeOf(() => mapOperationError(grpcError(12))())).toBe("BAD_REQUEST");
+    expect(catchError(() => mapOperationError(grpcError(12))).code).toBe("BAD_REQUEST");
   });
 
   it("collapses not-found, permission-denied, and unauthenticated into NOT_FOUND", () => {
     for (const code of [5, 7, 16]) {
-      expect(orpcCodeOf(() => mapOperationError(grpcError(code))())).toBe("NOT_FOUND");
+      expect(catchError(() => mapOperationError(grpcError(code))).code).toBe("NOT_FOUND");
     }
   });
 
   it("treats every other failure as SERVICE_UNAVAILABLE", () => {
     for (const code of [4, 14, 8, 13, 2]) {
-      expect(orpcCodeOf(() => mapOperationError(grpcError(code))())).toBe("SERVICE_UNAVAILABLE");
+      expect(catchError(() => mapOperationError(grpcError(code))).code).toBe("SERVICE_UNAVAILABLE");
     }
   });
 });
