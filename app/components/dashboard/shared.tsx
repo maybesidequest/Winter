@@ -74,3 +74,4 @@ export function DashboardDangerCard({ style, styles, ...props }: CardProps) {
 }
 
 export { DepthToggle, type DepthToggleProps } from "./DepthToggle";
+export { DashboardSelect, type DashboardSelectProps, type DashboardSelectOption } from "./DashboardSelect";

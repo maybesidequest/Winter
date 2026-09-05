@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Select } from "antd";
-import { DepthToggle } from "~/components/dashboard/shared";
+import { DashboardSelect, DepthToggle } from "~/components/dashboard/shared";
 import type { DiscordChannelResource, ServerResource } from "~/resources/server";
 
 type CallSpec = ServerResource["spec"];
@@ -18,7 +17,7 @@ export function CallSettings({ server, channels, saving, onSave }: { server: Ser
   const update = <K extends keyof CallSpec>(key: K, value: CallSpec[K]) => setSpec((current) => ({ ...current, [key]: value }));
   return <section className="dashboard-section"><div className="dashboard-form">
     {!server.status.botInstalled && <div className="dashboard-alert">Install InterChat in this server before changing text Call settings.</div>}
-    <div className="dashboard-field"><label htmlFor="call-channels">Allowed Call channels</label><Select id="call-channels" mode="multiple" className="w-full custom-glass-select" value={spec.lobbyChannelIds} disabled={!server.status.botInstalled} placeholder="Any text channel" options={channels.map((channel) => ({ value: channel.id, label: `#${channel.name}`, disabled: !channel.connectable, title: channel.rejectionReason || undefined }))} onChange={(value) => update("lobbyChannelIds", value)} /><small>Leave empty to allow text Calls in any accessible channel. Channels that cannot support Calls are shown disabled with the Control Plane reason.</small></div>
+    <div className="dashboard-field"><label htmlFor="call-channels">Allowed Call channels</label><DashboardSelect id="call-channels" aria-label="Allowed Call channels" mode="multiple" className="w-full" value={spec.lobbyChannelIds} disabled={!server.status.botInstalled} placeholder="Any text channel" options={channels.map((channel) => ({ value: channel.id, label: `#${channel.name}`, disabled: !channel.connectable, title: channel.rejectionReason || undefined }))} onChange={(value) => update("lobbyChannelIds", value)} /><small>Leave empty to allow text Calls in any accessible channel. Channels that cannot support Calls are shown disabled with the Control Plane reason.</small></div>
     <div>{toggles.map((toggle) => <div className="dashboard-toggle-row" key={toggle.key}><div><strong>{toggle.label}</strong><small>{toggle.description}</small></div><DepthToggle checked={Boolean(spec[toggle.key])} disabled={!server.status.botInstalled} onChange={(value) => update(toggle.key, value)} aria-label={toggle.label} /></div>)}</div>
     {server.status.botInstalled && <div><button className="dashboard-button dashboard-button--primary" disabled={saving} onClick={() => onSave(spec)}>{saving ? "Saving…" : "Save Call settings"}</button></div>}
   </div></section>;

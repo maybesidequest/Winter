@@ -60,6 +60,7 @@
     },
   },
   "trustedDependencies": [
+    "esbuild",
     "protobufjs",
   ],
   "packages": {

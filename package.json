@@ -72,6 +72,7 @@
     "vite": "^8.2.2"
   },
   "trustedDependencies": [
+    "esbuild",
     "protobufjs"
   ]
 }

@@ -1,7 +1,7 @@
 import { CheckCircleOutlined, SendOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
+import { DashboardSelect, dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpc } from "~/lib/orpc";
 
 type FeedbackCategory = "general" | "dashboard" | "hub" | "safety";
@@ -95,18 +95,13 @@ export function HelpFeedbackForm() {
             <label htmlFor="feedback-category" className="text-white/70 font-semibold">
               Category
             </label>
-            <select
+            <DashboardSelect<FeedbackCategory>
               id="feedback-category"
               value={category}
-              onChange={(e) => setCategory(e.target.value as FeedbackCategory)}
-              className="dashboard-input text-xs font-bold py-1.5 px-3 min-h-[36px] bg-[#13141f] border border-white/10 rounded-xl text-white cursor-pointer focus:border-[#8175ee] focus:outline-none"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value} className="bg-[#13141f] text-white">
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setCategory(val)}
+              className="w-full"
+              options={CATEGORIES}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">

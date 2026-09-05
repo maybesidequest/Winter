@@ -1,4 +1,5 @@
 import { CalendarOutlined, ReloadOutlined } from "@ant-design/icons";
+import { DashboardSelect } from "~/components/dashboard/shared";
 
 export const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -35,31 +36,27 @@ export function ActivityPeriodBar({
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <select
+        <DashboardSelect<number>
           aria-label="Activity month"
           value={month}
-          onChange={(e) => onPeriodChange(year, Number(e.target.value))}
-          className="text-xs font-bold py-1.5 px-3 min-h-[36px] bg-[#13141f] border border-white/10 rounded-xl text-white cursor-pointer focus:border-[#8175ee] focus:outline-none"
-        >
-          {MONTH_NAMES.map((name, index) => (
-            <option key={name} value={index + 1} className="bg-[#13141f] text-white">
-              {name}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => onPeriodChange(year, val)}
+          options={MONTH_NAMES.map((name, index) => ({
+            value: index + 1,
+            label: name,
+          }))}
+          style={{ width: 130 }}
+        />
 
-        <select
+        <DashboardSelect<number>
           aria-label="Activity year"
           value={year}
-          onChange={(e) => onPeriodChange(Number(e.target.value), month)}
-          className="text-xs font-bold py-1.5 px-3 min-h-[36px] bg-[#13141f] border border-white/10 rounded-xl text-white cursor-pointer focus:border-[#8175ee] focus:outline-none"
-        >
-          {[currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
-            <option key={y} value={y} className="bg-[#13141f] text-white">
-              {y}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => onPeriodChange(val, month)}
+          options={[currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => ({
+            value: y,
+            label: String(y),
+          }))}
+          style={{ width: 100 }}
+        />
 
         {!isCurrent && (
           <button

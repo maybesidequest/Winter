@@ -1,6 +1,6 @@
-import { Select, message } from "antd";
+import { message } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
-import { DepthToggle } from "~/components/dashboard/shared";
+import { DashboardSelect, DepthToggle } from "~/components/dashboard/shared";
 import type { UserResource, SupportedLocale } from "~/resources/user";
 import { orpc } from "~/lib/orpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -69,10 +69,10 @@ export function PreferencesSection({
           href="https://top.gg/bot/interchat/vote"
           target="_blank"
           rel="noreferrer"
-          className="dashboard-pill-btn text-[11px] flex items-center gap-1.5 py-1 px-2.5 rounded-lg no-underline text-violet-300 hover:text-white"
+          className="dashboard-pill-btn text-xs flex items-center gap-1.5 py-1 px-2.5 rounded-lg no-underline text-violet-300 hover:text-white"
         >
           <span>Vote</span>
-          <LinkOutlined className="text-[10px]" />
+          <LinkOutlined className="text-xs" />
         </a>
       ),
     },
@@ -107,17 +107,17 @@ export function PreferencesSection({
       >
         <div>
           <h4 className="text-xs sm:text-sm font-bold text-white">Bot Language</h4>
-          <p className="text-[11px] text-white/50">
+          <p className="text-xs text-white/50">
             Language used for bot commands, embed responses, and direct messages.
           </p>
         </div>
         <div className="w-full sm:w-48">
-            <Select
-              value={spec.locale || "en"}
-              onChange={(val) => handleToggle("locale", val)}
-              disabled={mutation.isPending}
+          <DashboardSelect
+            value={spec.locale || "en"}
+            onChange={(val) => handleToggle("locale", val)}
+            disabled={mutation.isPending}
             className="w-full"
-            popupClassName="dashboard-dropdown-panel"
+            aria-label="Bot Language"
             options={locales.map((loc) => ({
               value: loc.code,
               label: `${loc.flag} ${loc.name}`,
@@ -142,7 +142,7 @@ export function PreferencesSection({
               <span className="text-xs sm:text-sm font-bold text-white leading-tight">
                 {row.title}
               </span>
-              <span className="text-[11px] text-white/50 mt-0.5 leading-snug">
+              <span className="text-xs text-white/50 mt-0.5 leading-snug">
                 {row.desc}
               </span>
             </div>

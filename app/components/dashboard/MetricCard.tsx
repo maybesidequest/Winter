@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 
 interface MetricCardProps {
   title: string;
@@ -19,15 +20,15 @@ export function MetricCard({
 }: MetricCardProps) {
   return (
     <div
-      className="relative overflow-hidden p-5 md:p-6 rounded-2xl flex flex-col justify-between select-none"
+      className="relative overflow-hidden rounded-2xl flex flex-col justify-between select-none transition-all hover:border-white/15 group"
       style={{
-        background: "#13141f",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        boxShadow: "0 4px 0 0 rgba(10, 8, 23, 0.75)",
+        ...dashboardGlassCardStyle,
+        height: "auto",
+        padding: "20px 24px",
       }}
     >
       {/* Subtle Contour Effect from Homepage (Atlas Contours) */}
-      <div className={`${contourClass} pointer-events-none`} aria-hidden="true" />
+      <div className={`${contourClass} pointer-events-none opacity-25 group-hover:opacity-35 transition-opacity`} aria-hidden="true" />
 
       {/* Content */}
       <div className="relative z-10 flex items-start justify-between gap-4">
@@ -41,7 +42,7 @@ export function MetricCard({
         </div>
 
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 border border-white/10"
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 border border-white/10 shadow-[0_1.5px_0_0_rgba(255,255,255,0.06)]"
           style={{ backgroundColor: iconBg }}
         >
           {icon}
