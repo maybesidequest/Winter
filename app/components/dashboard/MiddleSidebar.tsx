@@ -1,3 +1,4 @@
+import { CheckOutlined, StarFilled } from "@ant-design/icons";
 import { useLocation, useParams, Link } from "react-router";
 import type { ServerResource } from "~/resources/server";
 import type { HubResource } from "~/resources/hub";
@@ -96,8 +97,8 @@ export function MiddleSidebar({
               background: bannerUrl
                 ? `url(${bannerUrl}) center/cover no-repeat`
                 : isHub
-                ? "linear-gradient(135deg, #1f1d33 0%, #13141f 100%)"
-                : "linear-gradient(135deg, #161e2b 0%, #13141f 100%)",
+                ? "linear-gradient(135deg, #222038 0%, #13141f 100%)"
+                : "linear-gradient(135deg, #19172b 0%, #13141f 100%)",
               border: "1px solid rgba(255, 255, 255, 0.08)",
               boxShadow: "0 1.5px 0 0 rgba(255, 255, 255, 0.08)",
             }}
@@ -127,20 +128,20 @@ export function MiddleSidebar({
               {isVerified && (
                 <span
                   title="Verified Hub"
-                  className="flex items-center justify-center w-4 h-4 rounded-full bg-violet-500/20 text-violet-300 border border-violet-400/40 text-[10px] flex-shrink-0 font-bold"
+                  className="flex items-center justify-center w-4 h-4 rounded-full bg-violet-500/20 text-violet-300 border border-violet-400/40 flex-shrink-0"
                 >
-                  ✓
+                  <CheckOutlined className="text-xs" />
                 </span>
               )}
               {isPartnered && !isVerified && (
                 <span
                   title="Partnered Hub"
-                  className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] flex-shrink-0 font-bold"
+                  className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 flex-shrink-0"
                 >
-                  ★
+                  <StarFilled className="text-xs" />
                 </span>
               )}
-              <span className="font-['Sora'] font-bold text-[15px] text-white tracking-wide truncate leading-none drop-shadow-md">
+              <span className="font-['Sora'] font-bold text-sm text-white tracking-wide truncate leading-none drop-shadow-md">
                 {currentTitle}
               </span>
             </div>

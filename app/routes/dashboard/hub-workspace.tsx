@@ -28,12 +28,12 @@ const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
   rules: { title: "Rules", desc: "Keep the Hub rules clear and current." },
   chat: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
   modules: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
-  logging: { title: "Logging", desc: "Configure log channels and notification roles." },
+  logging: { title: "Log Channels", desc: "Configure event log channels and notification dispatch." },
   badges: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
   invites: { title: "Invites", desc: "Create and revoke hub invite codes." },
   team: { title: "Team", desc: "Manage staff roles and permissions." },
   announcements: { title: "Announcements", desc: "Schedule announcements across connected servers." },
-  audit: { title: "Audit history", desc: "Review changes made to this Hub." },
+  audit: { title: "Audit Log", desc: "Review security and configuration changes made to this Hub." },
   settings: { title: "Settings", desc: "Manage visibility, localization, ownership, and deletion." },
 };
 
