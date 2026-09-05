@@ -10,10 +10,11 @@ import { ServerBlocklistTable } from "./ServerBlocklistTable";
 interface ServerBlocklistCardProps {
   server: ServerResource;
   blocks: ServerBlockResource[];
+  isLoading?: boolean;
   onRefresh?: () => void;
 }
 
-export function ServerBlocklistCard({ server, blocks: initialBlocks, onRefresh }: ServerBlocklistCardProps) {
+export function ServerBlocklistCard({ server, blocks: initialBlocks, isLoading = false, onRefresh }: ServerBlocklistCardProps) {
   const [blocks, setBlocks] = useState<ServerBlockResource[]>(initialBlocks);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -36,7 +37,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks, onRefresh }
         idempotencyKey: addIdempotencyKey.current,
       });
 
-      message.success(`Blocked ${values.targetType === "user" ? "member" : "Server"} successfully.`);
+      message.success(`Blocked ${values.targetType === "user" ? "member" : "server"} successfully.`);
       setIsAddModalOpen(false);
       addIdempotencyKey.current = crypto.randomUUID();
 
@@ -64,7 +65,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks, onRefresh }
         blockId,
         idempotencyKey,
       });
-      message.success("Entity unblocked successfully.");
+      message.success("Unblocked successfully.");
       setBlocks((prev) => prev.filter((b) => b.id !== blockId));
       removeIdempotencyKeys.current.delete(blockId);
       onRefresh?.();
@@ -89,7 +90,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks, onRefresh }
               Server Blocklist
             </h2>
             <p className="text-xs text-white/70">
-              Prevent specific Discord users or servers from interacting with {server.metadata.name} in Calls and Hubs.
+              Prevent disruptive members or other servers from chatting in your bridged channels and calls.
             </p>
           </div>
         </div>
@@ -106,7 +107,7 @@ export function ServerBlocklistCard({ server, blocks: initialBlocks, onRefresh }
       </div>
 
       {/* Blocklist Table */}
-      <ServerBlocklistTable blocks={blocks} onRemoveBlock={handleRemoveBlock} />
+      <ServerBlocklistTable blocks={blocks} isLoading={isLoading} onRemoveBlock={handleRemoveBlock} />
 
       {/* Add Block Modal */}
       <ServerBlockModal

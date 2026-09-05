@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Radio } from "antd";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { HubSubjectSelector } from "../HubSubjectSelector";
 
 export interface ServerBlockModalProps {
@@ -18,10 +18,12 @@ export function ServerBlockModal({
   serverId,
 }: ServerBlockModalProps) {
   const [form] = Form.useForm();
+  const [targetType, setTargetType] = useState<"user" | "server">("user");
 
   useEffect(() => {
     if (!open) {
       form.resetFields();
+      setTargetType("user");
     }
   }, [open, form]);
 
@@ -36,48 +38,60 @@ export function ServerBlockModal({
 
   return (
     <Modal
-      title="Block User or Server"
+      title={targetType === "server" ? "Block Discord Server" : "Block Discord Member"}
       open={open}
       onOk={handleOk}
       confirmLoading={submitting}
       onCancel={onClose}
-      okText="Block Entity"
+      okText={targetType === "server" ? "Block Server" : "Block Member"}
       okButtonProps={{ danger: true }}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" initialValues={{ targetType: "user" }} className="mt-4">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ targetType: "user" }}
+        className="mt-4"
+        onValuesChange={(changed) => {
+          if (changed.targetType) {
+            setTargetType(changed.targetType);
+            form.setFieldValue("targetId", undefined);
+          }
+        }}
+      >
         <Form.Item
           name="targetType"
-          label="Target Type"
+          label="Who do you want to block?"
           rules={[{ required: true }]}
         >
           <Radio.Group buttonStyle="solid">
-            <Radio.Button value="user">User</Radio.Button>
-            <Radio.Button value="server">Server</Radio.Button>
+            <Radio.Button value="user">Discord Member</Radio.Button>
+            <Radio.Button value="server">Discord Server</Radio.Button>
           </Radio.Group>
         </Form.Item>
 
-        <Form.Item noStyle shouldUpdate={(previous, current) => previous.targetType !== current.targetType}>
-          {({ getFieldValue }) => {
-            const targetType = getFieldValue("targetType");
-            return (
-              <Form.Item
-                name="targetId"
-                label="Target"
-                rules={[{ required: true, message: "Choose a named user or Server" }]}
-              >
-                <HubSubjectSelector
-                  hubId={serverId}
-                  selectorType={targetType === "server" ? "SELECTOR_TYPE_SERVER" : "SELECTOR_TYPE_USER"}
-                  placeholder={targetType === "server" ? "Search manageable Servers" : "Search Server members"}
-                />
-              </Form.Item>
-            );
-          }}
+        <Form.Item
+          name="targetId"
+          label={targetType === "server" ? "Select Discord Server" : "Select Discord Member"}
+          rules={[{ required: true, message: targetType === "server" ? "Please select a server to block" : "Please select a member to block" }]}
+        >
+          <HubSubjectSelector
+            hubId={serverId}
+            selectorType={targetType === "server" ? "SELECTOR_TYPE_SERVER" : "SELECTOR_TYPE_USER"}
+            placeholder={targetType === "server" ? "Search connected servers…" : "Search server members…"}
+          />
         </Form.Item>
 
-        <Form.Item name="reason" label="Reason" rules={[{ required: true, message: "Please provide a reason" }]}>
-          <Input.TextArea placeholder="Internal note for staff" rows={3} maxLength={500} />
+        <Form.Item
+          name="reason"
+          label="Reason for Block"
+          rules={[{ required: true, message: "Please provide a reason" }]}
+        >
+          <Input.TextArea
+            placeholder="e.g., Repeated spam or harassment across bridges"
+            rows={3}
+            maxLength={500}
+          />
         </Form.Item>
       </Form>
     </Modal>

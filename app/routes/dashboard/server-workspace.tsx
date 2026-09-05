@@ -15,7 +15,7 @@ import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCall
 import { ServerMobileTabs } from "~/components/dashboard/server/ServerMobileTabs";
 import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
 import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
-import { requireUser } from "~/services/auth.server";
+import { requireUser, type User } from "~/services/auth.server";
 import { serverService } from "~/services/server.server";
 import { shouldRevalidateServerWorkspace } from "~/services/serverWorkspaceNavigation";
 import { stateForCollection, stateForControlError, type ServerDataState } from "~/services/serverState";
@@ -49,6 +49,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   } catch (error) {
     const failure = stateForControlError(error);
     return {
+      user: {
+        id: user.id,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+      },
       server: null,
       serverState: failure.state,
       serverError: failure.message,
@@ -56,6 +61,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   return {
+    user: {
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+    },
     server,
     serverState: "ready" as const,
     serverError: null,
@@ -72,6 +82,7 @@ const VIEW_CAPABILITIES: Record<string, readonly string[]> = {
 const LEGACY_VIEWS: Record<string, string> = { blocklist: "safety" };
 
 type DashboardContext = {
+  user?: User;
   capabilities?: Record<string, boolean>;
 };
 
@@ -93,7 +104,8 @@ export default function ServerWorkspace() {
   const navigation = useNavigation();
   const revalidator = useRevalidator();
   const queryClient = useQueryClient();
-  const { capabilities = {} } = useOutletContext<DashboardContext>();
+  const { user: contextUser, capabilities = {} } = useOutletContext<DashboardContext>();
+  const user = data.user || contextUser;
   const params = useParams();
   const serverId = params.serverId || "";
   const requestedView = LEGACY_VIEWS[params.view || "overview"] || params.view || "overview";
@@ -150,8 +162,14 @@ export default function ServerWorkspace() {
   );
   if (navigation.state !== "idle" && (!isSameServerNavigation || !serverDataIsForCurrentRoute)) {
     return (
-      <main className="max-w-2xl mx-auto p-6" aria-busy="true">
-        <div className="dashboard-alert" role="status">Loading server data…</div>
+      <main className="flex flex-col gap-6 max-w-6xl mx-auto w-full animate-pulse p-4 sm:p-0" aria-busy="true">
+        <div className="flex flex-col gap-2 pb-6 border-b border-white/[0.08]">
+          <div className="h-4 w-28 bg-white/[0.08] rounded-md" />
+          <div className="h-8 w-64 bg-white/[0.12] rounded-lg" />
+          <div className="h-4 w-96 bg-white/[0.06] rounded-md mt-1" />
+        </div>
+        <div className="h-10 w-full max-w-md bg-white/[0.06] rounded-xl" />
+        <div className="h-72 w-full bg-white/[0.03] rounded-2xl border border-white/[0.06]" />
       </main>
     );
   }
@@ -221,9 +239,7 @@ export default function ServerWorkspace() {
         ? blocksState
         : null;
   const viewUnavailable = viewDataState && (viewDataState.state === "permission_denied" || viewDataState.state === "unavailable");
-  const viewNotRequested = viewDataState?.state === "not_requested";
-  const viewLoading = viewDataState?.state === "loading";
-  const viewNeedsAttention = Boolean(viewUnavailable || viewNotRequested || viewLoading || (!server.status.botInstalled && view !== "overview"));
+  const viewNeedsAttention = Boolean(viewUnavailable || (!server.status.botInstalled && view !== "overview"));
   const viewQuery = view === "calls"
     ? channelsQuery
     : view === "bridges"
@@ -233,11 +249,7 @@ export default function ServerWorkspace() {
         : null;
   const viewAttentionMessage = !server.status.botInstalled && view !== "overview"
     ? "Install InterChat in this Discord server before managing this data."
-    : viewNotRequested
-      ? "This data was not requested for the current server state."
-      : viewLoading
-        ? `Loading ${currentView.title.toLowerCase()} data…`
-        : viewDataState?.error;
+    : viewDataState?.error || "This section is currently unavailable.";
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
@@ -267,6 +279,7 @@ export default function ServerWorkspace() {
       {view === "overview" && (
         <ServerOverviewCard
           server={server}
+          user={user}
           bridges={bridges}
           bridgesCount={server.status.connectionCount}
           blocksCount={blocks.length}
@@ -298,6 +311,7 @@ export default function ServerWorkspace() {
           server={server}
           bridges={bridges}
           channels={channels}
+          isLoading={bridgesQuery.isLoading}
           onServerUpdated={refreshServerProjection}
         />
       )}
@@ -305,11 +319,16 @@ export default function ServerWorkspace() {
         <ServerCallSettingsCard
           server={server}
           channels={channels}
+          channelsLoading={channelsQuery.isLoading}
           onServerUpdated={refreshServerProjection}
         />
       )}
       {(view === "safety" || view === "blocklist") && !viewNeedsAttention && (
-        <ServerBlocklistCard server={server} blocks={blocks} />
+        <ServerBlocklistCard
+          server={server}
+          blocks={blocks}
+          isLoading={blocksQuery.isLoading}
+        />
       )}
       {view === "settings" && !viewNeedsAttention && (
         <ServerSettingsCard

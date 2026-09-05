@@ -66,34 +66,37 @@ export function HubRoutes({
               placeholder="Search bridges..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="dashboard-input text-xs pl-8 py-1.5 min-h-[34px] w-48"
+              className="dashboard-input text-sm pl-8 py-1.5 min-h-[42px] w-full sm:w-56"
             />
           </div>
 
-          <div className="flex items-center bg-white/[0.04] p-1 rounded-xl border border-white/[0.08]">
+          <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Bridge status filters">
             <button
               type="button"
+              aria-pressed={statusFilter === "all"}
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                statusFilter === "all" ? "bg-white/[0.12] text-white" : "text-white/50 hover:text-white"
+              className={`dashboard-pill-btn px-3 py-1.5 text-xs font-bold ${
+                statusFilter === "all" ? "dashboard-pill-btn--active text-white" : "text-white/70 hover:text-white"
               }`}
             >
               All ({connections.length})
             </button>
             <button
               type="button"
+              aria-pressed={statusFilter === "active"}
               onClick={() => setStatusFilter("active")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                statusFilter === "active" ? "bg-white/[0.12] text-emerald-300" : "text-white/50 hover:text-white"
+              className={`dashboard-pill-btn px-3 py-1.5 text-xs font-bold ${
+                statusFilter === "active" ? "dashboard-pill-btn--active text-white" : "text-white/70 hover:text-white"
               }`}
             >
               Enabled ({activeCount})
             </button>
             <button
               type="button"
+              aria-pressed={statusFilter === "paused"}
               onClick={() => setStatusFilter("paused")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                statusFilter === "paused" ? "bg-white/[0.12] text-amber-300" : "text-white/50 hover:text-white"
+              className={`dashboard-pill-btn px-3 py-1.5 text-xs font-bold ${
+                statusFilter === "paused" ? "dashboard-pill-btn--active text-white" : "text-white/70 hover:text-white"
               }`}
             >
               Paused ({pausedCount})
@@ -109,7 +112,7 @@ export function HubRoutes({
             {filtered.map((connection) => (
               <div
                 key={connection.metadata.id}
-                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
+                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-150 hover:bg-[#181726]/60 group"
               >
                 {/* Identity */}
                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -183,13 +186,22 @@ export function HubRoutes({
           </div>
         ) : (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white/40">
+            <div className="w-12 h-12 rounded-2xl bg-[#181726] border border-white/10 flex items-center justify-center text-xl text-violet-300 shadow-[0_2px_0_0_rgba(10,8,23,0.5)]">
               <ApiOutlined />
             </div>
             <h3 className="text-sm font-bold text-white font-['Sora'] m-0">No Connected Bridges Found</h3>
             <p className="text-xs text-white/50 max-w-sm m-0">
               {search ? "No bridges match your filter criteria." : "Connect a Discord channel via InterChat's /hub connect command or invite code."}
             </p>
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-bold mt-1"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         )}
       </div>

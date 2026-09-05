@@ -10,10 +10,21 @@ import type { ServerBlockResource } from "~/resources/server";
 
 export interface ServerBlocklistTableProps {
   blocks: ServerBlockResource[];
+  isLoading?: boolean;
   onRemoveBlock: (blockId: string) => Promise<void>;
 }
 
-export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistTableProps) {
+export function ServerBlocklistTable({ blocks, isLoading = false, onRemoveBlock }: ServerBlocklistTableProps) {
+  if (isLoading) {
+    return (
+      <div className="p-6 rounded-2xl border flex flex-col gap-3 animate-pulse" style={dashboardGlassCardStyle}>
+        <div className="h-6 w-36 bg-white/[0.08] rounded-md" />
+        <div className="h-12 w-full bg-white/[0.04] rounded-xl" />
+        <div className="h-12 w-full bg-white/[0.04] rounded-xl" />
+      </div>
+    );
+  }
+
   if (blocks.length === 0) {
     return (
       <div
@@ -25,10 +36,10 @@ export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistT
         </div>
         <div className="flex flex-col gap-1 max-w-sm">
           <h3 className="text-base font-bold text-white font-['Sora']">
-            No Blocked Entities
+            Your Blocklist is Clean
           </h3>
           <p className="text-xs text-white/70">
-            Your server blocklist is clean. Blocked users or servers will not be matched in Calls or bridge messages to this server.
+            No members or servers are blocked. Everyone can chat across bridges and connect in calls.
           </p>
         </div>
       </div>
@@ -45,7 +56,7 @@ export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistT
           <thead>
             <tr className="border-b border-white/[0.08] text-white/70 uppercase tracking-wider font-semibold">
               <th className="py-3 px-4">Type</th>
-              <th className="py-3 px-4">Target</th>
+              <th className="py-3 px-4">Member or Server</th>
               <th className="py-3 px-4">Reason</th>
               <th className="py-3 px-4">Added by</th>
               <th className="py-3 px-4">Date Added</th>
@@ -63,7 +74,7 @@ export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistT
                       }`}
                   >
                     {block.targetType === "user" ? <UserOutlined /> : <CloudServerOutlined />}
-                    <span>{block.targetType.toUpperCase()}</span>
+                    <span>{block.targetType === "user" ? "MEMBER" : "SERVER"}</span>
                   </span>
                 </td>
                 <td className="py-3.5 px-4">
@@ -78,9 +89,9 @@ export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistT
                 </td>
                 <td className="py-3.5 px-4 text-right">
                   <Popconfirm
-                    title="Unblock entity"
-                    description="Are you sure you want to remove this block?"
-                    okText="Yes, Unblock"
+                    title="Remove this block?"
+                    description="This member or server will be able to join calls and bridge messages again."
+                    okText="Unblock"
                     cancelText="Cancel"
                     okButtonProps={{ danger: true }}
                     onConfirm={() => onRemoveBlock(block.id)}
@@ -102,4 +113,3 @@ export function ServerBlocklistTable({ blocks, onRemoveBlock }: ServerBlocklistT
     </div>
   );
 }
-

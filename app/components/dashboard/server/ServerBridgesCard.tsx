@@ -12,10 +12,11 @@ interface ServerBridgesCardProps {
   server: ServerResource;
   bridges: ServerBridgeResource[];
   channels?: DiscordChannelResource[];
+  isLoading?: boolean;
   onServerUpdated?: () => void;
 }
 
-export function ServerBridgesCard({ server, bridges, channels = [], onServerUpdated }: ServerBridgesCardProps) {
+export function ServerBridgesCard({ server, bridges, channels = [], isLoading = false, onServerUpdated }: ServerBridgesCardProps) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
@@ -145,7 +146,12 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
         onOpenWizard={() => setWizardOpen(true)}
       />
 
-      {bridges.length === 0 || filteredBridges.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
+          <div className="h-44 rounded-2xl bg-white/[0.04] border border-white/[0.08]" />
+          <div className="h-44 rounded-2xl bg-white/[0.04] border border-white/[0.08]" />
+        </div>
+      ) : bridges.length === 0 || filteredBridges.length === 0 ? (
         <ServerBridgesEmptyState
           isFiltered={bridges.length > 0 && filteredBridges.length === 0}
           onOpenWizard={() => setWizardOpen(true)}

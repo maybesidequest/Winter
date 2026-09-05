@@ -336,7 +336,7 @@
 /* Sub-card or inner panel within a main dashboard card */
 .dashboard-subcard {
   --subcard-edge: rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
+  background: #181726;
   border: 1px solid var(--subcard-edge);
   border-radius: 12px;
   box-shadow: 0 1.5px 0 0 var(--subcard-edge);
@@ -347,7 +347,7 @@
   --subcard-edge: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
   box-shadow: 0 2.5px 0 0 var(--subcard-edge);
-  background: rgba(255, 255, 255, 0.04);
+  background: #1d1b2e;
 }
 
 .dashboard-button {

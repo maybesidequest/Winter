@@ -45,10 +45,10 @@ export function ServerBridgeItem({
     : null;
 
   const statusBadge = needsAttention
-    ? { label: "Degraded", dot: "bg-amber-400", classes: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
+    ? { label: "Needs Attention", dot: "bg-amber-400", classes: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
     : isPaused
       ? { label: "Paused", dot: "bg-amber-400", classes: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
-      : { label: "Relay enabled", dot: "bg-emerald-400 animate-pulse", classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" };
+      : { label: "Active", dot: "bg-emerald-400 animate-pulse", classes: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" };
 
   const formattedDate = bridge.createdAt
     ? new Date(bridge.createdAt).toLocaleDateString(undefined, {
@@ -111,7 +111,7 @@ export function ServerBridgeItem({
           <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ExclamationCircleOutlined className="flex-shrink-0 text-rose-400" />
-              <span>Discord webhook unprovisioned or missing.</span>
+              <span>Channel webhook is missing or disconnected.</span>
             </div>
             <button
               type="button"
@@ -153,7 +153,7 @@ export function ServerBridgeItem({
             disabled={isBridgePending}
             className="dashboard-btn-secondary px-3 py-1.5 min-h-[36px] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
             onClick={() => onRepair(bridge)}
-            title="Re-synchronize and repair Discord webhook"
+            title="Re-connect and repair Discord channel webhook"
           >
             {isRepairPending ? <LoadingOutlined /> : <ToolOutlined className="text-sky-400" />}
             <span>Repair</span>
@@ -162,7 +162,7 @@ export function ServerBridgeItem({
           {/* Disconnect Button */}
           <Popconfirm
             title="Disconnect this bridge?"
-            description="Messages will stop routing between this channel and the Hub."
+            description="Messages will stop flowing between this channel and the Hub."
             okText="Disconnect"
             cancelText="Cancel"
             okButtonProps={{ danger: true }}

@@ -1,38 +1,18 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, List, message, Modal, Popconfirm, Tag, Typography } from "antd";
+import { Alert, message, Popconfirm } from "antd";
 import { useRef, useState } from "react";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
-import { DashboardSectionCard, DashboardSectionTitle, DashboardSelect, DepthToggle } from "./shared";
-import { HubSubjectSelector } from "./HubSubjectSelector";
-
-const { Text } = Typography;
-
-export const HUB_ROLE_PERMISSIONS = [
-  { key: "MANAGE_HUB_SETTINGS", label: "Manage Settings", desc: "Edit Hub branding, bio, and modules", bit: 1 },
-  { key: "MODERATE_MESSAGES", label: "Moderate Messages", desc: "Warn members and moderate relayed chat", bit: 2 },
-  { key: "MANAGE_CONNECTIONS", label: "Manage Bridges", desc: "Pause, resume, or disconnect Discord servers", bit: 4 },
-  { key: "MANAGE_MODERATORS", label: "Manage Staff", desc: "Assign or modify roles and team access", bit: 8 },
-  { key: "MANAGE_RULES", label: "Manage Rules", desc: "Create, edit, reorder, and remove hub rules", bit: 16 },
-  { key: "VIEW_ANALYTICS", label: "View Analytics", desc: "View message volume and bridge statistics", bit: 32 },
-  { key: "VIEW_LOGS", label: "View Logs & Audit", desc: "Access audit history and log channels", bit: 64 },
-  { key: "MANAGE_BANS", label: "Manage Bans", desc: "Ban and unban users across connected channels", bit: 128 },
-  { key: "ANNOUNCE", label: "Broadcast Announcements", desc: "Send cross-server announcements", bit: 4096 },
-  { key: "LOCKDOWN_HUB", label: "Lockdown Hub", desc: "Emergency freeze on all bridge message traffic", bit: 8192 },
-  { key: "MANAGE_INVITES", label: "Manage Invites", desc: "Create and revoke server invite codes", bit: 16384 },
-] as const;
-
-function getPermissionLabels(bitmask: number): string[] {
-  if (bitmask === 0) return ["No permissions"];
-  const labels: string[] = [];
-  for (const perm of HUB_ROLE_PERMISSIONS) {
-    if ((bitmask & perm.bit) === perm.bit) {
-      labels.push(perm.label);
-    }
-  }
-  return labels.length > 0 ? labels : [`Bitmask: ${bitmask}`];
-}
+import { DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { getPermissionLabels, HubRoleModal } from "./team/HubRoleModal";
+import { HubStaffAssignModal } from "./team/HubStaffAssignModal";
 
 interface HubTeamPanelProps {
   hub: HubResource;
@@ -60,7 +40,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
     orpc.hub.listStaff.queryOptions({ input: { hubId: hub.metadata.id } })
   );
   const { data: roles = [], isLoading: rolesLoading, isError: rolesError } = useQuery(
-    orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }),
+    orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } })
   );
 
   const assignMutation = useMutation(
@@ -87,7 +67,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to create role."),
-    }),
+    })
   );
 
   const deleteRoleMutation = useMutation(
@@ -97,7 +77,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to delete role."),
-    }),
+    })
   );
 
   const updateRoleMutation = useMutation(
@@ -110,7 +90,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
         queryClient.invalidateQueries({ queryKey: orpc.hub.listRoles.queryOptions({ input: { hubId: hub.metadata.id } }).queryKey });
       },
       onError: (err) => message.error(err.message || "Failed to update role."),
-    }),
+    })
   );
 
   const removeMutation = useMutation(
@@ -199,7 +179,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                 assignKeyRef.current = crypto.randomUUID();
                 setAssignModalOpen(true);
               }}
-              className="dashboard-btn-primary px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              className="dashboard-btn-primary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
             >
               <PlusOutlined />
               <span>Assign Staff</span>
@@ -225,25 +205,57 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
           <span className="text-xs text-white/60">{roles.length} available</span>
         </div>
 
-        <List
-          loading={rolesLoading}
-          size="small"
-          dataSource={roles}
-          locale={{ emptyText: <span className="text-xs text-white/60">No roles configured.</span> }}
-          renderItem={(item) => {
-            const grantedLabels = getPermissionLabels(item.spec.permissionsBitmask);
-            return (
-              <List.Item
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-                actions={
-                  canEdit && !item.status.protected
-                    ? [
-                      <Button
-                        key="edit-role"
-                        type="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        style={{ color: "rgba(255,255,255,0.7)" }}
+        {rolesLoading ? (
+          <div className="flex flex-col gap-2">
+            {[1, 2].map((i) => (
+              <div key={i} className="dashboard-subcard p-4 rounded-xl animate-pulse h-16" />
+            ))}
+          </div>
+        ) : roles.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {roles.map((item) => {
+              const grantedLabels = getPermissionLabels(item.spec.permissionsBitmask);
+              return (
+                <div
+                  key={item.metadata.id}
+                  className="dashboard-subcard p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors hover:bg-[#1d1b2e]"
+                >
+                  <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-xs text-[#c4b5fd] bg-violet-500/15 px-2 py-0.5 rounded border border-violet-500/30">
+                        {item.spec.name}
+                      </span>
+                      {item.status.protected && (
+                        <span className="text-xs text-amber-300/80 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-medium">
+                          System Protected
+                        </span>
+                      )}
+                      <span className="text-xs text-white/60">
+                        · {item.status.memberCount} {item.status.memberCount === 1 ? "member" : "members"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {grantedLabels.slice(0, 4).map((label) => (
+                        <span
+                          key={label}
+                          className="text-xs bg-white/[0.04] text-white/70 px-2 py-0.5 rounded-md border border-white/[0.04]"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                      {grantedLabels.length > 4 && (
+                        <span className="text-xs text-white/50 bg-white/[0.02] px-1.5 py-0.5 rounded">
+                          +{grantedLabels.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {canEdit && !item.status.protected && (
+                    <div className="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-center">
+                      <button
+                        type="button"
+                        className="dashboard-btn-secondary px-2.5 py-1 text-xs font-semibold"
                         onClick={() => {
                           setEditingRole(item);
                           setRoleName(item.spec.name);
@@ -252,10 +264,10 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                           setRoleModalOpen(true);
                         }}
                       >
-                        Edit
-                      </Button>,
+                        <EditOutlined />
+                        <span>Edit</span>
+                      </button>
                       <Popconfirm
-                        key="delete-role"
                         title="Delete this role?"
                         onConfirm={() =>
                           deleteRoleMutation.mutate(
@@ -269,48 +281,22 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                           )
                         }
                       >
-                        <Button type="text" danger size="small" icon={<DeleteOutlined />}>
-                          Delete
-                        </Button>
-                      </Popconfirm>,
-                    ]
-                    : []
-                }
-              >
-                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-4">
-                  <div className="flex items-center gap-2">
-                    <Tag color="purple" style={{ margin: 0, fontWeight: 600 }}>
-                      {item.spec.name}
-                    </Tag>
-                    {item.status.protected && (
-                      <span className="text-xs text-amber-300/80 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-medium">
-                        System Protected
-                      </span>
-                    )}
-                    <span className="text-xs text-white/60">
-                      · {item.status.memberCount} {item.status.memberCount === 1 ? "member" : "members"}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {grantedLabels.slice(0, 4).map((label) => (
-                      <span
-                        key={label}
-                        className="text-xs bg-white/[0.04] text-white/70 px-2 py-0.5 rounded-md border border-white/[0.04]"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                    {grantedLabels.length > 4 && (
-                      <span className="text-xs text-white/50 bg-white/[0.02] px-1.5 py-0.5 rounded">
-                        +{grantedLabels.length - 4} more
-                      </span>
-                    )}
-                  </div>
+                        <button
+                          type="button"
+                          className="dashboard-btn-danger px-2.5 py-1 text-xs font-semibold"
+                        >
+                          <DeleteOutlined />
+                        </button>
+                      </Popconfirm>
+                    </div>
+                  )}
                 </div>
-              </List.Item>
-            );
-          }}
-        />
+              );
+            })}
+          </div>
+        ) : (
+          <span className="text-xs text-white/60">No roles configured.</span>
+        )}
       </div>
 
       {/* Staff Assignments Section */}
@@ -320,152 +306,104 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
           <span className="text-xs text-white/60">{staff.length} active</span>
         </div>
 
-        <List
-          loading={staffLoading}
-          dataSource={staff}
-          locale={{ emptyText: <Text style={{ color: "rgba(255,255,255,0.6)" }}>No staff roles assigned.</Text> }}
-          renderItem={(item) => (
-            <List.Item
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-              actions={
-                canEdit && !staffError && !rolesError
-                  ? [
-                    <Popconfirm
-                      key="del"
-                      title="Remove this staff member?"
-                      onConfirm={() =>
-                        removeMutation.mutate(
-                          {
-                            hubId: hub.metadata.id,
-                            userId: item.metadata.userId,
-                            expectedVersion: hub.version,
-                            idempotencyKey: keyFor(removeStaffKeysRef.current, item.metadata.userId),
-                          },
-                          { onSuccess: () => removeStaffKeysRef.current.delete(item.metadata.userId) },
-                        )
-                      }
-                    >
-                      <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                    </Popconfirm>,
-                  ]
-                  : []
-              }
-            >
-              <List.Item.Meta
-                avatar={<UserOutlined style={{ color: "#8175ee", fontSize: 20, marginTop: 4 }} />}
-                title={
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
-                      Hub staff member
-                    </Text>
-                    <Tag color={item.spec.role === "OWNER" ? "gold" : item.spec.role === "MANAGER" ? "purple" : "cyan"}>
-                      {item.spec.role}
-                    </Tag>
+        {staffLoading ? (
+          <div className="flex flex-col gap-2">
+            {[1, 2].map((i) => (
+              <div key={i} className="dashboard-subcard p-4 rounded-xl animate-pulse h-16" />
+            ))}
+          </div>
+        ) : staff.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {staff.map((item) => (
+              <div
+                key={item.metadata.userId}
+                className="dashboard-subcard p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors hover:bg-[#1d1b2e]"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-8 h-8 rounded-full bg-violet-600/30 border border-violet-400/30 flex items-center justify-center text-xs text-violet-200 flex-shrink-0 shadow-[0_1.5px_0_0_#5b4ccb]">
+                    <UserOutlined />
                   </div>
-                }
-                description={
-                  <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>
-                    Assigned by {item.spec.assignedBy || "System"}
-                  </Text>
-                }
-              />
-            </List.Item>
-          )}
-        />
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white truncate font-['Sora']">
+                        Staff member
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                          item.spec.role === "OWNER"
+                            ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                            : item.spec.role === "MANAGER"
+                            ? "bg-violet-500/15 text-violet-300 border-violet-500/30"
+                            : "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                        }`}
+                      >
+                        {item.spec.role}
+                      </span>
+                    </div>
+                    <span className="text-xs text-white/50 truncate mt-0.5">
+                      Assigned by {item.spec.assignedBy || "System"}
+                    </span>
+                  </div>
+                </div>
+
+                {canEdit && !staffError && !rolesError && (
+                  <Popconfirm
+                    title="Remove this staff member?"
+                    onConfirm={() =>
+                      removeMutation.mutate(
+                        {
+                          hubId: hub.metadata.id,
+                          userId: item.metadata.userId,
+                          expectedVersion: hub.version,
+                          idempotencyKey: keyFor(removeStaffKeysRef.current, item.metadata.userId),
+                        },
+                        { onSuccess: () => removeStaffKeysRef.current.delete(item.metadata.userId) },
+                      )
+                    }
+                  >
+                    <button
+                      type="button"
+                      className="dashboard-btn-danger px-2.5 py-1 text-xs font-semibold"
+                      title="Remove staff member"
+                    >
+                      <DeleteOutlined />
+                    </button>
+                  </Popconfirm>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs text-white/60">No staff roles assigned.</span>
+        )}
       </div>
 
-      {/* Role Creation / Editing Modal with Permissions Matrix */}
-      <Modal
-        title={editingRole ? `Edit Role: ${editingRole.spec.name}` : "Create Hub Role"}
+      <HubRoleModal
         open={roleModalOpen}
-        confirmLoading={createRoleMutation.isPending || updateRoleMutation.isPending}
-        onCancel={() => setRoleModalOpen(false)}
-        onOk={handleSaveRole}
-        okText={editingRole ? "Save Role" : "Create Role"}
-        width={560}
-      >
-        <div className="flex flex-col gap-4 mt-4 max-h-[70vh] overflow-y-auto pr-1">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Role Name</label>
-            <input
-              type="text"
-              value={roleName}
-              onChange={(e) => setRoleName(e.target.value)}
-              placeholder="e.g. Moderator, Assistant, Community Lead"
-              className="dashboard-input text-xs"
-              maxLength={64}
-            />
-          </div>
+        isEditing={Boolean(editingRole)}
+        roleName={roleName}
+        roleBitmask={roleBitmask}
+        isPending={createRoleMutation.isPending || updateRoleMutation.isPending}
+        onRoleNameChange={setRoleName}
+        onTogglePermission={togglePermission}
+        onClose={() => setRoleModalOpen(false)}
+        onSubmit={handleSaveRole}
+      />
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-white/90">Role Permissions</label>
-              <span className="text-xs text-violet-300 font-mono">Bitmask: {roleBitmask}</span>
-            </div>
-            <p className="text-xs text-white/60 m-0">
-              Select the capabilities granted to members assigned this role.
-            </p>
-
-            <div className="flex flex-col divide-y divide-white/[0.06] rounded-xl border border-white/[0.08] bg-white/[0.02] p-1 mt-1">
-              {HUB_ROLE_PERMISSIONS.map((perm) => {
-                const checked = (roleBitmask & perm.bit) === perm.bit;
-                return (
-                  <label
-                    key={perm.key}
-                    className="flex items-center justify-between p-2.5 hover:bg-white/[0.04] rounded-lg transition-colors cursor-pointer"
-                  >
-                    <div className="flex flex-col gap-0.5 pr-3">
-                      <span className="text-xs font-semibold text-white/90">{perm.label}</span>
-                      <span className="text-xs text-white/60">{perm.desc}</span>
-                    </div>
-                    <DepthToggle
-                      checked={checked}
-                      onChange={() => togglePermission(perm.bit)}
-                      aria-label={perm.label}
-                    />
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Staff Assignment Modal */}
-      <Modal
-        title="Assign Hub Staff Role"
+      <HubStaffAssignModal
         open={assignModalOpen}
-        onOk={handleAssign}
-        onCancel={() => setAssignModalOpen(false)}
-        confirmLoading={assignMutation.isPending}
-        okText="Assign Member"
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-staff-subject">Member</label>
-            <HubSubjectSelector
-              id="hub-staff-subject"
-              hubId={hub.metadata.id}
-              value={userId}
-              onChange={setUserId}
-              placeholder="Search by Discord name"
-            />
-            <span id="hub-staff-subject-help" className="text-xs text-white/60">Choose a named member from this Hub.</span>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-staff-role">Role</label>
-            <DashboardSelect
-              id="hub-staff-role"
-              value={selectedRole || undefined}
-              onChange={setSelectedRole}
-              placeholder="Select a role"
-              disabled={rolesLoading || rolesError || roles.length === 0}
-              className="w-full"
-              options={roles.map((item) => ({ label: item.spec.name, value: item.spec.name }))}
-            />
-          </div>
-        </div>
-      </Modal>
+        hubId={hub.metadata.id}
+        userId={userId}
+        selectedRole={selectedRole}
+        roles={roles}
+        rolesLoading={rolesLoading}
+        rolesError={Boolean(rolesError)}
+        isPending={assignMutation.isPending}
+        onUserIdChange={setUserId}
+        onRoleChange={setSelectedRole}
+        onClose={() => setAssignModalOpen(false)}
+        onSubmit={handleAssign}
+      />
     </DashboardSectionCard>
   );
 }

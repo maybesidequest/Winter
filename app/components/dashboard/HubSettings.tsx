@@ -84,14 +84,14 @@ export function HubSettings({
                 className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all ${
                   visibility === opt.id
                     ? "bg-violet-500/15 border-violet-400 text-white shadow-sm"
-                    : "bg-white/[0.02] border-white/[0.08] text-white/70 hover:bg-white/[0.05]"
+                    : "bg-[#181726] border-white/[0.08] text-white/70 hover:bg-[#1d1b2e]"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <strong className="text-xs font-bold">{opt.title}</strong>
                   {visibility === opt.id && <span className="w-2 h-2 rounded-full bg-violet-400" />}
                 </div>
-                <span className="text-[11px] text-white/50 leading-relaxed">{opt.desc}</span>
+                <span className="text-xs text-white/50 leading-relaxed">{opt.desc}</span>
               </button>
             ))}
           </div>
@@ -99,10 +99,13 @@ export function HubSettings({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90">Primary Language</label>
+            <label htmlFor="hub-language-input" className="text-xs font-bold text-white/90">
+              Primary Language
+            </label>
             <input
+              id="hub-language-input"
               type="text"
-              className="dashboard-input text-xs"
+              className="dashboard-input text-sm min-h-[42px]"
               value={language}
               disabled={!canEdit}
               onChange={(e) => setLanguage(e.target.value)}
@@ -110,10 +113,13 @@ export function HubSettings({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90">Target Region</label>
+            <label htmlFor="hub-region-input" className="text-xs font-bold text-white/90">
+              Target Region
+            </label>
             <input
+              id="hub-region-input"
               type="text"
-              className="dashboard-input text-xs"
+              className="dashboard-input text-sm min-h-[42px]"
               value={region}
               disabled={!canEdit}
               onChange={(e) => setRegion(e.target.value)}

@@ -54,7 +54,7 @@ export function ServerSettingsCard({
       return;
     }
     if (!version) {
-      message.error("Canonical server version is unavailable. Refresh before saving.");
+      message.error("Could not reach Discord to verify server state. Please refresh the page and try again.");
       return;
     }
     setSavingPrefix(true);
@@ -91,10 +91,10 @@ export function ServerSettingsCard({
           </div>
           <div>
             <h2 className="text-base font-bold text-white font-['Sora']">
-              Server Settings & Diagnostics
+              Server Settings & Discord Permissions
             </h2>
             <p className="text-xs text-white/70">
-              Core bot integration parameters and permissions for {server.metadata.name}.
+              Essential bot settings and Discord permissions for {server.metadata.name}.
             </p>
           </div>
         </div>
@@ -154,21 +154,21 @@ export function ServerSettingsCard({
         >
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-bold uppercase tracking-wider text-white/70">
-              Bot Integration
+              Bot Presence
             </span>
             <div className="flex items-center gap-2">
               {isInstalled ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <CheckCircleOutlined /> Installed
+                  <CheckCircleOutlined /> Active in Server
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  <ExclamationCircleOutlined /> Not Installed
+                  <ExclamationCircleOutlined /> Not in Server
                 </span>
               )}
             </div>
             <p className="text-xs text-white/70 mt-1">
-              Re-authorize or grant updated Discord permissions to ensure smooth operation across all features.
+              Invite or re-authorize InterChat to refresh permissions and ensure all features function smoothly.
             </p>
           </div>
 

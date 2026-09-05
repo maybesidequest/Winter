@@ -54,7 +54,7 @@ export function ServerBridgesToolbar({
           <input
             type="text"
             aria-label="Search connected bridges"
-            placeholder="Search bridges..."
+            placeholder="Search channels or hubs…"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="dashboard-input text-xs pl-8 pr-3 py-2 min-h-[40px] w-44 sm:w-48"
@@ -79,7 +79,7 @@ export function ServerBridgesToolbar({
             className={`dashboard-pill-btn min-h-[40px] px-3.5 text-xs font-semibold cursor-pointer ${statusFilter === "active" ? "dashboard-pill-btn--active" : ""
               }`}
           >
-            Enabled ({activeCount})
+            Active ({activeCount})
           </button>
           <button
             type="button"
@@ -116,4 +116,3 @@ export function ServerBridgesToolbar({
     </div>
   );
 }
-

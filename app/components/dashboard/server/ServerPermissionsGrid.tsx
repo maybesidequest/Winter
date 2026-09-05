@@ -8,11 +8,11 @@ export interface PermissionDef {
 }
 
 export const REQUIRED_PERMISSIONS: PermissionDef[] = [
-  { name: "Manage Webhooks", desc: "Required for cross-server message bridging and Userphone", bit: 1 << 29 },
-  { name: "Manage Messages", desc: "Required for automod deletion and moderation panel commands", bit: 1 << 13 },
-  { name: "View Channels", desc: "Required for bot responsiveness and command handling", bit: 1 << 10 },
-  { name: "Send Messages", desc: "Required for bot responsiveness and command handling", bit: 1 << 11 },
-  { name: "Embed Links & Attach Files", desc: "Required for rich card rendering and attachment relay", bit: (1 << 14) | (1 << 15) },
+  { name: "Manage Webhooks", desc: "Relays messages between channels and answers text calls", bit: 1 << 29 },
+  { name: "Manage Messages", desc: "Filters spam, removes explicit content, and executes mod actions", bit: 1 << 13 },
+  { name: "View Channels", desc: "Listens for command triggers in your allowed channels", bit: 1 << 10 },
+  { name: "Send Messages", desc: "Sends bot replies and delivers bridged chat messages", bit: 1 << 11 },
+  { name: "Embed Links & Attach Files", desc: "Displays rich interactive cards and forwards images", bit: (1 << 14) | (1 << 15) },
 ];
 
 export interface ServerPermissionsGridProps {
@@ -28,10 +28,10 @@ export function ServerPermissionsGrid({ botPermissions, permissionsKnown }: Serv
     >
       <div>
         <h3 className="text-sm font-bold text-white font-['Sora']">
-          Required Discord Permissions
+          Discord Bot Permissions
         </h3>
         <p className="text-xs text-white/70 mt-0.5">
-          Verified permissions for InterChat bot inside this Discord server
+          Key Discord permissions InterChat needs to operate in this server
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -61,7 +61,7 @@ export function ServerPermissionsGrid({ botPermissions, permissionsKnown }: Serv
                 <span className="text-xs text-white/70">
                   {permissionsKnown
                     ? hasPerm
-                      ? `Granted. ${perm.desc}`
+                      ? `Active. ${perm.desc}`
                       : `Missing. ${perm.desc}`
                     : "Permission status not available."}
                 </span>
@@ -73,4 +73,3 @@ export function ServerPermissionsGrid({ botPermissions, permissionsKnown }: Serv
     </div>
   );
 }
-

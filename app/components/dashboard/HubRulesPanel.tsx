@@ -105,7 +105,7 @@ export function HubRulesPanel({ hub, canEdit }: HubRulesPanelProps) {
       {isLoading && (
         <div className="flex flex-col gap-3">
           {[1, 2].map((i) => (
-            <div key={i} className="dashboard-subcard p-4 rounded-xl animate-pulse bg-white/[0.02] h-20" />
+            <div key={i} className="dashboard-subcard p-4 rounded-xl animate-pulse h-20" />
           ))}
         </div>
       )}

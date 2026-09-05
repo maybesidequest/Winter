@@ -86,45 +86,54 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
         {/* Input Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Owner Badge</label>
+            <label htmlFor="owner-badge-input" className="text-xs font-bold text-white/90">
+              Owner Badge
+            </label>
             <input
+              id="owner-badge-input"
               type="text"
               value={ownerBadge}
               onChange={(e) => setOwnerBadge(e.target.value)}
               placeholder="e.g. 👑 or <:crown:12345>"
               maxLength={32}
               disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
-              className="dashboard-input text-xs"
+              className="dashboard-input text-sm min-h-[42px]"
             />
-            <span className="text-[11px] text-white/60">Appended to Hub Owner messages</span>
+            <span className="text-xs text-white/60">Appended to Hub Owner messages</span>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Manager Badge</label>
+            <label htmlFor="manager-badge-input" className="text-xs font-bold text-white/90">
+              Manager Badge
+            </label>
             <input
+              id="manager-badge-input"
               type="text"
               value={managerBadge}
               onChange={(e) => setManagerBadge(e.target.value)}
               placeholder="e.g. 🛡️ or <:shield:12345>"
               maxLength={32}
               disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
-              className="dashboard-input text-xs"
+              className="dashboard-input text-sm min-h-[42px]"
             />
-            <span className="text-[11px] text-white/60">Appended to Manager messages</span>
+            <span className="text-xs text-white/60">Appended to Manager messages</span>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Moderator Badge</label>
+            <label htmlFor="moderator-badge-input" className="text-xs font-bold text-white/90">
+              Moderator Badge
+            </label>
             <input
+              id="moderator-badge-input"
               type="text"
               value={moderatorBadge}
               onChange={(e) => setModeratorBadge(e.target.value)}
               placeholder="e.g. ⚔️ or <:sword:12345>"
               maxLength={32}
               disabled={!canEdit || badgesQuery.isLoading || badgesQuery.isError}
-              className="dashboard-input text-xs"
+              className="dashboard-input text-sm min-h-[42px]"
             />
-            <span className="text-[11px] text-white/60">Appended to Moderator messages</span>
+            <span className="text-xs text-white/60">Appended to Moderator messages</span>
           </div>
         </div>
 
@@ -144,10 +153,10 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
               <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-white">Alex</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-200 px-1.5 py-0.2 rounded font-semibold border border-amber-400/30">
+                  <span className="text-xs bg-amber-400/20 text-amber-200 px-1.5 py-0.5 rounded font-semibold border border-amber-400/30">
                     {ownerBadge.trim() || "👑"} Owner
                   </span>
-                  <span className="text-[10px] text-white/40">Today at 9:42 PM</span>
+                  <span className="text-xs text-white/40">Today at 9:42 PM</span>
                 </div>
                 <p className="text-xs text-white/80 m-0">
                   Welcome everyone to the cross-server discussion channel!
@@ -163,10 +172,10 @@ export function HubBadgesPanel({ hub, canEdit }: HubBadgesPanelProps) {
               <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-white">Sam</span>
-                  <span className="text-[10px] bg-purple-400/20 text-purple-200 px-1.5 py-0.2 rounded font-semibold border border-purple-400/30">
+                  <span className="text-xs bg-purple-400/20 text-purple-200 px-1.5 py-0.5 rounded font-semibold border border-purple-400/30">
                     {moderatorBadge.trim() || "⚔️"} Moderator
                   </span>
-                  <span className="text-[10px] text-white/40">Today at 9:44 PM</span>
+                  <span className="text-xs text-white/40">Today at 9:44 PM</span>
                 </div>
                 <p className="text-xs text-white/80 m-0">
                   Please keep discussion on-topic according to rule #1.

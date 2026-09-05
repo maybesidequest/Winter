@@ -10,14 +10,27 @@ type CallSpec = ServerResource["spec"];
 type EditableCallKey = "pingOnMatch" | "autoRequeueOnSkip" | "filterNsfw";
 
 const TOGGLES: Array<{ key: EditableCallKey; label: string; description: string }> = [
-  { key: "pingOnMatch", label: "Ping on match", description: "Send a notification ping in the call channel when another server connects." },
-  { key: "autoRequeueOnSkip", label: "Requeue after skip", description: "Automatically search for another text Call after a participant skips the match." },
-  { key: "filterNsfw", label: "Filter NSFW / explicit images", description: "Automatically scan and block explicit imagery from being shown to your server members during calls." },
+  {
+    key: "pingOnMatch",
+    label: "Ring on call match",
+    description: "Send a notification in the channel when another server connects so your members know someone picked up.",
+  },
+  {
+    key: "autoRequeueOnSkip",
+    label: "Find next server if skipped",
+    description: "If the other party hangs up or skips, automatically search for a new connection without having to run the command again.",
+  },
+  {
+    key: "filterNsfw",
+    label: "Block explicit images",
+    description: "AI automatically scans image attachments during calls and blocks adult content to keep your server safe.",
+  },
 ];
 
 interface ServerCallSettingsCardProps {
   server: ServerResource;
   channels: DiscordChannelResource[];
+  channelsLoading?: boolean;
   onServerUpdated?: () => void;
 }
 
@@ -25,7 +38,7 @@ function channelsEqual(a: string[], b: string[]) {
   return a.length === b.length && a.every((val, idx) => val === b[idx]);
 }
 
-export function ServerCallSettingsCard({ server, channels, onServerUpdated }: ServerCallSettingsCardProps) {
+export function ServerCallSettingsCard({ server, channels, channelsLoading = false, onServerUpdated }: ServerCallSettingsCardProps) {
   const [spec, setSpec] = useState<CallSpec>(server.spec);
   const [saving, setSaving] = useState(false);
   const [version, setVersion] = useState<number | null>(server.version ?? null);
@@ -41,7 +54,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
 
   const handleSave = async () => {
     if (!isInstalled || !version) {
-      message.error("Canonical server version is unavailable. Refresh before saving.");
+      message.error("Could not reach Discord to verify server state. Please refresh the page and try again.");
       return;
     }
     setSaving(true);
@@ -59,7 +72,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
       setVersion(result.server?.version ?? null);
       idempotencyKeyRef.current = crypto.randomUUID();
       onServerUpdated?.();
-      message.success("Call settings saved successfully.");
+      message.success("Call settings saved! Your server is ready for calls.");
     } catch (err: unknown) {
       message.error(err instanceof Error ? err.message : "Failed to save call settings.");
     } finally {
@@ -85,8 +98,10 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
               <ThunderboltOutlined />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white font-['Sora']">Userphone & Call Configuration</h2>
-              <p className="text-xs text-white/70">Configure how {server.metadata.name} behaves in ephemeral 1:1 and group text calls.</p>
+              <h2 className="text-base font-bold text-white font-['Sora']">Text Calls & Userphone</h2>
+              <p className="text-xs text-white/70">
+                Choose how {server.metadata.name} connects in random 1-on-1 and group text calls with other Discord communities.
+              </p>
             </div>
           </div>
 
@@ -121,6 +136,7 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
             aria-label="Allowed Call Channels"
             mode="multiple"
             disabled={!isInstalled}
+            loading={channelsLoading}
             value={spec.lobbyChannelIds}
             onChange={(ids) => setSpec((prev) => ({ ...prev, lobbyChannelIds: ids }))}
             maxCount={1}
@@ -134,9 +150,9 @@ export function ServerCallSettingsCard({ server, channels, onServerUpdated }: Se
             style={{ width: "100%" }}
           />
           <span className="text-xs text-white/70">
-            Restricts <code>/call</code> and <code>/groupcall</code> commands to the selected channels. If empty, calls can be initiated in any accessible channel.
+            Limit <code>/call</code> and <code>/groupcall</code> commands to these channels. If empty, members can start calls in any text channel the bot can see.
           </span>
-          {channels.length === 0 && <span className="text-xs text-amber-300">No connectable text channels were returned for this server.</span>}
+          {channels.length === 0 && <span className="text-xs text-amber-300">No accessible text channels found for this server.</span>}
         </div>
 
         <div className="h-[1px] bg-white/[0.08] w-full" />

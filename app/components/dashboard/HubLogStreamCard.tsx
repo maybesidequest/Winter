@@ -45,7 +45,7 @@ export function HubLogStreamCard({
   );
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 flex flex-col gap-3.5 transition-colors hover:border-white/[0.12]">
+    <div className="dashboard-subcard p-4 flex flex-col gap-3.5 transition-colors hover:border-white/[0.12]">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/80 shrink-0">

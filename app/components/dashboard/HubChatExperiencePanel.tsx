@@ -58,22 +58,22 @@ export function HubChatExperiencePanel({
             <span className="text-xs font-bold text-white/90 uppercase tracking-wide">
               Cross-Server Interactions
             </span>
-            <span className="text-[11px] text-white/60">
+            <span className="text-xs text-white/60">
               Formatting, identities, and social reactions for relayed community chat.
             </span>
           </div>
 
-          <div className="flex flex-col divide-y divide-white/[0.04] rounded-xl border border-white/[0.06] bg-white/[0.015] px-3 py-1">
+          <div className="flex flex-col divide-y divide-white/[0.04] rounded-xl border border-white/[0.06] bg-[#181726] px-3 py-1 shadow-[0_1.5px_0_0_rgba(255,255,255,0.06)]">
             {CHAT_TOGGLES.map(({ flag, label, desc }) => {
               const isChecked = hasSettingsFlag(settings, flag);
               return (
                 <label
                   key={flag}
-                  className="flex items-center justify-between py-3 px-1.5 hover:bg-white/[0.03] rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center justify-between py-3 px-2 hover:bg-[#1d1b2e] rounded-lg transition-colors cursor-pointer"
                 >
                   <div className="flex flex-col gap-0.5 pr-4">
                     <span className="text-xs font-bold text-white block">{label}</span>
-                    <span className="text-[11px] text-white/60 block leading-normal">
+                    <span className="text-xs text-white/60 block leading-normal">
                       {desc}
                     </span>
                   </div>

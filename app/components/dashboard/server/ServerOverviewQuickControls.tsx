@@ -19,7 +19,7 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
   const handleToggle = async (key: "pingOnMatch" | "filterNsfw", nextValue: boolean) => {
     if (!isInstalled) return;
     if (!server.version) {
-      message.error("Server version unavailable. Refresh before updating.");
+      message.error("Could not reach Discord to verify your server. Please refresh and try again.");
       return;
     }
 
@@ -41,18 +41,18 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
       message.success(
         key === "pingOnMatch"
           ? nextValue
-            ? "Call match notifications enabled (Ping)."
-            : "Call match notifications set to Silent."
+            ? "📞 Calls will now ring in the channel when connected."
+            : "🔇 Calls will connect silently without pings."
           : nextValue
-            ? "NSFW content filter enabled."
-            : "NSFW content filter disabled.",
+            ? "🛡️ Explicit image filter enabled."
+            : "⚠️ Explicit image filter turned off.",
       );
       onServerUpdated?.();
     } catch (err: unknown) {
       // Revert optimistic state
       if (key === "pingOnMatch") setPingOnMatch(!nextValue);
       if (key === "filterNsfw") setFilterNsfw(!nextValue);
-      message.error(err instanceof Error ? err.message : "Failed to update call posture.");
+      message.error(err instanceof Error ? err.message : "Could not update call settings. Please try again.");
     } finally {
       setSavingKey(null);
     }
@@ -61,8 +61,8 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
   return (
     <div className="flex flex-col gap-3 p-5 rounded-xl border border-white/[0.08] bg-white/[0.02] shadow-[0_2px_0_0_rgba(255,255,255,0.06)]">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider text-white/80">Call Safety & Posture</span>
-        <span className="text-xs text-white/60">Instant Quick-Toggles</span>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-white/80 m-0">Call Safety & Behavior</h3>
+        <span className="text-xs text-white/60">Quick Controls</span>
       </div>
 
       <div className="flex flex-col divide-y divide-white/[0.06]">
@@ -75,10 +75,10 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
         >
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-semibold text-white group-hover:text-violet-200 transition-colors">
-              Match Alerts (Ping)
+              Ring on Match
             </span>
             <span className="text-xs text-white/70">
-              {pingOnMatch ? "Pings members when matched" : "Silent matching in channel"}
+              {pingOnMatch ? "Alerts the channel when another server connects" : "Silent connection (no pings)"}
             </span>
           </div>
           <DepthToggle
@@ -86,7 +86,7 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
             disabled={!isInstalled || savingKey === "pingOnMatch"}
             checked={pingOnMatch}
             onChange={(checked) => void handleToggle("pingOnMatch", checked)}
-            aria-label="Toggle Call Match Alerts"
+            aria-label="Toggle Ring on Match"
           />
         </label>
 
@@ -99,10 +99,10 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
         >
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-semibold text-white group-hover:text-violet-200 transition-colors">
-              NSFW Media Filter
+              Block Explicit Images
             </span>
             <span className="text-xs text-white/70">
-              {filterNsfw ? "Scans and blocks explicit images" : "Unfiltered attachments"}
+              {filterNsfw ? "AI scans and blocks adult images during calls" : "Allows all image attachments"}
             </span>
           </div>
           <DepthToggle
@@ -110,7 +110,7 @@ export function ServerOverviewQuickControls({ server, onServerUpdated }: ServerO
             disabled={!isInstalled || savingKey === "filterNsfw"}
             checked={filterNsfw}
             onChange={(checked) => void handleToggle("filterNsfw", checked)}
-            aria-label="Toggle NSFW Media Filter"
+            aria-label="Toggle Block Explicit Images"
           />
         </label>
       </div>

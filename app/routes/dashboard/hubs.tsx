@@ -1,8 +1,9 @@
-import { ArrowRightOutlined, ExclamationCircleOutlined, PlusOutlined, TeamOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, PlusOutlined, TeamOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext } from "react-router";
 import { CreateHubWizard } from "~/components/CreateHubWizard";
+import { HubListItem } from "~/components/dashboard/HubListItem";
 import { PageHeader } from "~/components/dashboard/PageHeader";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpc } from "~/lib/orpc";
@@ -108,8 +109,8 @@ export default function HubsPage() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search your Hubs"
-              className="dashboard-input text-xs w-full sm:max-w-sm"
+              placeholder="Search your Hubs by name or description..."
+              className="dashboard-input text-sm w-full sm:max-w-sm min-h-[42px]"
             />
           </div>
         )}
@@ -132,82 +133,29 @@ export default function HubsPage() {
         ) : filteredHubs.length > 0 ? (
           <div className="flex flex-col divide-y divide-white/[0.06]">
             {filteredHubs.map((hub) => (
-              <div
-                key={hub.metadata.id}
-                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
-              >
-                {/* Identity */}
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-950/60 border border-violet-400/20 flex items-center justify-center text-xs font-bold text-violet-300 flex-shrink-0 font-['Sora'] shadow-sm">
-                    {hub.spec.iconUrl ? (
-                      <img
-                        src={hub.spec.iconUrl}
-                        alt={hub.metadata.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span>{hub.metadata.name.slice(0, 2).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-white truncate font-['Sora']">
-                      {hub.metadata.name}
-                    </div>
-                    <div className="text-xs text-white/50 truncate max-w-md">
-                      {hub.spec.shortDescription || hub.spec.description || "No description provided."}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Meta Details */}
-                <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 text-xs">
-                  <div className="text-white/60 hidden md:block">
-                    <span className="font-semibold text-white/90">{hub.status.connectionCount}</span> routes
-                    <span className="mx-1.5 text-white/20">·</span>
-                    <span className="font-semibold text-white/90">
-                      {hub.status.weeklyMessageCount}
-                    </span> messages this week
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${hub.spec.locked
-                          ? "bg-red-500/15 text-red-300 border-red-500/30"
-                          : "bg-violet-500/15 text-violet-300 border-violet-500/30"
-                        }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${hub.spec.locked ? "bg-red-400" : "bg-violet-400"
-                          }`}
-                      />
-                      {hub.spec.locked ? "Locked" : hub.spec.visibility}
-                    </span>
-                  </div>
-
-                  {/* Action Button */}
-                  <Link
-                    to={`/dashboard/hubs/${hub.metadata.id}/overview`}
-                    className="dashboard-btn-secondary px-4 py-1.5 text-xs font-bold"
-                  >
-                    <span>Manage</span>
-                    <ArrowRightOutlined className="text-xs" />
-                  </Link>
-                </div>
-              </div>
+              <HubListItem key={hub.metadata.id} hub={hub} />
             ))}
           </div>
         ) : (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white/40">
+            <div className="w-12 h-12 rounded-2xl bg-[#181726] border border-white/10 flex items-center justify-center text-xl text-violet-300 shadow-[0_2px_0_0_rgba(10,8,23,0.5)]">
               <TeamOutlined />
             </div>
-            <h3 className="text-base font-bold text-white font-['Sora']">
+            <h3 className="text-base font-bold text-white font-['Sora'] m-0">
               {hubs.length > 0 ? "No matching Hubs" : "No accessible Hubs"}
             </h3>
-            <p className="text-xs text-white/50 max-w-sm">
-              {hubs.length > 0 ? "Try a different search term." : "Ask a Hub owner to add you to their team."}
+            <p className="text-xs text-white/50 max-w-sm m-0">
+              {hubs.length > 0 ? "No hubs match your search criteria. Try a different query." : "Ask a Hub owner to add you to their team, or create your first Hub."}
             </p>
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-bold mt-1"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         )}
       </div>

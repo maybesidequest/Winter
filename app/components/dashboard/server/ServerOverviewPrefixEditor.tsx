@@ -1,15 +1,17 @@
-import { CheckOutlined, SaveOutlined } from "@ant-design/icons";
+import { CheckOutlined, SaveOutlined, UserOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { orpcClient as orpc } from "~/lib/orpc";
 import type { ServerResource } from "~/resources/server";
+import type { User } from "~/services/auth.server";
 
 export interface ServerOverviewPrefixEditorProps {
   server: ServerResource;
+  user?: User;
   onServerUpdated?: () => void;
 }
 
-export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOverviewPrefixEditorProps) {
+export function ServerOverviewPrefixEditor({ server, user, onServerUpdated }: ServerOverviewPrefixEditorProps) {
   const isInstalled = server.status.botInstalled;
   const [prefix, setPrefix] = useState(server.spec.prefix || "!");
   const [savedPrefix, setSavedPrefix] = useState(server.spec.prefix || "!");
@@ -22,6 +24,7 @@ export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOv
     setSavedPrefix(server.spec.prefix || "!");
   }, [server.spec.prefix]);
 
+  const effectivePrefix = prefix.trim() || "!";
   const isDirty = prefix.trim() !== savedPrefix && prefix.trim().length > 0;
 
   const handleSave = async () => {
@@ -31,7 +34,7 @@ export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOv
       return;
     }
     if (!server.version) {
-      message.error("Server version is unavailable. Refresh before saving.");
+      message.error("Could not reach Discord to verify your server. Please refresh and try again.");
       return;
     }
     setSaving(true);
@@ -47,8 +50,8 @@ export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOv
       setSavedPrefix(nextPrefix);
       idempotencyKeyRef.current = crypto.randomUUID();
       setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2500);
-      message.success(`Command prefix updated to "${nextPrefix}"`);
+      setTimeout(() => setJustSaved(false), 3000);
+      message.success(`Command prefix updated to "${nextPrefix}". Try running ${nextPrefix}call in Discord!`);
       onServerUpdated?.();
     } catch (err: unknown) {
       message.error(err instanceof Error ? err.message : "Failed to save command prefix.");
@@ -57,11 +60,14 @@ export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOv
     }
   };
 
+  const username = user?.username || "You";
+  const userAvatarUrl = user?.avatarUrl;
+
   return (
-    <div className="flex flex-col gap-3 p-5 rounded-xl border border-white/[0.08] bg-white/[0.02] shadow-[0_2px_0_0_rgba(255,255,255,0.06)]">
+    <div className="flex flex-col gap-4 p-5 rounded-xl border border-white/[0.08] bg-white/[0.02] shadow-[0_2px_0_0_rgba(255,255,255,0.06)]">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider text-white/80">Command Prefix</span>
-        <span className="text-xs text-white/60 font-mono">Example: <code className="text-violet-300">{prefix || "!"}call</code></span>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-white/80 m-0">Bot Command Prefix</h3>
+        <span className="text-xs text-white/50">Slash commands (<code>/call</code>) always work</span>
       </div>
 
       <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
@@ -111,8 +117,62 @@ export function ServerOverviewPrefixEditor({ server, onServerUpdated }: ServerOv
         )}
       </div>
 
-      <p className="text-xs text-white/70 m-0">
-        Trigger for text commands in Discord. Slash commands (<code>/</code>) remain active alongside your prefix.
+      {/* Interactive Discord Chat Simulator for Instant Clarity & Delight */}
+      <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] flex flex-col gap-3 text-xs">
+        <span className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+          Discord Preview
+        </span>
+
+        {/* User Command Message */}
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#5b4ccb] border border-white/10 flex items-center justify-center text-white text-sm font-bold font-['Sora'] overflow-hidden flex-shrink-0 mt-0.5 shadow-sm">
+            {userAvatarUrl ? (
+              <img src={userAvatarUrl} alt={username} className="w-full h-full object-cover" />
+            ) : username ? (
+              <span>{username.charAt(0).toUpperCase()}</span>
+            ) : (
+              <UserOutlined className="text-white/80" />
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-white/90 truncate">{username}</span>
+              <span className="text-xs text-white/40">Today at 12:42 PM</span>
+            </div>
+            <p className="text-white font-mono m-0 text-sm">
+              <span className="text-violet-300 font-bold">{effectivePrefix}</span>call
+            </p>
+          </div>
+        </div>
+
+        {/* Bot Response Message */}
+        <div className="flex items-start gap-3 pl-2 border-l-2 border-violet-500/40 ml-3">
+          <div className="w-10 h-10 rounded-full bg-black border border-white/15 flex items-center justify-center overflow-hidden flex-shrink-0 mt-0.5 shadow-sm p-1">
+            <img src="/images/interchat.png" alt="InterChat" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-violet-200">InterChat</span>
+              <span className="bg-[#5865f2] text-xs font-bold text-white px-1.5 py-0.5 rounded leading-none inline-flex items-center gap-1 shadow-sm">
+                <CheckOutlined className="text-xs" />
+                <span>APP</span>
+              </span>
+            </div>
+            <p className="text-white/80 m-0 leading-relaxed text-xs">
+              {justSaved ? (
+                <span className="text-emerald-300 font-semibold">
+                  ✨ Command prefix updated! Running {effectivePrefix}call is now active.
+                </span>
+              ) : (
+                <>Searching for an active server to chat with… Found a match!</>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs text-white/60 m-0">
+        Type the symbol your community prefers for text commands.
       </p>
     </div>
   );

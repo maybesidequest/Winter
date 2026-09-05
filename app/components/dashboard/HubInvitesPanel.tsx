@@ -1,12 +1,10 @@
 import { CopyOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, InputNumber, List, message, Modal, Popconfirm, Tag, Typography } from "antd";
+import { InputNumber, message, Modal, Popconfirm } from "antd";
 import { useRef, useState } from "react";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
 import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
-
-const { Text } = Typography;
 
 interface HubInvitesPanelProps {
   hub: HubResource;
@@ -82,27 +80,57 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
     >
       {!canEdit && <DashboardReadOnlyNotice message="Only staff with invite-management access can create or revoke invites." />}
       {isError && <span className="text-xs text-red-300">Invites are temporarily unavailable. Try again before making changes.</span>}
-      <List
-        loading={isLoading}
-        dataSource={invites}
-        locale={{ emptyText: <span className="text-xs text-white/60">No active invites.</span> }}
-        renderItem={(item) => (
-          <List.Item
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-            actions={
-              canEdit
-                ? [
-                  <Button
-                    key="copy"
-                    type="text"
-                    icon={<CopyOutlined />}
-                    size="small"
-                    style={{ color: "rgba(255,255,255,0.6)" }}
+      
+      {isLoading ? (
+        <div className="flex flex-col gap-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="dashboard-subcard p-4 rounded-xl animate-pulse h-16" />
+          ))}
+        </div>
+      ) : invites.length > 0 ? (
+        <div className="flex flex-col gap-2.5">
+          {invites.map((item) => (
+            <div
+              key={item.code}
+              className="dashboard-subcard p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors hover:bg-[#1d1b2e]"
+            >
+              <div className="flex flex-col gap-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <code className="font-mono text-xs font-bold text-[#c4b5fd] bg-violet-500/15 px-2 py-0.5 rounded border border-violet-500/30">
+                    {item.code}
+                  </code>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                      item.maxUses > 0 && item.uses >= item.maxUses
+                        ? "bg-red-500/15 text-red-300 border-red-500/30"
+                        : "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                    }`}
+                  >
+                    {item.uses} / {item.maxUses > 0 ? item.maxUses : "∞"} uses
+                  </span>
+                </div>
+                <span className="text-xs text-white/60">
+                  Expires: {item.expiresAt ? new Date(item.expiresAt).toLocaleDateString() : "Never"}
+                </span>
+              </div>
+
+              {canEdit && (
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    type="button"
                     onClick={() => handleCopy(item.code)}
-                  />,
+                    className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
+                    title="Copy invite code"
+                  >
+                    <CopyOutlined />
+                    <span>Copy</span>
+                  </button>
                   <Popconfirm
-                    key="del"
                     title="Revoke this invite code?"
+                    description="This invite code will no longer allow servers to join."
+                    okText="Revoke"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
                     onConfirm={() =>
                       revokeMutation.mutate(
                         {
@@ -114,30 +142,27 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
                       )
                     }
                   >
-                    <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                  </Popconfirm>,
-                ]
-                : []
-            }
-          >
-            <List.Item.Meta
-              title={
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Text code style={{ color: "#a897ea" }}>{item.code}</Text>
-                  <Tag color={item.maxUses > 0 && item.uses >= item.maxUses ? "red" : "blue"}>
-                    {item.uses} / {item.maxUses > 0 ? item.maxUses : "∞"} uses
-                  </Tag>
+                    <button
+                      type="button"
+                      className="dashboard-btn-danger px-2.5 py-1.5 text-xs font-semibold"
+                      title="Revoke invite"
+                    >
+                      <DeleteOutlined />
+                    </button>
+                  </Popconfirm>
                 </div>
-              }
-              description={
-                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
-                  Expires: {item.expiresAt ? new Date(item.expiresAt).toLocaleDateString() : "Never"}
-                </Text>
-              }
-            />
-          </List.Item>
-        )}
-      />
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="dashboard-subcard p-8 rounded-xl text-center flex flex-col items-center justify-center gap-2">
+          <span className="text-sm font-bold text-white font-['Sora'] m-0">No active invites</span>
+          <p className="text-xs text-white/50 max-w-sm m-0">
+            Generate an invite code to allow Discord server administrators to link their channels to this Hub.
+          </p>
+        </div>
+      )}
 
       <Modal
         title="Create Hub Invite"
@@ -156,9 +181,9 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
           <div>
-            <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
+            <span className="text-xs text-white/70 block mb-1">
               Max Uses (0 = unlimited)
-            </Text>
+            </span>
             <InputNumber
               value={maxUses}
               onChange={(val) => setMaxUses(val || 0)}
@@ -168,9 +193,9 @@ export function HubInvitesPanel({ hub, canEdit }: HubInvitesPanelProps) {
             />
           </div>
           <div>
-            <Text style={{ color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
+            <span className="text-xs text-white/70 block mb-1">
               Duration in Seconds (0 = never expires)
-            </Text>
+            </span>
             <InputNumber
               value={durationSeconds}
               onChange={(val) => setDurationSeconds(val || 0)}

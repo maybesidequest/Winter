@@ -5,12 +5,14 @@ import {
 } from "@ant-design/icons";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import type { ServerBridgeResource, ServerResource } from "~/resources/server";
+import type { User } from "~/services/auth.server";
 import { ServerOverviewPrefixEditor } from "./ServerOverviewPrefixEditor";
 import { ServerOverviewQuickControls } from "./ServerOverviewQuickControls";
 import { ServerOverviewTelemetry } from "./ServerOverviewTelemetry";
 
 export interface ServerOverviewCardProps {
   server: ServerResource;
+  user?: User;
   botClientId?: string;
   bridges?: ServerBridgeResource[];
   bridgesCount?: number;
@@ -20,6 +22,7 @@ export interface ServerOverviewCardProps {
 
 export function ServerOverviewCard({
   server,
+  user,
   botClientId = "798748015435055134",
   bridges = [],
   bridgesCount,
@@ -46,7 +49,7 @@ export function ServerOverviewCard({
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2.5">
-                <h2 className="text-base font-bold text-white">Bot Integration Status</h2>
+                <h2 className="text-base font-bold text-white">InterChat Bot Status</h2>
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                     isInstalled
@@ -55,13 +58,13 @@ export function ServerOverviewCard({
                   }`}
                 >
                   {isInstalled && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-                  {isInstalled ? "Installed" : "Action Required"}
+                  {isInstalled ? "Active in Server" : "Bot Not Added Yet"}
                 </span>
               </div>
               <p className="mt-1 text-sm text-white/70">
                 {isInstalled
-                  ? "InterChat bot is installed. Operational health and routing telemetry are synced below."
-                  : "InterChat needs to be invited to this Discord server before cross-server Hubs and Calls can function."}
+                  ? "InterChat is connected and active in your server. Bridges and calls are running smoothly."
+                  : "Add InterChat to this server so members can connect channels and start calls."}
               </p>
             </div>
           </div>
@@ -73,33 +76,33 @@ export function ServerOverviewCard({
               className="dashboard-btn-primary px-5 py-2.5 min-h-[44px] text-xs font-bold flex-shrink-0 inline-flex items-center gap-2"
             >
               <PlusOutlined />
-              <span>Add Bot to Discord</span>
+              <span>Invite InterChat to Discord</span>
             </a>
           )}
         </div>
       </section>
 
-      {/* Mission Control: In-Place Core Operations */}
+      {/* Quick Controls: In-Place Core Operations */}
       <section style={{ ...dashboardGlassCardStyle, padding: 24, borderRadius: 16 }}>
         <div className="border-b border-white/[0.08] pb-4 mb-5">
-          <h2 className="text-base font-bold text-white">Mission Control</h2>
+          <h2 className="text-base font-bold text-white">Quick Controls</h2>
           <p className="text-xs text-white/70 mt-0.5">
-            Core server configurations that take effect immediately in your Discord guild.
+            Frequently adjusted settings. Changes take effect immediately in Discord.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ServerOverviewPrefixEditor server={server} onServerUpdated={onServerUpdated} />
+          <ServerOverviewPrefixEditor server={server} user={user} onServerUpdated={onServerUpdated} />
           <ServerOverviewQuickControls server={server} onServerUpdated={onServerUpdated} />
         </div>
       </section>
 
-      {/* Operational Telemetry & Live Health */}
+      {/* Live Activity & Status */}
       <section style={{ ...dashboardGlassCardStyle, padding: 24, borderRadius: 16 }}>
         <div className="border-b border-white/[0.08] pb-4 mb-5">
-          <h2 className="text-base font-bold text-white">Live Routing & Telemetry</h2>
+          <h2 className="text-base font-bold text-white">Live Server Activity</h2>
           <p className="text-xs text-white/70 mt-0.5">
-            Real-time status of message bridges, call availability, and safety filters.
+            See how your connected channels, calls, and safety filters are running right now.
           </p>
         </div>
 
