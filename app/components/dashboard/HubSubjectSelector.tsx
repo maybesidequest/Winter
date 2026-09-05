@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { Select } from "antd";
 import { useEffect, useState } from "react";
 import { orpc } from "~/lib/orpc";
+import { DashboardSelect } from "./DashboardSelect";
 
-interface HubSubjectSelectorProps {
+export interface HubSubjectSelectorProps {
   hubId: string;
   value?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   id?: string;
   selectorType?: "SELECTOR_TYPE_CHANNEL" | "SELECTOR_TYPE_ROLE" | "SELECTOR_TYPE_USER" | "SELECTOR_TYPE_SERVER";
   disabled?: boolean;
   placeholder?: string;
+  "aria-label"?: string;
 }
 
 interface SelectedOption {
@@ -28,16 +29,19 @@ export function HubSubjectSelector({
   id,
   selectorType = "SELECTOR_TYPE_USER",
   disabled = false,
-  placeholder = "Search by name",
+  placeholder,
+  "aria-label": ariaLabel,
 }: HubSubjectSelectorProps) {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedOption, setSelectedOption] = useState<SelectedOption | undefined>();
+
   // Debounced so fast typing fires one search RPC instead of one per keystroke.
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchInput.trim()), 250);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
   const normalizedSearch = debouncedSearch;
   const query = useQuery({
     ...orpc.selectors.search.queryOptions({
@@ -49,8 +53,9 @@ export function HubSubjectSelector({
         cursor: "",
       },
     }),
-    enabled: !disabled && normalizedSearch.length >= 2,
+    enabled: !disabled && Boolean(hubId) && normalizedSearch.length >= 2,
   });
+
   const resolvedQuery = useQuery({
     ...orpc.selectors.resolve.queryOptions({
       input: {
@@ -59,7 +64,7 @@ export function HubSubjectSelector({
         id: value || "",
       },
     }),
-    enabled: !disabled && Boolean(value) && !selectedOption,
+    enabled: !disabled && Boolean(hubId) && Boolean(value) && !selectedOption,
   });
 
   useEffect(() => {
@@ -90,31 +95,81 @@ export function HubSubjectSelector({
   }
   const visibleValue = selectedOption?.value === value ? value : undefined;
 
+  const defaultPlaceholder = (() => {
+    switch (selectorType) {
+      case "SELECTOR_TYPE_CHANNEL":
+        return "Search channels by name…";
+      case "SELECTOR_TYPE_ROLE":
+        return "Search roles to mention…";
+      case "SELECTOR_TYPE_SERVER":
+        return "Search connected servers…";
+      case "SELECTOR_TYPE_USER":
+      default:
+        return "Search members by username or ID…";
+    }
+  })();
+  const effectivePlaceholder = (!placeholder || placeholder === "Search by name") ? defaultPlaceholder : placeholder;
+
+  const notFoundContent = (() => {
+    if (!hubId) {
+      return selectorType === "SELECTOR_TYPE_CHANNEL" || selectorType === "SELECTOR_TYPE_ROLE"
+        ? "Select a source server first."
+        : "Select a Hub first.";
+    }
+    if (query.isError) {
+      return "Search failed. Check bot permissions or try again.";
+    }
+    if (query.isFetching) {
+      return "Searching…";
+    }
+    if (normalizedSearch.length < 2) {
+      switch (selectorType) {
+        case "SELECTOR_TYPE_CHANNEL":
+          return "Type 2 or more characters to search channels.";
+        case "SELECTOR_TYPE_ROLE":
+          return "Type 2 or more characters to search roles.";
+        case "SELECTOR_TYPE_SERVER":
+          return "Type 2 or more characters to search servers.";
+        case "SELECTOR_TYPE_USER":
+        default:
+          return "Type 2 or more characters to search members.";
+      }
+    }
+    switch (selectorType) {
+      case "SELECTOR_TYPE_CHANNEL":
+        return `No channels found matching "${normalizedSearch}".`;
+      case "SELECTOR_TYPE_ROLE":
+        return `No roles found matching "${normalizedSearch}".`;
+      case "SELECTOR_TYPE_SERVER":
+        return `No servers found matching "${normalizedSearch}".`;
+      case "SELECTOR_TYPE_USER":
+      default:
+        return `No members found matching "${normalizedSearch}".`;
+    }
+  })();
+
   return (
-    <Select
+    <DashboardSelect
       showSearch
       allowClear
       id={id}
+      aria-label={ariaLabel || effectivePlaceholder}
+      aria-busy={query.isFetching}
+      status={query.isError ? "error" : undefined}
       className="w-full"
       value={visibleValue}
       disabled={disabled}
       filterOption={false}
       options={options}
-      placeholder={placeholder}
+      placeholder={effectivePlaceholder}
       loading={query.isFetching}
-      notFoundContent={
-        query.isError
-          ? "Search is temporarily unavailable."
-          : normalizedSearch.length < 2
-            ? "Type at least 2 characters."
-            : "No matching members."
-      }
+      notFoundContent={notFoundContent}
       onSearch={setSearchInput}
       onClear={() => {
         setSearchInput("");
         setDebouncedSearch("");
         setSelectedOption(undefined);
-        onChange("");
+        onChange?.("");
       }}
       onChange={(nextValue, option) => {
         const picked = Array.isArray(option) ? option[0] : option;
@@ -122,7 +177,7 @@ export function HubSubjectSelector({
         if (nextValue && label !== undefined) {
           setSelectedOption({ value: nextValue, label: String(label), title: String(label), disabled: false });
         }
-        onChange(nextValue ?? "");
+        onChange?.((nextValue as string) ?? "");
       }}
       onDropdownVisibleChange={(open) => {
         if (!open) {

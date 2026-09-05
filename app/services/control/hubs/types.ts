@@ -32,6 +32,20 @@ export interface HubLogConfig {
   channelId: string;
   eventFlags: number;
   notificationRoleId?: string;
+  modLogsChannelId?: string;
+  modLogsRoleId?: string;
+  joinLeavesChannelId?: string;
+  joinLeavesRoleId?: string;
+  messageModerationChannelId?: string;
+  messageModerationRoleId?: string;
+  reportsChannelId?: string;
+  reportsRoleId?: string;
+  networkAlertsChannelId?: string;
+  networkAlertsRoleId?: string;
+  appealsChannelId?: string;
+  appealsRoleId?: string;
+  safetyAlertsChannelId?: string;
+  safetyAlertsRoleId?: string;
 }
 
 export interface HubAuditEntry {

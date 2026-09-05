@@ -1,6 +1,8 @@
 import { controlHubService } from "~/services/control.server";
 import { hubStaffService } from "~/services/control/hubs/staff";
 import { hubRoleService } from "~/services/control/hubs/roles";
+import type { z } from "zod";
+import type { patchHubLogConfigSchema } from "~/schemas/hub";
 
 export const hubFeaturesService = {
   async getBadges(userId: string, hubId: string) {
@@ -57,14 +59,29 @@ export const hubFeaturesService = {
     });
   },
 
-  async patchLogConfig(userId: string, input: { hubId: string; channelId: string; eventFlags: number; notificationRoleId?: string | null; expectedVersion: number; idempotencyKey: string }) {
+  async patchLogConfig(userId: string, input: z.infer<typeof patchHubLogConfigSchema>) {
+    const toClearOrValue = (val: string | null | undefined) => (val === null ? "" : val);
     return controlHubService.patchLogConfig({
       hubId: input.hubId,
-      channelId: input.channelId,
+      channelId: input.channelId !== undefined ? (input.channelId ?? "") : "",
       eventFlags: input.eventFlags,
-      notificationRoleId: input.notificationRoleId ?? undefined,
+      notificationRoleId: input.notificationRoleId !== undefined ? (input.notificationRoleId ?? "") : undefined,
       expectedVersion: input.expectedVersion,
       idempotencyKey: input.idempotencyKey,
+      modLogsChannelId: toClearOrValue(input.modLogsChannelId),
+      modLogsRoleId: toClearOrValue(input.modLogsRoleId),
+      joinLeavesChannelId: toClearOrValue(input.joinLeavesChannelId),
+      joinLeavesRoleId: toClearOrValue(input.joinLeavesRoleId),
+      messageModerationChannelId: toClearOrValue(input.messageModerationChannelId),
+      messageModerationRoleId: toClearOrValue(input.messageModerationRoleId),
+      reportsChannelId: toClearOrValue(input.reportsChannelId),
+      reportsRoleId: toClearOrValue(input.reportsRoleId),
+      networkAlertsChannelId: toClearOrValue(input.networkAlertsChannelId),
+      networkAlertsRoleId: toClearOrValue(input.networkAlertsRoleId),
+      appealsChannelId: toClearOrValue(input.appealsChannelId),
+      appealsRoleId: toClearOrValue(input.appealsRoleId),
+      safetyAlertsChannelId: toClearOrValue(input.safetyAlertsChannelId),
+      safetyAlertsRoleId: toClearOrValue(input.safetyAlertsRoleId),
       actorId: userId,
     });
   },

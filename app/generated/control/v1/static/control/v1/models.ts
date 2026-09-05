@@ -1371,6 +1371,20 @@ export interface HubLogConfig {
   channelId: string;
   eventFlags: number;
   notificationRoleId: string;
+  joinLeavesChannelId: string;
+  joinLeavesRoleId: string;
+  messageModerationChannelId: string;
+  messageModerationRoleId: string;
+  reportsChannelId: string;
+  reportsRoleId: string;
+  networkAlertsChannelId: string;
+  networkAlertsRoleId: string;
+  appealsChannelId: string;
+  appealsRoleId: string;
+  safetyAlertsChannelId: string;
+  safetyAlertsRoleId: string;
+  modLogsChannelId: string;
+  modLogsRoleId: string;
 }
 
 export interface HubAnnouncement {
@@ -3765,7 +3779,26 @@ export const HubBadgeConfig: MessageFns<HubBadgeConfig> = {
 };
 
 function createBaseHubLogConfig(): HubLogConfig {
-  return { hubId: "", channelId: "", eventFlags: 0, notificationRoleId: "" };
+  return {
+    hubId: "",
+    channelId: "",
+    eventFlags: 0,
+    notificationRoleId: "",
+    joinLeavesChannelId: "",
+    joinLeavesRoleId: "",
+    messageModerationChannelId: "",
+    messageModerationRoleId: "",
+    reportsChannelId: "",
+    reportsRoleId: "",
+    networkAlertsChannelId: "",
+    networkAlertsRoleId: "",
+    appealsChannelId: "",
+    appealsRoleId: "",
+    safetyAlertsChannelId: "",
+    safetyAlertsRoleId: "",
+    modLogsChannelId: "",
+    modLogsRoleId: "",
+  };
 }
 
 export const HubLogConfig: MessageFns<HubLogConfig> = {
@@ -3781,6 +3814,48 @@ export const HubLogConfig: MessageFns<HubLogConfig> = {
     }
     if (message.notificationRoleId !== "") {
       writer.uint32(34).string(message.notificationRoleId);
+    }
+    if (message.joinLeavesChannelId !== "") {
+      writer.uint32(42).string(message.joinLeavesChannelId);
+    }
+    if (message.joinLeavesRoleId !== "") {
+      writer.uint32(50).string(message.joinLeavesRoleId);
+    }
+    if (message.messageModerationChannelId !== "") {
+      writer.uint32(58).string(message.messageModerationChannelId);
+    }
+    if (message.messageModerationRoleId !== "") {
+      writer.uint32(66).string(message.messageModerationRoleId);
+    }
+    if (message.reportsChannelId !== "") {
+      writer.uint32(74).string(message.reportsChannelId);
+    }
+    if (message.reportsRoleId !== "") {
+      writer.uint32(82).string(message.reportsRoleId);
+    }
+    if (message.networkAlertsChannelId !== "") {
+      writer.uint32(90).string(message.networkAlertsChannelId);
+    }
+    if (message.networkAlertsRoleId !== "") {
+      writer.uint32(98).string(message.networkAlertsRoleId);
+    }
+    if (message.appealsChannelId !== "") {
+      writer.uint32(106).string(message.appealsChannelId);
+    }
+    if (message.appealsRoleId !== "") {
+      writer.uint32(114).string(message.appealsRoleId);
+    }
+    if (message.safetyAlertsChannelId !== "") {
+      writer.uint32(122).string(message.safetyAlertsChannelId);
+    }
+    if (message.safetyAlertsRoleId !== "") {
+      writer.uint32(130).string(message.safetyAlertsRoleId);
+    }
+    if (message.modLogsChannelId !== "") {
+      writer.uint32(138).string(message.modLogsChannelId);
+    }
+    if (message.modLogsRoleId !== "") {
+      writer.uint32(146).string(message.modLogsRoleId);
     }
     return writer;
   },
@@ -3824,6 +3899,118 @@ export const HubLogConfig: MessageFns<HubLogConfig> = {
           message.notificationRoleId = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.joinLeavesChannelId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.joinLeavesRoleId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.messageModerationChannelId = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.messageModerationRoleId = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.reportsChannelId = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.reportsRoleId = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.networkAlertsChannelId = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.networkAlertsRoleId = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.appealsChannelId = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.appealsRoleId = reader.string();
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.safetyAlertsChannelId = reader.string();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.safetyAlertsRoleId = reader.string();
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.modLogsChannelId = reader.string();
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.modLogsRoleId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3842,6 +4029,20 @@ export const HubLogConfig: MessageFns<HubLogConfig> = {
     message.channelId = object.channelId ?? "";
     message.eventFlags = object.eventFlags ?? 0;
     message.notificationRoleId = object.notificationRoleId ?? "";
+    message.joinLeavesChannelId = object.joinLeavesChannelId ?? "";
+    message.joinLeavesRoleId = object.joinLeavesRoleId ?? "";
+    message.messageModerationChannelId = object.messageModerationChannelId ?? "";
+    message.messageModerationRoleId = object.messageModerationRoleId ?? "";
+    message.reportsChannelId = object.reportsChannelId ?? "";
+    message.reportsRoleId = object.reportsRoleId ?? "";
+    message.networkAlertsChannelId = object.networkAlertsChannelId ?? "";
+    message.networkAlertsRoleId = object.networkAlertsRoleId ?? "";
+    message.appealsChannelId = object.appealsChannelId ?? "";
+    message.appealsRoleId = object.appealsRoleId ?? "";
+    message.safetyAlertsChannelId = object.safetyAlertsChannelId ?? "";
+    message.safetyAlertsRoleId = object.safetyAlertsRoleId ?? "";
+    message.modLogsChannelId = object.modLogsChannelId ?? "";
+    message.modLogsRoleId = object.modLogsRoleId ?? "";
     return message;
   },
 };

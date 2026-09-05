@@ -165,13 +165,26 @@ export const patchHubBadgesSchema = z.object({
 
 export const patchHubLogConfigSchema = z.object({
   hubId: z.string(),
-  // An empty channel clears logging. The Control Plane validates whether a
-  // non-empty channel belongs to this Hub and is usable.
-  channelId: z.string().max(32),
+  // An empty channel clears logging for that stream.
+  channelId: z.string().max(32).optional(),
   eventFlags: z.number().int().min(0).default(0),
   notificationRoleId: z.string().optional().nullable(),
   expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().min(1, "A retry key is required."),
+  modLogsChannelId: z.string().max(32).optional().nullable(),
+  modLogsRoleId: z.string().max(32).optional().nullable(),
+  joinLeavesChannelId: z.string().max(32).optional().nullable(),
+  joinLeavesRoleId: z.string().max(32).optional().nullable(),
+  messageModerationChannelId: z.string().max(32).optional().nullable(),
+  messageModerationRoleId: z.string().max(32).optional().nullable(),
+  reportsChannelId: z.string().max(32).optional().nullable(),
+  reportsRoleId: z.string().max(32).optional().nullable(),
+  networkAlertsChannelId: z.string().max(32).optional().nullable(),
+  networkAlertsRoleId: z.string().max(32).optional().nullable(),
+  appealsChannelId: z.string().max(32).optional().nullable(),
+  appealsRoleId: z.string().max(32).optional().nullable(),
+  safetyAlertsChannelId: z.string().max(32).optional().nullable(),
+  safetyAlertsRoleId: z.string().max(32).optional().nullable(),
 });
 
 export const assignHubStaffSchema = z.object({

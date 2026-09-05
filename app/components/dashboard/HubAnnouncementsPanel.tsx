@@ -4,7 +4,7 @@ import { Button, List, message, Modal, Popconfirm, Typography } from "antd";
 import { useRef, useState } from "react";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
-import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle } from "./shared";
+import { DashboardReadOnlyNotice, DashboardSectionCard, DashboardSectionTitle, DashboardSelect } from "./shared";
 
 const { Paragraph, Text } = Typography;
 
@@ -221,7 +221,7 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
             <List.Item.Meta
               avatar={<SendOutlined style={{ color: "#8175ee", fontSize: 18, marginTop: 4 }} />}
               title={
-                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
+                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>
                   {item.desiredState} · {item.deliveryState} · {item.nextDelivery ? `Next ${new Date(item.nextDelivery).toLocaleString()}` : "No next run"}
                 </Text>
               }
@@ -259,12 +259,18 @@ export function HubAnnouncementsPanel({ hub, canEdit }: HubAnnouncementsPanelPro
           <input type="datetime-local" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} className="dashboard-input text-xs" />
           <label className="text-xs font-bold text-white/90">Repeat interval (minutes, 0 = one-time)</label>
           <input type="number" min={0} max={525600} value={repeatIntervalMinutes} onChange={(e) => setRepeatIntervalMinutes(Number(e.target.value))} className="dashboard-input text-xs" />
-          <label className="text-xs font-bold text-white/90">Desired state</label>
-          <select value={desiredState} onChange={(e) => setDesiredState(e.target.value as typeof desiredState)} className="dashboard-input text-xs">
-            <option value="DRAFT">Draft</option>
-            <option value="SCHEDULED">Scheduled</option>
-            <option value="PAUSED">Paused</option>
-          </select>
+          <label className="text-xs font-bold text-white/90" htmlFor="announcement-desired-state">Desired state</label>
+          <DashboardSelect<typeof desiredState>
+            id="announcement-desired-state"
+            className="w-full"
+            value={desiredState}
+            onChange={(val) => setDesiredState(val)}
+            options={[
+              { value: "DRAFT", label: "Draft" },
+              { value: "SCHEDULED", label: "Scheduled" },
+              { value: "PAUSED", label: "Paused" },
+            ]}
+          />
         </div>
       </Modal>
     </DashboardSectionCard>

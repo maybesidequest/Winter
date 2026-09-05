@@ -1,5 +1,13 @@
+import {
+  AuditOutlined,
+  HistoryOutlined,
+  InboxOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpc } from "~/lib/orpc";
 import {
   AppealDecisionModal,
@@ -10,6 +18,7 @@ import {
   SafetyAssessmentCard,
   useHubModerationActions,
 } from "~/components/dashboard/moderation";
+import { HubAppealCooldownCard } from "~/components/dashboard/moderation/HubAppealCooldownCard";
 import type { HubResource } from "~/resources/hub";
 import type { PatchHubConfigInput } from "~/schemas/hub";
 import { HubSubjectSelector } from "./HubSubjectSelector";
@@ -60,32 +69,37 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
   const settings = settingsQuery.data;
   const assessmentState = subjectUserId.trim().length === 0 ? "idle" : assessmentQuery.isPending ? "loading" : assessmentQuery.isError ? "error" : "ready";
   const [subTab, setSubTab] = useState<"desk" | "policies">("desk");
-  const [appealCooldown, setAppealCooldown] = useState<number>(hub.spec.appealCooldownHours ?? 168);
+
+  const pendingAppealsCount = appealsQuery.data?.items?.length ?? 0;
+  const infractionsCount = infractionsQuery.data?.items?.length ?? 0;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-5">
-      <div className="flex items-center gap-2 pb-1 border-b border-white/[0.06]">
+    <div className="flex max-w-4xl flex-col gap-6 w-full">
+      {/* Moderation Sub-tabs */}
+      <div className="flex items-center gap-2.5 pb-2 border-b border-white/[0.06]">
         <button
           type="button"
           onClick={() => setSubTab("desk")}
-          className={`dashboard-pill-btn cursor-pointer ${
+          className={`dashboard-pill-btn cursor-pointer flex items-center gap-2 ${
             subTab === "desk" ? "dashboard-pill-btn--active" : ""
           }`}
         >
+          <AuditOutlined />
           <span>Live Desk</span>
-          {(appealsQuery.data?.items?.length ?? 0) > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-violet-400 text-[#0b0c14] text-[10px] font-bold">
-              {appealsQuery.data?.items.length}
+          {pendingAppealsCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-violet-400 text-[#0b0c14] text-xs font-bold">
+              {pendingAppealsCount}
             </span>
           )}
         </button>
         <button
           type="button"
           onClick={() => setSubTab("policies")}
-          className={`dashboard-pill-btn cursor-pointer ${
+          className={`dashboard-pill-btn cursor-pointer flex items-center gap-2 ${
             subTab === "policies" ? "dashboard-pill-btn--active" : ""
           }`}
         >
+          <SafetyCertificateOutlined />
           <span>Safety Policies</span>
         </button>
       </div>
@@ -99,7 +113,7 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
       )}
 
       {subTab === "policies" && (
-        <>
+        <div className="flex flex-col gap-6">
           {settings ? (
             <HubSafetySettingsPanel
               settings={settings}
@@ -116,60 +130,40 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
               }
             />
           ) : settingsQuery.isLoading ? (
-            <p className="text-xs text-white/60">Loading canonical safety settings…</p>
+            <div className="rounded-2xl border p-6 animate-pulse text-xs text-white/60" style={dashboardGlassCardStyle}>
+              Loading canonical safety policies…
+            </div>
           ) : null}
 
-          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-white m-0 font-['Sora']">
-                  Appeal Cooldown Period
-                </h3>
-                <p className="text-xs text-white/65 m-0 mt-0.5">
-                  Specify how long sanctioned members must wait before submitting a new infraction appeal.
-                </p>
-              </div>
-              {canEdit && onSaveConfig && (
-                <button
-                  type="button"
-                  disabled={isSaving || appealCooldown === (hub.spec.appealCooldownHours ?? 168)}
-                  onClick={() => onSaveConfig({ appealCooldownHours: appealCooldown })}
-                  className="dashboard-btn-primary !min-h-[32px] !px-3.5 !py-1 !text-xs !font-bold"
-                >
-                  {isSaving ? "Saving…" : "Save Cooldown"}
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                id="hub-appeal-cooldown-policies"
-                type="number"
-                min={0}
-                max={8760}
-                value={appealCooldown}
-                disabled={!canEdit || isSaving}
-                onChange={(e) => setAppealCooldown(Number(e.target.value))}
-                className="dashboard-input text-xs w-28"
-              />
-              <span className="text-xs text-white/60">
-                hours ({Math.round(((appealCooldown || 0) / 24) * 10) / 10} days)
-              </span>
-            </div>
-          </section>
-        </>
+          <HubAppealCooldownCard
+            hub={hub}
+            canEdit={canEdit}
+            isSaving={isSaving}
+            onSaveConfig={onSaveConfig}
+          />
+        </div>
       )}
 
       {subTab === "desk" && (
-        <>
-          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-            <h3 className="mb-3 text-sm font-bold text-white">Appeal review</h3>
+        <div className="flex flex-col gap-6">
+          {/* Appeals Review Card */}
+          <section className="rounded-2xl border p-6 flex flex-col gap-4" style={dashboardGlassCardStyle}>
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5">
+                <InboxOutlined className="text-violet-400 text-base" />
+                <h3 className="text-base font-bold text-white font-['Sora'] m-0">Pending Infraction Appeals</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 font-semibold">
+                  {pendingAppealsCount} awaiting review
+                </span>
+              </div>
+            </div>
+
             {appealsQuery.isError ? (
-              <p role="alert" className="m-0 text-xs text-amber-300">
-                Appeals are temporarily unavailable. No state is assumed.
-              </p>
+              <div role="alert" className="rounded-xl border border-[#ff8c73]/30 bg-[#ff8c73]/10 px-3 py-2 text-xs text-[#ff8c73]">
+                Appeals service is temporarily unreachable. Please retry shortly.
+              </div>
             ) : appealsQuery.isPending ? (
-              <p className="m-0 animate-pulse text-xs text-white/60">Loading appeals…</p>
+              <p className="m-0 animate-pulse text-xs text-white/60">Loading pending appeals…</p>
             ) : (
               <AppealList
                 appeals={appealsQuery.data?.items ?? []}
@@ -178,14 +172,24 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
             )}
           </section>
 
-          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-            <h3 className="mb-3 text-sm font-bold text-white">Sanctions</h3>
+          {/* Sanctions & Infractions Card */}
+          <section className="rounded-2xl border p-6 flex flex-col gap-4" style={dashboardGlassCardStyle}>
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5">
+                <HistoryOutlined className="text-sky-400 text-base" />
+                <h3 className="text-base font-bold text-white font-['Sora'] m-0">Enforced Sanctions</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 font-semibold">
+                  {infractionsCount} total logged
+                </span>
+              </div>
+            </div>
+
             {infractionsQuery.isError ? (
-              <p role="alert" className="m-0 text-xs text-amber-300">
-                Moderation records are temporarily unavailable. No state is assumed.
-              </p>
+              <div role="alert" className="rounded-xl border border-[#ff8c73]/30 bg-[#ff8c73]/10 px-3 py-2 text-xs text-[#ff8c73]">
+                Infractions log is temporarily unreachable. Please retry shortly.
+              </div>
             ) : infractionsQuery.isPending ? (
-              <p className="m-0 animate-pulse text-xs text-white/60">Loading moderation records…</p>
+              <p className="m-0 animate-pulse text-xs text-white/60">Loading infraction records…</p>
             ) : (
               <InfractionList
                 infractions={infractionsQuery.data?.items ?? []}
@@ -205,20 +209,25 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
             )}
           </section>
 
-          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-bold text-white">Member safety assessment</h3>
-              <div className="w-full sm:w-64">
+          {/* Member Safety Assessment Card */}
+          <section className="rounded-2xl border p-6 flex flex-col gap-4" style={dashboardGlassCardStyle}>
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5">
+                <UserOutlined className="text-emerald-400 text-base" />
+                <h3 className="text-base font-bold text-white font-['Sora'] m-0">Member Safety Assessment</h3>
+              </div>
+              <div className="w-full sm:w-72">
                 <label className="sr-only" htmlFor="hub-safety-subject">Member to assess</label>
                 <HubSubjectSelector
                   id="hub-safety-subject"
                   hubId={hub.metadata.id}
                   value={subjectUserId}
                   onChange={setSubjectUserId}
-                  placeholder="Search by Discord name"
+                  placeholder="Search member by Discord username…"
                 />
               </div>
             </div>
+
             <SafetyAssessmentCard assessment={assessmentQuery.data ?? null} state={assessmentState} />
           </section>
 
@@ -230,7 +239,7 @@ export function HubModerationPanel({ hub, canEdit, onSaveConfig, isSaving = fals
             onClose={() => setDecisionTarget(null)}
             onConfirm={handleConfirmDecision}
           />
-        </>
+        </div>
       )}
     </div>
   );

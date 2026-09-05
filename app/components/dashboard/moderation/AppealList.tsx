@@ -1,6 +1,7 @@
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import type { Appeal } from "~/services/control/moderation.shared";
 
@@ -24,14 +25,15 @@ interface AppealListProps {
 export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
   if (appeals.length === 0) {
     return (
-      <div className="py-6 text-center rounded-xl bg-white/[0.02] border border-white/[0.06]">
-        <p className="m-0 text-xs text-white/50">No pending appeals for this Hub.</p>
+      <div className="py-8 text-center rounded-xl bg-[#181726] border border-white/[0.06] flex flex-col items-center gap-2">
+        <InboxOutlined className="text-2xl text-white/30" />
+        <p className="m-0 text-xs text-white/50">No pending appeals awaiting review for this Hub.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col divide-y divide-white/[0.06]">
+    <div className="flex flex-col gap-3">
       {appeals.map((appeal) => {
         const isPending = appeal.appealStatus === "APPEAL_STATUS_PENDING";
         const sanctionType = appeal.infraction?.type?.replace("SANCTION_TYPE_", "") || "SANCTION";
@@ -39,7 +41,7 @@ export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
         return (
           <article
             key={appeal.id}
-            className="flex flex-col gap-2.5 py-3.5 text-xs first:pt-1 last:pb-1"
+            className="flex flex-col gap-3 p-4 rounded-xl bg-[#181726] border border-white/[0.08] text-xs shadow-[0_2px_0_0_rgba(10,8,23,0.3)] transition-all hover:border-white/15"
           >
             {/* Header / Badges */}
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -55,7 +57,7 @@ export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
                 >
                   {formatStatus(appeal.appealStatus)}
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/5 text-white/60 border border-white/10">
+                <span className="px-2 py-0.5 rounded text-xs font-bold bg-white/5 text-white/70 border border-white/10">
                   {sanctionType}
                 </span>
                 <span className="text-white/60 font-mono text-xs">
@@ -69,14 +71,14 @@ export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
             </div>
 
             {/* Appeal Reason Statement */}
-            <div className="p-2.5 rounded-lg bg-black/30 border border-white/[0.06]">
-              <p className="m-0 text-white/90 leading-relaxed whitespace-pre-wrap">
+            <div className="p-3 rounded-lg bg-black/30 border border-white/[0.06]">
+              <p className="m-0 text-white/90 leading-relaxed whitespace-pre-wrap font-sans">
                 "{appeal.reason}"
               </p>
             </div>
 
             {/* Metadata Footer & Review Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/[0.04]">
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-white/40 text-xs">
                 {appeal.reviewedAt && (
                   <span>Reviewed: {formatDate(appeal.reviewedAt)}</span>
@@ -101,7 +103,7 @@ export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
                   <button
                     type="button"
                     onClick={() => onOpenDecision(appeal, "approve")}
-                    className="dashboard-btn-primary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+                    className="dashboard-btn-primary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <CheckCircleOutlined className="text-xs" />
                     <span>Approve…</span>
@@ -109,7 +111,7 @@ export function AppealList({ appeals, onOpenDecision }: AppealListProps) {
                   <button
                     type="button"
                     onClick={() => onOpenDecision(appeal, "reject")}
-                    className="dashboard-btn-secondary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+                    className="dashboard-btn-secondary !min-h-[30px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <CloseCircleOutlined className="text-xs" />
                     <span>Reject…</span>

@@ -1,10 +1,10 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, List, message, Modal, Popconfirm, Select, Tag, Typography } from "antd";
+import { Alert, Button, List, message, Modal, Popconfirm, Tag, Typography } from "antd";
 import { useRef, useState } from "react";
 import { orpc } from "~/lib/orpc";
 import type { HubResource } from "~/resources/hub";
-import { DashboardSectionCard, DashboardSectionTitle, DepthToggle } from "./shared";
+import { DashboardSectionCard, DashboardSectionTitle, DashboardSelect, DepthToggle } from "./shared";
 import { HubSubjectSelector } from "./HubSubjectSelector";
 
 const { Text } = Typography;
@@ -222,7 +222,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       <div className="flex flex-col gap-3 mb-6 pb-6 border-b border-white/[0.06]">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-white/90 tracking-wide uppercase">Configured Roles</span>
-          <span className="text-[11px] text-white/60">{roles.length} available</span>
+          <span className="text-xs text-white/60">{roles.length} available</span>
         </div>
 
         <List
@@ -283,7 +283,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                       {item.spec.name}
                     </Tag>
                     {item.status.protected && (
-                      <span className="text-[10px] text-amber-300/80 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-medium">
+                      <span className="text-xs text-amber-300/80 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-medium">
                         System Protected
                       </span>
                     )}
@@ -295,13 +295,13 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                     {grantedLabels.slice(0, 4).map((label) => (
                       <span
                         key={label}
-                        className="text-[10px] bg-white/[0.04] text-white/70 px-2 py-0.5 rounded-md border border-white/[0.04]"
+                        className="text-xs bg-white/[0.04] text-white/70 px-2 py-0.5 rounded-md border border-white/[0.04]"
                       >
                         {label}
                       </span>
                     ))}
                     {grantedLabels.length > 4 && (
-                      <span className="text-[10px] text-white/50 bg-white/[0.02] px-1.5 py-0.5 rounded">
+                      <span className="text-xs text-white/50 bg-white/[0.02] px-1.5 py-0.5 rounded">
                         +{grantedLabels.length - 4} more
                       </span>
                     )}
@@ -317,7 +317,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-white/90 tracking-wide uppercase">Staff Assignments</span>
-          <span className="text-[11px] text-white/60">{staff.length} active</span>
+          <span className="text-xs text-white/60">{staff.length} active</span>
         </div>
 
         <List
@@ -352,7 +352,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
               }
             >
               <List.Item.Meta
-                avatar={<UserOutlined style={{ color: "#a897ea", fontSize: 20, marginTop: 4 }} />}
+                avatar={<UserOutlined style={{ color: "#8175ee", fontSize: 20, marginTop: 4 }} />}
                 title={
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Text style={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
@@ -364,7 +364,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                   </div>
                 }
                 description={
-                  <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
+                  <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>
                     Assigned by {item.spec.assignedBy || "System"}
                   </Text>
                 }
@@ -400,9 +400,9 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-white/90">Role Permissions</label>
-              <span className="text-[11px] text-violet-300 font-mono">Bitmask: {roleBitmask}</span>
+              <span className="text-xs text-violet-300 font-mono">Bitmask: {roleBitmask}</span>
             </div>
-            <p className="text-[11px] text-white/60 m-0">
+            <p className="text-xs text-white/60 m-0">
               Select the capabilities granted to members assigned this role.
             </p>
 
@@ -416,7 +416,7 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
                   >
                     <div className="flex flex-col gap-0.5 pr-3">
                       <span className="text-xs font-semibold text-white/90">{perm.label}</span>
-                      <span className="text-[11px] text-white/60">{perm.desc}</span>
+                      <span className="text-xs text-white/60">{perm.desc}</span>
                     </div>
                     <DepthToggle
                       checked={checked}
@@ -450,16 +450,17 @@ export function HubTeamPanel({ hub, canEdit }: HubTeamPanelProps) {
               onChange={setUserId}
               placeholder="Search by Discord name"
             />
-            <span id="hub-staff-subject-help" className="text-[11px] text-white/60">Choose a named member from this Hub.</span>
+            <span id="hub-staff-subject-help" className="text-xs text-white/60">Choose a named member from this Hub.</span>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-white/90">Role</label>
-            <Select
+            <label className="text-xs font-bold text-white/90" htmlFor="hub-staff-role">Role</label>
+            <DashboardSelect
+              id="hub-staff-role"
               value={selectedRole || undefined}
               onChange={setSelectedRole}
               placeholder="Select a role"
               disabled={rolesLoading || rolesError || roles.length === 0}
-              style={{ width: "100%" }}
+              className="w-full"
               options={roles.map((item) => ({ label: item.spec.name, value: item.spec.name }))}
             />
           </div>

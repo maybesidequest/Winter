@@ -21,8 +21,9 @@ import {
 } from "~/services/lifecycleIntent";
 
 const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
-  overview: { title: "Overview", desc: "Hub status, activity, and identity settings." },
-  general: { title: "General", desc: "Manage identity, branding, and description." },
+  overview: { title: "Overview", desc: "Hub status, activity, and network topology." },
+  branding: { title: "Branding", desc: "Manage Hub identity, banner, and descriptions." },
+  general: { title: "Branding", desc: "Manage Hub identity, banner, and descriptions." },
   connections: { title: "Connections", desc: "Manage connected Discord servers and channels." },
   moderation: { title: "Moderation", desc: "Manage safety settings, rules, and access." },
   rules: { title: "Rules", desc: "Keep the Hub rules clear and current." },
@@ -38,7 +39,7 @@ const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
 };
 
 const LEGACY_VIEWS: Record<string, string> = {
-  general: "overview",
+  general: "branding",
   routes: "connections",
   safety: "moderation",
   members: "team",
@@ -48,6 +49,7 @@ const LEGACY_VIEWS: Record<string, string> = {
 
 const VISIBLE_HUB_VIEWS = new Set([
   "overview",
+  "branding",
   "connections",
   "moderation",
   "rules",
@@ -62,6 +64,7 @@ const VISIBLE_HUB_VIEWS = new Set([
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
+  branding: "HUB_CONFIG",
   connections: "CONNECTIONS",
   moderation: "MODERATION",
   chat: "HUB_CONFIG",
@@ -149,7 +152,7 @@ export default function HubWorkspace({ loaderData }: Route.ComponentProps) {
   });
   const hub = hubDetail || loaderData?.initialHub || hubs.find((h) => h.metadata.id === hubId);
   const isLoading = isHubLoading && !hub;
-  const connectionsEnabled = (capabilities.CONNECTIONS || import.meta.env.DEV) && activeTab === "connections";
+  const connectionsEnabled = (capabilities.CONNECTIONS || import.meta.env.DEV) && (activeTab === "connections" || activeTab === "overview");
   const { data: connections = [] } = useQuery({
     ...orpc.hub.getConnections.queryOptions({ input: { hubId } }),
     enabled: connectionsEnabled,

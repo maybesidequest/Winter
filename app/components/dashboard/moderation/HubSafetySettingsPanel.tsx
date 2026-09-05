@@ -1,6 +1,6 @@
-import { SaveOutlined, UndoOutlined } from "@ant-design/icons";
+import { SafetyCertificateOutlined, SaveOutlined, UndoOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { DepthToggle } from "~/components/dashboard/shared";
+import { dashboardGlassCardStyle, DepthToggle } from "~/components/dashboard/shared";
 import type { HubSafetySettings } from "~/services/control/moderation.shared";
 import {
   ALL_SAFETY_KEYS,
@@ -49,16 +49,21 @@ export function HubSafetySettingsPanel({
   };
 
   return (
-    <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-5">
+    <section className="rounded-2xl border p-6 flex flex-col gap-6" style={dashboardGlassCardStyle}>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
-        <div>
-          <h3 className="text-sm font-bold text-white m-0 font-['Sora']">
-            Hub Safety Settings
-          </h3>
-          <p className="text-xs text-white/65 m-0 mt-0.5">
-            Configure automated content filtering, spam protection, and media relay rules.
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-300 text-base">
+            <SafetyCertificateOutlined />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white m-0 font-['Sora']">
+              Hub Safety Policies
+            </h3>
+            <p className="text-xs text-white/60 m-0 mt-0.5">
+              Automated content sanitization, anti-spam filters, and cross-server media relay rules.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -67,7 +72,7 @@ export function HubSafetySettingsPanel({
               type="button"
               onClick={handleReset}
               disabled={saving}
-              className="dashboard-btn-secondary !min-h-[32px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+              className="dashboard-btn-secondary !min-h-[32px] !px-3 !py-1 !text-xs !font-bold flex items-center gap-1.5 cursor-pointer"
             >
               <UndoOutlined className="text-xs" />
               <span>Reset</span>
@@ -79,19 +84,19 @@ export function HubSafetySettingsPanel({
               type="button"
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="dashboard-btn-primary !min-h-[32px] !px-3.5 !py-1 !text-xs !font-bold flex items-center gap-1.5"
+              className="dashboard-btn-primary !min-h-[32px] !px-4 !py-1 !text-xs !font-bold flex items-center gap-1.5 cursor-pointer"
             >
               <SaveOutlined className="text-xs" />
-              <span>{saving ? "Saving…" : "Save Changes"}</span>
+              <span>{saving ? "Saving…" : "Save Policies"}</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Categorized Settings Grid */}
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         {SAFETY_CATEGORIES.map((category) => (
-          <div key={category.id} className="flex flex-col gap-2.5">
+          <div key={category.id} className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm">{category.icon}</span>
               <h4 className="text-xs font-bold uppercase tracking-wider text-white/70 m-0">
@@ -99,7 +104,7 @@ export function HubSafetySettingsPanel({
               </h4>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {category.items.map((item) => {
                 const isChecked = Boolean(draft[item.key]);
                 const isModified = draft[item.key] !== settings.spec[item.key];
@@ -107,10 +112,10 @@ export function HubSafetySettingsPanel({
                 return (
                   <div
                     key={item.key}
-                    className={`p-3 rounded-xl border transition-all flex items-start justify-between gap-3 ${
+                    className={`p-3.5 rounded-xl border transition-all flex items-start justify-between gap-3 ${
                       isModified
-                        ? "bg-violet-500/10 border-violet-500/30"
-                        : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]"
+                        ? "bg-violet-950/40 border-violet-500/40 shadow-[0_0_12px_rgba(129,117,238,0.15)]"
+                        : "bg-[#181726] border-white/[0.06] hover:border-white/15"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
@@ -128,7 +133,7 @@ export function HubSafetySettingsPanel({
                           />
                         )}
                       </div>
-                      <p className="text-xs text-white/65 m-0 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-white/60 m-0 mt-0.5 leading-relaxed">
                         {item.description}
                       </p>
                     </div>
@@ -151,9 +156,9 @@ export function HubSafetySettingsPanel({
       </div>
 
       {settings.updatedAt && (
-        <div className="pt-2 text-right">
+        <div className="pt-2 text-right border-t border-white/[0.04]">
           <span className="text-xs text-white/40">
-            Last saved: {new Date(settings.updatedAt).toLocaleString()}
+            Last policy update: {new Date(settings.updatedAt).toLocaleString()}
           </span>
         </div>
       )}

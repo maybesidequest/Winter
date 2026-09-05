@@ -147,6 +147,20 @@ export interface PatchHubLogConfigRequest {
   notificationRoleId: string;
   expectedVersion: number;
   operationId: string;
+  joinLeavesChannelId?: string | undefined;
+  joinLeavesRoleId?: string | undefined;
+  messageModerationChannelId?: string | undefined;
+  messageModerationRoleId?: string | undefined;
+  reportsChannelId?: string | undefined;
+  reportsRoleId?: string | undefined;
+  networkAlertsChannelId?: string | undefined;
+  networkAlertsRoleId?: string | undefined;
+  appealsChannelId?: string | undefined;
+  appealsRoleId?: string | undefined;
+  safetyAlertsChannelId?: string | undefined;
+  safetyAlertsRoleId?: string | undefined;
+  modLogsChannelId?: string | undefined;
+  modLogsRoleId?: string | undefined;
 }
 
 export interface GetHubLogConfigRequest {
@@ -1538,6 +1552,20 @@ function createBasePatchHubLogConfigRequest(): PatchHubLogConfigRequest {
     notificationRoleId: "",
     expectedVersion: 0,
     operationId: "",
+    joinLeavesChannelId: undefined,
+    joinLeavesRoleId: undefined,
+    messageModerationChannelId: undefined,
+    messageModerationRoleId: undefined,
+    reportsChannelId: undefined,
+    reportsRoleId: undefined,
+    networkAlertsChannelId: undefined,
+    networkAlertsRoleId: undefined,
+    appealsChannelId: undefined,
+    appealsRoleId: undefined,
+    safetyAlertsChannelId: undefined,
+    safetyAlertsRoleId: undefined,
+    modLogsChannelId: undefined,
+    modLogsRoleId: undefined,
   };
 }
 
@@ -1563,6 +1591,48 @@ export const PatchHubLogConfigRequest: MessageFns<PatchHubLogConfigRequest> = {
     }
     if (message.operationId !== "") {
       writer.uint32(58).string(message.operationId);
+    }
+    if (message.joinLeavesChannelId !== undefined) {
+      writer.uint32(66).string(message.joinLeavesChannelId);
+    }
+    if (message.joinLeavesRoleId !== undefined) {
+      writer.uint32(74).string(message.joinLeavesRoleId);
+    }
+    if (message.messageModerationChannelId !== undefined) {
+      writer.uint32(82).string(message.messageModerationChannelId);
+    }
+    if (message.messageModerationRoleId !== undefined) {
+      writer.uint32(90).string(message.messageModerationRoleId);
+    }
+    if (message.reportsChannelId !== undefined) {
+      writer.uint32(98).string(message.reportsChannelId);
+    }
+    if (message.reportsRoleId !== undefined) {
+      writer.uint32(106).string(message.reportsRoleId);
+    }
+    if (message.networkAlertsChannelId !== undefined) {
+      writer.uint32(114).string(message.networkAlertsChannelId);
+    }
+    if (message.networkAlertsRoleId !== undefined) {
+      writer.uint32(122).string(message.networkAlertsRoleId);
+    }
+    if (message.appealsChannelId !== undefined) {
+      writer.uint32(130).string(message.appealsChannelId);
+    }
+    if (message.appealsRoleId !== undefined) {
+      writer.uint32(138).string(message.appealsRoleId);
+    }
+    if (message.safetyAlertsChannelId !== undefined) {
+      writer.uint32(146).string(message.safetyAlertsChannelId);
+    }
+    if (message.safetyAlertsRoleId !== undefined) {
+      writer.uint32(154).string(message.safetyAlertsRoleId);
+    }
+    if (message.modLogsChannelId !== undefined) {
+      writer.uint32(162).string(message.modLogsChannelId);
+    }
+    if (message.modLogsRoleId !== undefined) {
+      writer.uint32(170).string(message.modLogsRoleId);
     }
     return writer;
   },
@@ -1630,6 +1700,118 @@ export const PatchHubLogConfigRequest: MessageFns<PatchHubLogConfigRequest> = {
           message.operationId = reader.string();
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.joinLeavesChannelId = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.joinLeavesRoleId = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.messageModerationChannelId = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.messageModerationRoleId = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.reportsChannelId = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.reportsRoleId = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.networkAlertsChannelId = reader.string();
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.networkAlertsRoleId = reader.string();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.appealsChannelId = reader.string();
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.appealsRoleId = reader.string();
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.safetyAlertsChannelId = reader.string();
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.safetyAlertsRoleId = reader.string();
+          continue;
+        }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.modLogsChannelId = reader.string();
+          continue;
+        }
+        case 21: {
+          if (tag !== 170) {
+            break;
+          }
+
+          message.modLogsRoleId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1653,6 +1835,20 @@ export const PatchHubLogConfigRequest: MessageFns<PatchHubLogConfigRequest> = {
     message.notificationRoleId = object.notificationRoleId ?? "";
     message.expectedVersion = object.expectedVersion ?? 0;
     message.operationId = object.operationId ?? "";
+    message.joinLeavesChannelId = object.joinLeavesChannelId ?? undefined;
+    message.joinLeavesRoleId = object.joinLeavesRoleId ?? undefined;
+    message.messageModerationChannelId = object.messageModerationChannelId ?? undefined;
+    message.messageModerationRoleId = object.messageModerationRoleId ?? undefined;
+    message.reportsChannelId = object.reportsChannelId ?? undefined;
+    message.reportsRoleId = object.reportsRoleId ?? undefined;
+    message.networkAlertsChannelId = object.networkAlertsChannelId ?? undefined;
+    message.networkAlertsRoleId = object.networkAlertsRoleId ?? undefined;
+    message.appealsChannelId = object.appealsChannelId ?? undefined;
+    message.appealsRoleId = object.appealsRoleId ?? undefined;
+    message.safetyAlertsChannelId = object.safetyAlertsChannelId ?? undefined;
+    message.safetyAlertsRoleId = object.safetyAlertsRoleId ?? undefined;
+    message.modLogsChannelId = object.modLogsChannelId ?? undefined;
+    message.modLogsRoleId = object.modLogsRoleId ?? undefined;
     return message;
   },
 };

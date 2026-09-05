@@ -1,5 +1,6 @@
 import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPanel";
 import { HubAuditPanel } from "~/components/dashboard/HubAuditPanel";
+import { HubBrandingPanel } from "~/components/dashboard/HubBrandingPanel";
 import { HubChatExperiencePanel } from "~/components/dashboard/HubChatExperiencePanel";
 import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
 import { HubLoggingPanel } from "~/components/dashboard/HubLoggingPanel";
@@ -68,8 +69,24 @@ export function HubWorkspaceTabs({
   const can = (...actions: PermissionAction[]) => actions.some((action) => hub.metadata.permissions[action] === true);
   switch (activeTab) {
     case "overview":
+      return (
+        <HubOverview
+          hub={hub}
+          connections={connections}
+          canEdit={canEdit}
+        />
+      );
+    case "branding":
     case "general":
-      return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} error={saveError} onSave={onSaveConfig} />;
+      return (
+        <HubBrandingPanel
+          hub={hub}
+          canEdit={canEdit}
+          saving={isSaving}
+          error={saveError}
+          onSave={onSaveConfig}
+        />
+      );
     case "connections":
       return (
         <HubRoutes
@@ -150,6 +167,6 @@ export function HubWorkspaceTabs({
         </div>
       );
     default:
-      return <HubOverview hub={hub} canEdit={canEdit} saving={isSaving} error={saveError} onSave={onSaveConfig} />;
+      return <HubOverview hub={hub} connections={connections} canEdit={canEdit} />;
   }
 }

@@ -7,6 +7,7 @@ import {
   HistoryOutlined,
   LinkOutlined,
   MessageOutlined,
+  PictureOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -120,6 +121,12 @@ export function HubSidebarTabs({ hubId, hub, onNavigate, capabilities }: HubSide
           label: "Audit Log",
           icon: <HistoryOutlined />,
           visible: enabled("HUB_AUDIT") && can("VIEW_LOGS"),
+        },
+        {
+          path: "branding",
+          label: "Branding",
+          icon: <PictureOutlined />,
+          visible: enabled("HUB_CONFIG") && can("MANAGE_HUB_SETTINGS"),
         },
         {
           path: "settings",
