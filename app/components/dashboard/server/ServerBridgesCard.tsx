@@ -1,19 +1,12 @@
-import {
-  ApartmentOutlined,
-  ArrowRightOutlined,
-  CompassOutlined,
-  LinkOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import { useMemo, useRef, useState } from "react";
-import { Link } from "react-router";
-import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { ConnectChannelWizard } from "~/components/dashboard/connection/ConnectChannelWizard";
 import { orpc } from "~/lib/orpc";
 import type { DiscordChannelResource, ServerBridgeResource, ServerResource } from "~/resources/server";
 import { ServerBridgeItem } from "./ServerBridgeItem";
+import { ServerBridgesEmptyState } from "./ServerBridgesEmptyState";
+import { ServerBridgesToolbar } from "./ServerBridgesToolbar";
 
 interface ServerBridgesCardProps {
   server: ServerResource;
@@ -27,8 +20,8 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "paused">("all");
   const [wizardOpen, setWizardOpen] = useState(false);
-  // Keyed per bridge so concurrent actions never clear each other's spinner.
   const [pendingActions, setPendingActions] = useState<Record<string, "toggle" | "repair" | "disconnect">>({});
+
   const markPending = (bridgeId: string, action: "toggle" | "repair" | "disconnect") =>
     setPendingActions((current) => ({ ...current, [bridgeId]: action }));
   const clearPending = (bridgeId: string) =>
@@ -48,9 +41,7 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
     return created;
   };
 
-  const channelMap = useMemo(() => {
-    return new Map(channels.map((c) => [c.id, c.name]));
-  }, [channels]);
+  const channelMap = useMemo(() => new Map(channels.map((c) => [c.id, c.name])), [channels]);
 
   const refreshBridges = () => {
     void queryClient.invalidateQueries({
@@ -60,43 +51,43 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
 
   const toggleMutation = useMutation(
     orpc.server.toggleBridge.mutationOptions({
-      onSuccess: (_result, variables) => {
+      onSuccess: (_res, variables) => {
         actionKeysRef.current.delete(`toggle:${variables.connectionId}`);
         message.success(variables.enabled ? "Bridge resumed." : "Bridge paused.");
         refreshBridges();
       },
-      onError: (error) => {
+      onError: (err) => {
         refreshBridges();
-        message.error(error instanceof Error ? error.message : "Unable to update this bridge.");
+        message.error(err instanceof Error ? err.message : "Unable to update this bridge.");
       },
     }),
   );
 
   const repairMutation = useMutation(
     orpc.server.repairBridge.mutationOptions({
-      onSuccess: (_result, variables) => {
+      onSuccess: (_res, variables) => {
         actionKeysRef.current.delete(`repair:${variables.connectionId}`);
         message.success("Bridge webhooks repaired.");
         refreshBridges();
       },
-      onError: (error) => {
+      onError: (err) => {
         refreshBridges();
-        message.error(error instanceof Error ? error.message : "Unable to repair this bridge.");
+        message.error(err instanceof Error ? err.message : "Unable to repair this bridge.");
       },
     }),
   );
 
   const disconnectMutation = useMutation(
     orpc.server.disconnectBridge.mutationOptions({
-      onSuccess: (_result, variables) => {
+      onSuccess: (_res, variables) => {
         actionKeysRef.current.delete(`disconnect:${variables.connectionId}`);
         message.success("Bridge disconnected.");
         refreshBridges();
         onServerUpdated?.();
       },
-      onError: (error) => {
+      onError: (err) => {
         refreshBridges();
-        message.error(error instanceof Error ? error.message : "Unable to disconnect this bridge.");
+        message.error(err instanceof Error ? err.message : "Unable to disconnect this bridge.");
       },
     }),
   );
@@ -104,67 +95,35 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
   const handleToggle = (bridge: ServerBridgeResource, isPaused: boolean) => {
     markPending(bridge.id, "toggle");
     toggleMutation.mutate(
-      {
-        serverId: server.metadata.id,
-        connectionId: bridge.id,
-        enabled: isPaused,
-        expectedVersion: bridge.version,
-        idempotencyKey: keyFor("toggle", bridge.id),
-      },
-      {
-        onSettled: () => clearPending(bridge.id),
-      },
+      { serverId: server.metadata.id, connectionId: bridge.id, enabled: isPaused, expectedVersion: bridge.version, idempotencyKey: keyFor("toggle", bridge.id) },
+      { onSettled: () => clearPending(bridge.id) },
     );
   };
 
   const handleRepair = (bridge: ServerBridgeResource) => {
     markPending(bridge.id, "repair");
     repairMutation.mutate(
-      {
-        serverId: server.metadata.id,
-        connectionId: bridge.id,
-        expectedVersion: bridge.version,
-        idempotencyKey: keyFor("repair", bridge.id),
-      },
-      {
-        onSettled: () => clearPending(bridge.id),
-      },
+      { serverId: server.metadata.id, connectionId: bridge.id, expectedVersion: bridge.version, idempotencyKey: keyFor("repair", bridge.id) },
+      { onSettled: () => clearPending(bridge.id) },
     );
   };
 
   const handleDisconnect = (bridge: ServerBridgeResource) => {
     markPending(bridge.id, "disconnect");
     disconnectMutation.mutate(
-      {
-        serverId: server.metadata.id,
-        connectionId: bridge.id,
-        expectedVersion: bridge.version,
-        idempotencyKey: keyFor("disconnect", bridge.id),
-      },
-      {
-        onSettled: () => clearPending(bridge.id),
-      },
+      { serverId: server.metadata.id, connectionId: bridge.id, expectedVersion: bridge.version, idempotencyKey: keyFor("disconnect", bridge.id) },
+      { onSettled: () => clearPending(bridge.id) },
     );
   };
 
-  const activeCount = useMemo(
-    () => bridges.filter((b) => b.connected).length,
-    [bridges],
-  );
-  const pausedCount = useMemo(
-    () => bridges.filter((b) => !b.connected).length,
-    [bridges],
-  );
+  const activeCount = useMemo(() => bridges.filter((b) => b.connected).length, [bridges]);
+  const pausedCount = useMemo(() => bridges.filter((b) => !b.connected).length, [bridges]);
 
   const filteredBridges = useMemo(() => {
     return bridges.filter((bridge) => {
       const chName = bridge.channelName || channelMap.get(bridge.channelId) || "";
       const query = search.trim().toLowerCase();
-      const matchesSearch =
-        !query ||
-        bridge.hubName.toLowerCase().includes(query) ||
-        chName.toLowerCase().includes(query);
-
+      const matchesSearch = !query || bridge.hubName.toLowerCase().includes(query) || chName.toLowerCase().includes(query);
       if (!matchesSearch) return false;
       const isPaused = !bridge.connected;
       if (statusFilter === "active") return !isPaused;
@@ -175,167 +134,40 @@ export function ServerBridgesCard({ server, bridges, channels = [], onServerUpda
 
   return (
     <div className="flex flex-col gap-5 w-full">
-      {/* Information & Filter Toolbar */}
-      <div
-        className="p-5 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4"
-        style={dashboardGlassCardStyle}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-300 text-lg shadow-sm">
-            <ApartmentOutlined />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-white font-['Sora'] m-0">
-              Connected Hub Bridges
-            </h2>
-            <p className="text-xs text-white/50 m-0 mt-0.5">
-              {activeCount} active · {pausedCount} paused · {bridges.length} total
-            </p>
-          </div>
-        </div>
+      <ServerBridgesToolbar
+        activeCount={activeCount}
+        pausedCount={pausedCount}
+        totalCount={bridges.length}
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onOpenWizard={() => setWizardOpen(true)}
+      />
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Search input */}
-          <div className="relative">
-            <SearchOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs" />
-            <input
-              type="text"
-              placeholder="Search bridges..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="dashboard-input text-xs pl-8 py-1.5 min-h-[34px] w-44 sm:w-48"
-            />
-          </div>
-
-          {/* Status Filter Pills */}
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setStatusFilter("all")}
-              className={`dashboard-pill-btn ${statusFilter === "all" ? "dashboard-pill-btn--active" : ""}`}
-            >
-              All ({bridges.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter("active")}
-              className={`dashboard-pill-btn ${statusFilter === "active" ? "dashboard-pill-btn--active" : ""}`}
-            >
-              Enabled ({activeCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter("paused")}
-              className={`dashboard-pill-btn ${statusFilter === "paused" ? "dashboard-pill-btn--active" : ""}`}
-            >
-              Paused ({pausedCount})
-            </button>
-          </div>
-
-          {/* Connect a channel */}
-          <button
-            type="button"
-            onClick={() => setWizardOpen(true)}
-            className="dashboard-btn-primary px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
-            title="Connect a channel on this server to a Hub"
-          >
-            <LinkOutlined />
-            <span>Connect a channel</span>
-          </button>
-
-          {/* Hub Directory Link */}
-          <Link
-            to="/dashboard/browse"
-            className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
-            title="Browse all available public hubs"
-          >
-            <CompassOutlined />
-            <span>Browse Hubs</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Bridges Content */}
-      {bridges.length === 0 ? (
-        <div
-          className="p-8 md:p-12 rounded-2xl border flex flex-col items-center justify-center text-center gap-4"
-          style={dashboardGlassCardStyle}
-        >
-          <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-300 text-2xl">
-            <LinkOutlined />
-          </div>
-          <div className="flex flex-col gap-1.5 max-w-md">
-            <h3 className="text-base font-bold text-white font-['Sora']">
-              Connect this server to a Hub
-            </h3>
-            <p className="text-xs text-white/70">
-              Pick one of this server&apos;s channels and the Hub it should relay with. Messages will flow between the
-              channel and the Hub&apos;s network.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setWizardOpen(true)}
-            className="dashboard-btn-primary px-5 py-2.5 text-xs font-semibold mt-2 flex items-center gap-2"
-          >
-            <LinkOutlined />
-            <span>Connect a channel</span>
-          </button>
-          <details className="mt-1 max-w-md w-full">
-            <summary className="text-[11px] text-white/40 cursor-pointer hover:text-white/60 select-none">
-              Prefer Discord commands?
-            </summary>
-            <div className="mt-2 p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between gap-3 text-xs font-mono text-violet-300">
-              <code>/hub join &lt;hub_name&gt;</code>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText("/hub join ");
-                  message.success("Command copied to clipboard");
-                }}
-                className="text-white/60 hover:text-white transition-colors cursor-pointer"
-                title="Copy command"
-              >
-                Copy
-              </button>
-            </div>
-          </details>
-        </div>
-      ) : filteredBridges.length === 0 ? (
-        <div
-          className="p-8 rounded-2xl border flex flex-col items-center justify-center text-center gap-2"
-          style={dashboardGlassCardStyle}
-        >
-          <p className="text-sm font-semibold text-white/80">No bridges match your filter</p>
-          <p className="text-xs text-white/50">Try clearing your search query or selecting &quot;All&quot;.</p>
-          <button
-            type="button"
-            onClick={() => {
-              setSearch("");
-              setStatusFilter("all");
-            }}
-            className="dashboard-btn-secondary px-3.5 py-1.5 text-xs font-semibold mt-2"
-          >
-            Reset Filters
-          </button>
-        </div>
+      {bridges.length === 0 || filteredBridges.length === 0 ? (
+        <ServerBridgesEmptyState
+          isFiltered={bridges.length > 0 && filteredBridges.length === 0}
+          onOpenWizard={() => setWizardOpen(true)}
+          onResetFilters={() => {
+            setSearch("");
+            setStatusFilter("all");
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredBridges.map((bridge) => {
-            const resolvedChannel = bridge.channelName || channelMap.get(bridge.channelId) || null;
-            return (
-              <ServerBridgeItem
-                key={bridge.id}
-                server={server}
-                bridge={bridge}
-                channelName={resolvedChannel}
-                pendingAction={pendingActions[bridge.id] ? { bridgeId: bridge.id, action: pendingActions[bridge.id] } : null}
-                onToggle={handleToggle}
-                onRepair={handleRepair}
-                onDisconnect={handleDisconnect}
-              />
-            );
-          })}
+          {filteredBridges.map((bridge) => (
+            <ServerBridgeItem
+              key={bridge.id}
+              server={server}
+              bridge={bridge}
+              channelName={bridge.channelName || channelMap.get(bridge.channelId) || null}
+              pendingAction={pendingActions[bridge.id] ? { bridgeId: bridge.id, action: pendingActions[bridge.id] } : null}
+              onToggle={handleToggle}
+              onRepair={handleRepair}
+              onDisconnect={handleDisconnect}
+            />
+          ))}
         </div>
       )}
 

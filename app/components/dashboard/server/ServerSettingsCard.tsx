@@ -10,20 +10,13 @@ import { useEffect, useRef, useState } from "react";
 import { dashboardGlassCardStyle } from "~/components/dashboard/shared";
 import { orpcClient as orpc } from "~/lib/orpc";
 import type { ServerResource } from "~/resources/server";
+import { ServerPermissionsGrid } from "./ServerPermissionsGrid";
 
 interface ServerSettingsCardProps {
   server: ServerResource;
   botClientId?: string;
   onServerUpdated?: () => void;
 }
-
-const REQUIRED_PERMISSIONS = [
-  { name: "Manage Webhooks", desc: "Required for cross-server message bridging and Userphone", bit: 1 << 29 },
-  { name: "Manage Messages", desc: "Required for automod deletion and moderation panel commands", bit: 1 << 13 },
-  { name: "View Channels", desc: "Required for bot responsiveness and command handling", bit: 1 << 10 },
-  { name: "Send Messages", desc: "Required for bot responsiveness and command handling", bit: 1 << 11 },
-  { name: "Embed Links & Attach Files", desc: "Required for rich card rendering and attachment relay", bit: (1 << 14) | (1 << 15) },
-];
 
 export function ServerSettingsCard({
   server,
@@ -100,7 +93,7 @@ export function ServerSettingsCard({
             <h2 className="text-base font-bold text-white font-['Sora']">
               Server Settings & Diagnostics
             </h2>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-white/70">
               Core bot integration parameters and permissions for {server.metadata.name}.
             </p>
           </div>
@@ -109,7 +102,7 @@ export function ServerSettingsCard({
         <button
           type="button"
           onClick={copyServerId}
-          className="dashboard-btn-secondary px-3.5 py-1.5 text-xs self-start sm:self-auto flex items-center gap-1.5"
+          className="dashboard-btn-secondary px-3.5 py-2 min-h-[44px] text-xs self-start sm:self-auto inline-flex items-center gap-1.5 cursor-pointer"
         >
           {copied ? <CheckCircleOutlined className="text-emerald-400" /> : <CopyOutlined />}
           <span>Copy ID</span>
@@ -124,27 +117,27 @@ export function ServerSettingsCard({
           style={dashboardGlassCardStyle}
         >
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-bold uppercase tracking-wider text-white/70">
               Command Prefix
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               <input
                 aria-label="Command prefix"
                 value={prefix}
                 maxLength={10}
                 disabled={!isInstalled || savingPrefix}
                 onChange={(event) => setPrefix(event.target.value)}
-                className="w-28 text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1 rounded-xl focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 outline-none transition-all"
+                className="w-28 min-h-[44px] text-2xl font-black font-mono text-white bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={savePrefix}
                 disabled={!isInstalled || !version || savingPrefix || prefix.trim() === savedPrefix}
-                className="dashboard-btn-primary px-3.5 py-2 text-xs"
+                className="dashboard-btn-primary px-4 py-2 min-h-[44px] text-xs font-semibold cursor-pointer"
               >
                 {savingPrefix ? "Saving…" : "Save"}
               </button>
-              <span className="text-xs text-white/60">
+              <span className="text-xs text-white/70">
                 (or slash commands <code>/</code>)
               </span>
             </div>
@@ -160,7 +153,7 @@ export function ServerSettingsCard({
           style={dashboardGlassCardStyle}
         >
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-bold uppercase tracking-wider text-white/70">
               Bot Integration
             </span>
             <div className="flex items-center gap-2">
@@ -183,7 +176,7 @@ export function ServerSettingsCard({
             href={inviteUrl}
             target="_blank"
             rel="noreferrer"
-            className="dashboard-btn-secondary py-2 px-3 text-xs font-semibold text-center flex items-center justify-center gap-1.5"
+            className="dashboard-btn-secondary py-2.5 px-3.5 min-h-[44px] text-xs font-semibold text-center inline-flex items-center justify-center gap-1.5"
           >
             <LinkOutlined />
             <span>Re-authorize Bot</span>
@@ -192,55 +185,10 @@ export function ServerSettingsCard({
       </div>
 
       {/* Permissions Breakdown */}
-      <div
-        className="p-6 rounded-2xl border flex flex-col gap-4"
-        style={dashboardGlassCardStyle}
-      >
-        <div>
-          <h3 className="text-sm font-bold text-white font-['Sora']">
-            Required Discord Permissions
-          </h3>
-          <p className="text-xs text-white/60 mt-0.5">
-            Verified permissions for InterChat bot inside this Discord server
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {REQUIRED_PERMISSIONS.map((perm) => {
-            const hasPerm = permissionsKnown && (botPermissions & perm.bit) === perm.bit;
-            const isMissing = permissionsKnown && !hasPerm;
-
-            return (
-              <div
-                key={perm.name}
-                className={`p-3 rounded-xl border flex items-start gap-3 transition-colors ${hasPerm
-                    ? "bg-emerald-500/[0.04] border-emerald-500/20"
-                    : isMissing
-                      ? "bg-amber-500/[0.04] border-amber-500/20"
-                      : "bg-white/[0.03] border-white/[0.06]"
-                  }`}
-              >
-                {hasPerm ? (
-                  <CheckCircleOutlined className="text-emerald-400 mt-0.5 flex-shrink-0" />
-                ) : isMissing ? (
-                  <ExclamationCircleOutlined className="text-amber-400 mt-0.5 flex-shrink-0" />
-                ) : (
-                  <ExclamationCircleOutlined className="text-white/40 mt-0.5 flex-shrink-0" />
-                )}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold text-white">{perm.name}</span>
-                  <span className="text-[11px] text-white/70">
-                    {permissionsKnown
-                      ? hasPerm
-                        ? `Granted. ${perm.desc}`
-                        : `Missing. ${perm.desc}`
-                      : "Permission status not available."}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <ServerPermissionsGrid
+        botPermissions={botPermissions}
+        permissionsKnown={permissionsKnown}
+      />
     </div>
   );
 }

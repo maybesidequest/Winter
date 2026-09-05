@@ -60,11 +60,9 @@ export function ServerBridgeItem({
 
   return (
     <div
-      className="p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all duration-150 hover:border-white/15"
-      style={{
-        ...dashboardGlassCardStyle,
-        borderColor: isPaused || needsAttention ? "rgba(245, 158, 11, 0.3)" : "rgba(255, 255, 255, 0.08)",
-      }}
+      className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all duration-150 hover:border-white/15 ${isPaused || needsAttention ? "border-amber-500/30" : "border-white/[0.08]"
+        }`}
+      style={dashboardGlassCardStyle}
     >
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
@@ -85,7 +83,7 @@ export function ServerBridgeItem({
                 {bridge.hubName}
               </h4>
               <div className="text-xs text-white/70 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                <span className="text-white/50">Channel:</span>
+                <span className="text-white/60">Channel:</span>
                 <span className="font-semibold text-sky-300">
                   #{channelName || "Channel name unavailable"}
                 </span>
@@ -94,7 +92,7 @@ export function ServerBridgeItem({
           </div>
 
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border flex-shrink-0 ${statusBadge.classes}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border flex-shrink-0 ${statusBadge.classes}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot}`} />
             <span>{statusBadge.label}</span>
@@ -110,7 +108,7 @@ export function ServerBridgeItem({
 
         {/* Diagnostic Webhook Warning */}
         {bridge.webhookProvisioned === false && (
-          <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center justify-between gap-2">
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ExclamationCircleOutlined className="flex-shrink-0 text-rose-400" />
               <span>Discord webhook unprovisioned or missing.</span>
@@ -119,7 +117,7 @@ export function ServerBridgeItem({
               type="button"
               disabled={isBridgePending}
               onClick={() => onRepair(bridge)}
-              className="text-[11px] font-bold text-sky-300 hover:text-sky-200 underline cursor-pointer"
+              className="text-xs font-bold text-sky-300 hover:text-sky-200 underline cursor-pointer p-1"
             >
               Repair Now
             </button>
@@ -128,14 +126,14 @@ export function ServerBridgeItem({
       </div>
 
       {/* Card Footer: Metadata & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-white/[0.08] text-xs text-white/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-white/[0.08] text-xs text-white/70">
         <span>Connected {formattedDate}</span>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Pause / Resume Button */}
           <button
             type="button"
             disabled={isBridgePending}
-            className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold"
+            className="dashboard-btn-secondary px-3 py-1.5 min-h-[36px] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
             onClick={() => onToggle(bridge, isPaused)}
             title={isPaused ? "Resume message relay" : "Pause message relay"}
           >
@@ -153,7 +151,7 @@ export function ServerBridgeItem({
           <button
             type="button"
             disabled={isBridgePending}
-            className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold"
+            className="dashboard-btn-secondary px-3 py-1.5 min-h-[36px] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
             onClick={() => onRepair(bridge)}
             title="Re-synchronize and repair Discord webhook"
           >
@@ -173,7 +171,7 @@ export function ServerBridgeItem({
             <button
               type="button"
               disabled={isBridgePending}
-              className="dashboard-btn-danger-subtle px-3 py-1.5 text-xs font-semibold"
+              className="dashboard-btn-danger-subtle px-3 py-1.5 min-h-[36px] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
               title="Remove bridge connection"
             >
               {isDisconnectPending ? <LoadingOutlined /> : <DisconnectOutlined />}
@@ -185,10 +183,10 @@ export function ServerBridgeItem({
           {bridge.hubId && (
             <Link
               to={`/dashboard/hubs/${bridge.hubId}/overview`}
-              className="dashboard-btn-secondary px-3 py-1.5 text-xs font-semibold text-violet-300 hover:text-white flex items-center gap-1.5"
+              className="dashboard-btn-secondary px-3 py-1.5 min-h-[36px] text-xs font-semibold text-violet-300 hover:text-white inline-flex items-center gap-1.5 cursor-pointer"
             >
               <span>Hub</span>
-              <ArrowRightOutlined className="text-[10px]" />
+              <ArrowRightOutlined className="text-xs" />
             </Link>
           )}
         </div>

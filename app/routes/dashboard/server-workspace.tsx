@@ -12,6 +12,7 @@ import { PageHeader } from "~/components/dashboard/PageHeader";
 import { ServerBlocklistCard } from "~/components/dashboard/server/ServerBlocklistCard";
 import { ServerBridgesCard } from "~/components/dashboard/server/ServerBridgesCard";
 import { ServerCallSettingsCard } from "~/components/dashboard/server/ServerCallSettingsCard";
+import { ServerMobileTabs } from "~/components/dashboard/server/ServerMobileTabs";
 import { ServerOverviewCard } from "~/components/dashboard/server/ServerOverviewCard";
 import { ServerSettingsCard } from "~/components/dashboard/server/ServerSettingsCard";
 import { requireUser } from "~/services/auth.server";
@@ -109,7 +110,7 @@ export default function ServerWorkspace() {
   const shouldLoadBridges = Boolean(
     server?.status.botInstalled &&
     capabilities.CONNECTIONS === true &&
-    view === "bridges",
+    (view === "bridges" || view === "overview"),
   );
   const shouldLoadBlocks = Boolean(
     server?.status.botInstalled &&
@@ -256,42 +257,20 @@ export default function ServerWorkspace() {
         }
       />
 
-      {/* In-page Horizontal Tabs Bar (Mobile Only) */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-xl border border-white/[0.08] bg-[#1e1f2b] shadow-[0_2px_0_0_rgba(10,8,23,0.75)] overflow-x-auto md:hidden">
-        {[
-          { key: "overview", label: "Overview", icon: <CloudServerOutlined /> },
-          { key: "bridges", label: "Hubs", icon: <ApartmentOutlined />, count: server.status.connectionCount, capabilities: ["CONNECTIONS"] },
-          { key: "calls", label: "Calls", icon: <ThunderboltOutlined />, count: server.spec.lobbyChannelIds.length > 0 ? server.spec.lobbyChannelIds.length : undefined, capabilities: ["SERVER_CONFIG", "CONNECTIONS"] },
-          { key: "safety", label: "Blocklist", icon: <SafetyCertificateOutlined />, count: view === "safety" ? blocks.length : undefined, capabilities: ["SERVER_BLOCKLIST"] },
-          { key: "settings", label: "Settings", icon: <SettingOutlined />, capabilities: ["SERVER_CONFIG"] },
-        ].filter((tab) => !tab.capabilities || tab.capabilities.every((capability) => capabilities[capability] === true)).map((tab) => {
-          const isActive = view === tab.key;
-          return (
-            <Link
-              key={tab.key}
-              to={`/dashboard/servers/${server.metadata.id}/${tab.key === "overview" ? "" : tab.key}`}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${isActive
-                ? "bg-[#2b274c] text-violet-200 border border-violet-500/40 shadow-[0_1.5px_0_0_#5b4ccb] font-bold"
-                : "bg-white/[0.03] text-white/70 hover:text-white hover:bg-white/[0.06] border border-white/[0.08] shadow-[0_1.5px_0_0_rgba(255,255,255,0.06)]"
-                }`}
-            >
-              <span className={isActive ? "text-violet-300" : "text-white/50"}>{tab.icon}</span>
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && (
-                <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-violet-500/30 text-violet-200 border border-violet-400/30" : "bg-white/10 text-white/60"
-                  }`}>
-                  {tab.count}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
+      <ServerMobileTabs
+        server={server}
+        currentView={view}
+        capabilities={capabilities}
+        blocksCount={blocks.length}
+      />
 
       {view === "overview" && (
         <ServerOverviewCard
           server={server}
+          bridges={bridges}
           bridgesCount={server.status.connectionCount}
+          blocksCount={blocks.length}
+          onServerUpdated={refreshServerProjection}
         />
       )}
       {viewNeedsAttention && (
