@@ -26,9 +26,10 @@ const VIEW_TITLES: Record<string, { title: string; desc: string }> = {
   connections: { title: "Connections", desc: "Manage connected Discord servers and channels." },
   moderation: { title: "Moderation", desc: "Manage safety settings, rules, and access." },
   rules: { title: "Rules", desc: "Keep the Hub rules clear and current." },
-  modules: { title: "Modules", desc: "Choose how messages and attachments move through the hub." },
+  chat: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
+  modules: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
   logging: { title: "Logging", desc: "Configure log channels and notification roles." },
-  badges: { title: "Badges", desc: "Choose which staff badges appear on relayed messages." },
+  badges: { title: "Chat Experience", desc: "Configure cross-server reactions, nicknames, and staff badges." },
   invites: { title: "Invites", desc: "Create and revoke hub invite codes." },
   team: { title: "Team", desc: "Manage staff roles and permissions." },
   announcements: { title: "Announcements", desc: "Schedule announcements across connected servers." },
@@ -41,14 +42,29 @@ const LEGACY_VIEWS: Record<string, string> = {
   routes: "connections",
   safety: "moderation",
   members: "team",
+  modules: "chat",
+  badges: "chat",
 };
 
-const VISIBLE_HUB_VIEWS = new Set(["overview", "connections", "moderation", "rules", "modules", "logging", "badges", "invites", "team", "announcements", "audit", "settings"]);
+const VISIBLE_HUB_VIEWS = new Set([
+  "overview",
+  "connections",
+  "moderation",
+  "rules",
+  "chat",
+  "logging",
+  "invites",
+  "team",
+  "announcements",
+  "audit",
+  "settings",
+]);
 
 const VIEW_CAPABILITIES: Record<string, string> = {
   general: "HUB_CONFIG",
   connections: "CONNECTIONS",
   moderation: "MODERATION",
+  chat: "HUB_CONFIG",
   modules: "HUB_CONFIG",
   rules: "HUB_RULES",
   logging: "HUB_LOGGING",

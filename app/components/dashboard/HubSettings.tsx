@@ -55,6 +55,7 @@ export function HubSettings({
       visibility,
       language: language.trim() || null,
       region: region.trim() || null,
+      version: hub.version,
     });
   };
 

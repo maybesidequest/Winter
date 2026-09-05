@@ -1,13 +1,12 @@
 import { HubAnnouncementsPanel } from "~/components/dashboard/HubAnnouncementsPanel";
 import { HubAuditPanel } from "~/components/dashboard/HubAuditPanel";
-import { HubBadgesPanel } from "~/components/dashboard/HubBadgesPanel";
+import { HubChatExperiencePanel } from "~/components/dashboard/HubChatExperiencePanel";
 import { HubInvitesPanel } from "~/components/dashboard/HubInvitesPanel";
 import { HubLoggingPanel } from "~/components/dashboard/HubLoggingPanel";
 import { HubOverview } from "~/components/dashboard/HubOverview";
 import { HubRoutes } from "~/components/dashboard/HubRoutes";
 import { HubRulesPanel } from "~/components/dashboard/HubRulesPanel";
 import { HubSettings } from "~/components/dashboard/HubSettings";
-import { HubSettingsPanel } from "~/components/dashboard/HubSettingsPanel";
 import { HubTeamPanel } from "~/components/dashboard/HubTeamPanel";
 import { HubModerationPanel } from "~/components/dashboard/HubModerationPanel";
 import type { HubConnectionResource } from "~/resources/connection";
@@ -82,15 +81,29 @@ export function HubWorkspaceTabs({
         />
       );
     case "moderation":
-      return <HubModerationPanel hub={hub} canEdit={canEdit || can("MANAGE_HUB_SETTINGS")} />;
+      return (
+        <HubModerationPanel
+          hub={hub}
+          canEdit={canEdit || can("MANAGE_HUB_SETTINGS")}
+          onSaveConfig={onSaveConfig}
+          isSaving={isSaving}
+        />
+      );
     case "rules":
       return <HubRulesPanel hub={hub} canEdit={isOwner || can("MANAGE_RULES")} />;
     case "audit":
       return <HubAuditPanel hub={hub} />;
+    case "chat":
     case "modules":
+    case "badges":
       return (
         <div className="max-w-4xl">
-          <HubSettingsPanel settings={hub.spec.settings} canEdit={canEdit} isSaving={isSaving} onToggleFlag={onToggleModuleFlag} />
+          <HubChatExperiencePanel
+            hub={hub}
+            canEdit={canEdit}
+            isSaving={isSaving}
+            onToggleFlag={onToggleModuleFlag}
+          />
         </div>
       );
     case "settings":
@@ -116,12 +129,6 @@ export function HubWorkspaceTabs({
       return (
         <div className="max-w-4xl">
           <HubLoggingPanel hub={hub} connections={connections} canEdit={can("MANAGE_LOGS", "MANAGE_HUB_SETTINGS")} />
-        </div>
-      );
-    case "badges":
-      return (
-        <div className="max-w-4xl">
-          <HubBadgesPanel hub={hub} canEdit={canEdit} />
         </div>
       );
     case "invites":

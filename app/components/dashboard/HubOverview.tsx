@@ -27,11 +27,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
   const [shortDescription, setShortDescription] = useState(hub.spec.shortDescription || "");
   const [description, setDescription] = useState(hub.spec.description || "");
   const [welcomeMessage, setWelcomeMessage] = useState(hub.spec.welcomeMessage || "");
-  const [visibility, setVisibility] = useState(hub.spec.visibility);
-  const [language, setLanguage] = useState(hub.spec.language || "");
-  const [region, setRegion] = useState(hub.spec.region || "");
   const [nsfw, setNsfw] = useState(hub.spec.nsfw);
-  const [appealCooldownHours, setAppealCooldownHours] = useState(hub.spec.appealCooldownHours ?? 168);
 
   const prevHubIdRef = useRef(hub.metadata.id);
 
@@ -43,13 +39,9 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
       shortDescription !== (hub.spec.shortDescription || "") ||
       description !== (hub.spec.description || "") ||
       welcomeMessage !== (hub.spec.welcomeMessage || "") ||
-      visibility !== hub.spec.visibility ||
-      language !== (hub.spec.language || "") ||
-      region !== (hub.spec.region || "") ||
-      nsfw !== hub.spec.nsfw ||
-      appealCooldownHours !== (hub.spec.appealCooldownHours ?? 168)
+      nsfw !== hub.spec.nsfw
     );
-  }, [name, iconUrl, bannerUrl, shortDescription, description, welcomeMessage, visibility, language, region, nsfw, appealCooldownHours, hub]);
+  }, [name, iconUrl, bannerUrl, shortDescription, description, welcomeMessage, nsfw, hub]);
 
   const handleReset = () => {
     setName(hub.metadata.name);
@@ -58,11 +50,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
     setShortDescription(hub.spec.shortDescription || "");
     setDescription(hub.spec.description || "");
     setWelcomeMessage(hub.spec.welcomeMessage || "");
-    setVisibility(hub.spec.visibility);
-    setLanguage(hub.spec.language || "");
-    setRegion(hub.spec.region || "");
     setNsfw(hub.spec.nsfw);
-    setAppealCooldownHours(hub.spec.appealCooldownHours ?? 168);
   };
 
   useEffect(() => {
@@ -83,11 +71,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
         shortDescription: shortDescription.trim() || null,
         description: description.trim() || null,
         welcomeMessage: welcomeMessage.trim() || null,
-        visibility,
-        language: language.trim() || null,
-        region: region.trim() || null,
         nsfw,
-        appealCooldownHours: Number(appealCooldownHours),
         version: hub.version,
       });
     }
@@ -112,7 +96,7 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
         />
         <MetricCard
           title="Visibility"
-          value={visibility.charAt(0) + visibility.slice(1).toLowerCase()}
+          value={hub.spec.visibility.charAt(0) + hub.spec.visibility.slice(1).toLowerCase()}
           icon={<GlobalOutlined className="text-emerald-300 text-lg" />}
           iconBg="rgba(126, 212, 147, 0.18)"
           contourClass="dashboard-card-contours--sage"
@@ -213,54 +197,6 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-language">Primary language</label>
-            <input
-              id="hub-language"
-              type="text"
-              className="dashboard-input text-xs"
-              value={language}
-              maxLength={32}
-              disabled={!canEdit}
-              onChange={(e) => setLanguage(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-region">Primary region</label>
-            <input
-              id="hub-region"
-              type="text"
-              className="dashboard-input text-xs"
-              value={region}
-              maxLength={32}
-              disabled={!canEdit}
-              onChange={(e) => setRegion(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="flex items-center gap-3 text-xs font-bold text-white/90">
-            <DepthToggle checked={nsfw} disabled={!canEdit} onChange={setNsfw} aria-label="Age-restricted Hub" />
-            Age-restricted Hub (18+)
-          </label>
-          <div className="flex items-center gap-3">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-appeal-cooldown">Appeal cooldown</label>
-            <input
-              id="hub-appeal-cooldown"
-              type="number"
-              min={0}
-              max={8760}
-              className="dashboard-input text-xs w-28"
-              value={appealCooldownHours}
-              disabled={!canEdit}
-              onChange={(e) => setAppealCooldownHours(Number(e.target.value))}
-            />
-            <span className="text-xs text-white/60">hours</span>
-          </div>
-        </div>
-
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <label className="text-xs font-bold text-white/90">Short Tagline</label>
@@ -277,33 +213,18 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-visibility">Visibility</label>
-            <select
-              id="hub-visibility"
-              className="dashboard-input text-xs"
-              value={visibility}
-              disabled={!canEdit}
-              onChange={(e) => setVisibility(e.target.value as HubResource["spec"]["visibility"])}
-            >
-              <option value="PUBLIC">Public</option>
-              <option value="UNLISTED">Unlisted</option>
-              <option value="PRIVATE">Private</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-white/90" htmlFor="hub-welcome">Welcome message</label>
-            <input
-              id="hub-welcome"
-              type="text"
-              className="dashboard-input text-xs"
-              maxLength={2000}
-              value={welcomeMessage}
-              disabled={!canEdit}
-              onChange={(e) => setWelcomeMessage(e.target.value)}
-            />
-          </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold text-white/90" htmlFor="hub-welcome">Welcome message</label>
+          <input
+            id="hub-welcome"
+            type="text"
+            className="dashboard-input text-xs"
+            maxLength={2000}
+            placeholder="Greeting shown to new members joining through linked servers..."
+            value={welcomeMessage}
+            disabled={!canEdit}
+            onChange={(e) => setWelcomeMessage(e.target.value)}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
@@ -319,6 +240,13 @@ export function HubOverview({ hub, canEdit = false, saving = false, error, onSav
             disabled={!canEdit}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+
+        <div className="pt-1">
+          <label className="flex items-center gap-3 text-xs font-bold text-white/90 cursor-pointer w-fit">
+            <DepthToggle checked={nsfw} disabled={!canEdit} onChange={setNsfw} aria-label="Age-restricted Hub" />
+            <span>Age-restricted Hub (18+)</span>
+          </label>
         </div>
 
         {canEdit && onSave && (
