@@ -9,6 +9,19 @@ export function ArrowIcon() {
   );
 }
 
+export function RouteStop({ step, title }: { step: string; title: string }) {
+  return (
+    <div className="atlas-route-exit" aria-hidden="true">
+      <span className="atlas-route-exit__line" />
+      <span className="atlas-route-exit__node">{step}</span>
+      <span className="atlas-route-exit__label">
+        <small>Next stop</small>
+        <strong>{title}</strong>
+      </span>
+    </div>
+  );
+}
+
 export function AddInterChatButton({ className = "" }: { className?: string }) {
   return (
     <a className={`atlas-button ${className}`} href={ADD_INTERCHAT_URL}>

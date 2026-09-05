@@ -1,9 +1,10 @@
-import { AtlasPin, SectionIntro } from "./Primitives";
+import { AtlasPin, RouteStop, SectionIntro } from "./Primitives";
 import { Reveal } from "./Reveal";
 
 export function HubsSection() {
   return (
     <section className="atlas-section atlas-section--hubs" id="hubs" aria-labelledby="hubs-title">
+      <RouteStop step="02" title="Hub plaza" />
       <div className="atlas-container hubs-layout">
         <Reveal className="hubs-layout__copy">
           <SectionIntro question="Can whole communities meet here?" title="Build the place your people haven’t found yet." titleId="hubs-title">
@@ -35,23 +36,6 @@ export function HubsSection() {
             <AtlasPin label="Night Café" tone="coral" />
             <AtlasPin label="Garden Guild" />
           </div>
-
-          <div className="directory-card">
-            <div className="directory-card__command">/hub directory</div>
-            <div className="directory-card__result">
-              <span className="directory-card__icon">HC</span>
-              <div><strong>Hobby Corner</strong><small>Art, games & creative projects</small></div>
-              <span className="visibility-badge">Public</span>
-            </div>
-            <div className="directory-card__details">
-              <span>📌 Read the plaza rules</span>
-              <span>✦ Weekly community spotlight</span>
-              <span>↗ Invite a server</span>
-            </div>
-          </div>
-
-          <div className="atlas-stamp atlas-stamp--rules">RULES<br />POSTED</div>
-          <div className="atlas-stamp atlas-stamp--welcome">INVITES<br />OPEN</div>
         </Reveal>
       </div>
       <div className="atlas-fold" aria-hidden="true"><span>Detour: spontaneous Calls</span></div>

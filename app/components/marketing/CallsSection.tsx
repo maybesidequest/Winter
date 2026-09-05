@@ -42,16 +42,10 @@ export function CallsSection() {
           <SectionIntro question="How do Calls work?" title="A hello from somewhere unexpected." titleId="calls-title">
             Spontaneous 1:1 text chats across Discord communities. 100% text-based in your server’s designated channel — zero voice or camera overhead, with instant skip and moderation safety built into every connection.
           </SectionIntro>
-          <div className="calls-feature-strip" aria-label="Text Call guarantees">
-            <span className="calls-feature-pill">✦ 100% Text-Based</span>
-            <span className="calls-feature-pill">✦ Isolated Channel</span>
-            <span className="calls-feature-pill">✦ Instant Skip</span>
-            <span className="calls-feature-pill">✦ Zero Audio Permissions</span>
-          </div>
           <p className="calls-reassurance">
-            Never joins a voice channel. Members chat only through the specific text channel you assign, protected by your server’s existing automod.
+            Never joins a voice channel. Members chat only through the specific text channel you assign,
+            skip is instant, and your server’s existing automod still applies.
           </p>
-          <p className="atlas-handnote">Temporary route. Real conversation.</p>
         </Reveal>
       </div>
     </section>

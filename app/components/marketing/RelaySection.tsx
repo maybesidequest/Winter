@@ -1,23 +1,16 @@
-import { MessageFragment, SectionIntro } from "./Primitives";
+import { RouteStop, SectionIntro } from "./Primitives";
 import { Reveal } from "./Reveal";
 
-const channels = [
-  { server: "Pixel Pier", initials: "PP", tone: "sky" as const, note: "Sent here" },
-  { server: "Garden Guild", initials: "GG", tone: "violet" as const, note: "Safety check" },
-  { server: "Night Café", initials: "NC", tone: "coral" as const, note: "Delivered" },
+const stops = [
+  { server: "Pixel Pier", initials: "PP", tone: "sky" as const },
+  { server: "Garden Guild", initials: "GG", tone: "violet" as const },
+  { server: "Night Café", initials: "NC", tone: "coral" as const },
 ];
 
 export function RelaySection() {
   return (
     <section className="atlas-section atlas-section--paper relay-section" aria-labelledby="relay-title">
-      <div className="atlas-route-exit" aria-hidden="true">
-        <span className="atlas-route-exit__line" />
-        <span className="atlas-route-exit__node">01</span>
-        <span className="atlas-route-exit__label">
-          <small>Next stop</small>
-          <strong>Message relay</strong>
-        </span>
-      </div>
+      <RouteStop step="01" title="Message relay" />
       <div className="atlas-container">
         <Reveal>
           <SectionIntro question="What does InterChat actually do?" title="One channel. A whole neighbourhood." titleId="relay-title">
@@ -26,29 +19,20 @@ export function RelaySection() {
           </SectionIntro>
         </Reveal>
 
-        <Reveal className="relay-map" delay={100}>
-          <div className="relay-map__line" aria-hidden="true">
-            <span className="relay-map__traveller" />
-          </div>
-          {channels.map((channel, index) => (
-            <article className="channel-fragment" key={channel.server}>
-              <div className="channel-fragment__annotation">
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {channel.note}
-              </div>
-              <header>
-                <span className={`server-mark server-mark--${channel.tone}`}>{channel.initials}</span>
-                <div>
-                  <strong>{channel.server}</strong>
-                  <small># global-lounge</small>
-                </div>
-                <span className="connected-stamp">Hub route</span>
-              </header>
-              <MessageFragment initials="M" name="Mia" origin={`via ${channel.server}`} tone={channel.tone}>
-                anyone up for a game night?
-              </MessageFragment>
-            </article>
-          ))}
+        <Reveal className="relay-dispatch" delay={100}>
+          <figure className="relay-dispatch__message">
+            <blockquote>“anyone up for a game night?”</blockquote>
+            <figcaption>Mia · from Garden Guild</figcaption>
+          </figure>
+          <ol className="relay-dispatch__stops" aria-label="Where the message is delivered">
+            {stops.map((stop) => (
+              <li className="relay-dispatch__stop" key={stop.server}>
+                <span className={`server-mark server-mark--${stop.tone}`} aria-hidden="true">{stop.initials}</span>
+                <strong>{stop.server}</strong>
+                <span className="relay-dispatch__meta"># global-lounge · delivered</span>
+              </li>
+            ))}
+          </ol>
         </Reveal>
         <p className="atlas-margin-note">Same conversation. Three communities. Everyone stays home.</p>
       </div>
